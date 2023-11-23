@@ -1,6 +1,9 @@
-from PyQt6.QtWidgets import QWidget, QPushButton, QHBoxLayout
+from PyQt6.QtWidgets import QWidget, QPushButton, QHBoxLayout, QLabel
+from PyQt6.QtCore import QPoint
+from PyQt6.QtGui import QMouseEvent
 
 class CustomTitleBar(QWidget):
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.layout = QHBoxLayout()

@@ -1,43 +1,10 @@
-from PyQt6.QtWidgets import (
-    QApplication, QMainWindow, QStackedWidget, QWidget, QDialog,
-    QVBoxLayout, QLabel, QPushButton, QHBoxLayout, QSizePolicy,
-    QTableWidget, QTableWidgetItem, QHeaderView, QComboBox
-)
-from PyQt6.QtCore import QSize, Qt, QPoint
-from PyQt6.QtGui import QIcon, QPalette, QColor, QMouseEvent
-
-
-class TaskConfigDialog(QDialog):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle("Configure Task")
-        self.layout = QVBoxLayout()
-
-        self.task_selector = QComboBox()
-        self.task_selector.addItems(["Task 1", "Task 2", "Task 3"])
-        self.task_selector.currentIndexChanged.connect(self.update_config_options)
-        self.layout.addWidget(self.task_selector)
-
-        self.config_options_container = QWidget()
-        self.config_options_layout = QVBoxLayout()
-        self.config_options_container.setLayout(self.config_options_layout)
-        self.layout.addWidget(self.config_options_container)
-
-        self.buttons_layout = QHBoxLayout()
-        self.submit_button = QPushButton("Submit")
-        self.submit_button.clicked.connect(self.accept)
-        self.cancel_button = QPushButton("Cancel")
-        self.cancel_button.clicked.connect(self.reject)
-        self.buttons_layout.addWidget(self.submit_button)
-        self.buttons_layout.addWidget(self.cancel_button)
-        self.layout.addLayout(self.buttons_layout)
-
-        self.setLayout(self.layout)
-        self.update_config_options()
-
-    
-    def get_task_config(self):
-        return self.task_selector.currentText()
+from PyQt6.QtWidgets import (QMainWindow, QStackedWidget, QWidget, QVBoxLayout, QHBoxLayout, QTableWidget, 
+                             QTableWidgetItem, QHeaderView, QLabel, QPushButton, QDialog)
+from PyQt6.QtCore import QSize, Qt
+from PyQt6.QtGui import QPalette, QColor
+from ui.custom_title_bar import CustomTitleBar
+from ui.icon_button import IconButton
+from dialogs.task_config_dialog import TaskConfigDialog
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -129,9 +96,3 @@ class MainWindow(QMainWindow):
 
     def display_screen(self, index):
         self.stacked_widget.setCurrentIndex(index)
-
-if __name__ == "__main__":
-    app = QApplication([])
-    window = MainWindow()
-    window.show()
-    app.exec()
