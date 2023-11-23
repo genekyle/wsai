@@ -1,10 +1,10 @@
-from PyQt6.QtWidgets import (QMainWindow, QStackedWidget, QWidget, QVBoxLayout, QHBoxLayout, QTableWidget, 
-                             QTableWidgetItem, QHeaderView, QLabel, QPushButton, QDialog)
+from PyQt6.QtWidgets import QMainWindow, QStackedWidget, QWidget, QVBoxLayout, QHBoxLayout
 from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtGui import QPalette, QColor
 from ui.custom_title_bar import CustomTitleBar
 from ui.icon_button import IconButton
-from dialogs.task_config_dialog import TaskConfigDialog
+from screens.task_screen import TaskScreen
+from screens.home_screen import HomeScreen
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -38,16 +38,10 @@ class MainWindow(QMainWindow):
         self.sidebar_container.setLayout(self.sidebar_layout)
 
         self.stacked_widget = QStackedWidget()
-        self.home_screen = QWidget()
-        self.tasks_screen = QWidget()
+        self.home_screen = HomeScreen()
+        self.tasks_screen = TaskScreen()
         self.stacked_widget.addWidget(self.home_screen)
         self.stacked_widget.addWidget(self.tasks_screen)
-
-        self.home_layout = QVBoxLayout(self.home_screen)
-        self.home_layout.addWidget(QLabel('Content of Home Screen'))
-        self.tasks_layout = QVBoxLayout(self.tasks_screen)
-
-        self.setup_tasks_screen()
 
         self.home_button.clicked.connect(lambda: self.display_screen(0))
         self.tasks_button.clicked.connect(lambda: self.display_screen(1))
@@ -66,33 +60,7 @@ class MainWindow(QMainWindow):
         self.central_widget.setLayout(self.overall_layout)
         self.setCentralWidget(self.central_widget)
 
-    def setup_tasks_screen(self):
-        self.add_task_button = QPushButton("Add Task")
-        self.add_task_button.clicked.connect(self.open_task_config_dialog)
-        self.tasks_layout.addWidget(self.add_task_button)
-
-        self.tableWidget = QTableWidget()
-        self.tableWidget.setRowCount(0)
-        self.tableWidget.setColumnCount(3)
-        headers = ["Task", "Status", "Actions"]
-        self.tableWidget.setHorizontalHeaderLabels(headers)
-        self.tableWidget.setShowGrid(False)
-        self.tableWidget.verticalHeader().setVisible(False)
-        self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        self.tasks_layout.addWidget(self.tableWidget)
-
-    def open_task_config_dialog(self):
-        dialog = TaskConfigDialog(self)
-        if dialog.exec() == QDialog.DialogCode.Accepted:
-            task_config = dialog.get_task_config()
-            self.add_task_to_table(task_config)
-
-    def add_task_to_table(self, task_config):
-        row_count = self.tableWidget.rowCount()
-        self.tableWidget.insertRow(row_count)
-        self.tableWidget.setItem(row_count, 0, QTableWidgetItem(task_config))
-        self.tableWidget.setItem(row_count, 1, QTableWidgetItem("Pending"))
-        self.tableWidget.setItem(row_count, 2, QTableWidgetItem("Edit/Delete"))
-
     def display_screen(self, index):
         self.stacked_widget.setCurrentIndex(index)
+
+# Rest of the MainWindow class (if there's any additional logic)
