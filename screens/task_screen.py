@@ -1,18 +1,17 @@
-# screens/task_screen.py
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QPushButton, QTableWidget, 
-                             QTableWidgetItem, QHeaderView, QHBoxLayout, QLabel, QDialog)
+                             QTableWidgetItem, QHeaderView, QHBoxLayout, QLabel, QDialog, QMessageBox)
 from PyQt6.QtCore import pyqtSignal, QDateTime
 from shared.shared_data import tasks_data
 from dialogs.task_config_dialog import TaskConfigDialog
+import importlib
 import uuid
 
-# TaskRowWidget class to encapsulate task and action buttons
 class TaskRowWidget(QWidget):
-    def __init__(self, task_config, parent=None):
+    def __init__(self, task_name, parent=None):
         super().__init__(parent)
         layout = QHBoxLayout()
 
-        self.task_label = QLabel(task_config)
+        self.task_label = QLabel(task_name)
         layout.addWidget(self.task_label)
 
         self.status_label = QLabel("Pending")
@@ -29,8 +28,7 @@ class TaskRowWidget(QWidget):
         layout.addWidget(self.deleteButton)
 
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(10)  # Adjust the spacing as needed
-
+        layout.setSpacing(10)
         self.setLayout(layout)
 
 class TaskScreen(QWidget):
@@ -58,20 +56,37 @@ class TaskScreen(QWidget):
 
     def open_task_config_dialog(self):
         dialog = TaskConfigDialog(self)
-        if dialog.exec() == QDialog.DialogCode.Accepted:
+        result = dialog.exec()
+        print(f"Dialog result: {result}")  # Debug print
+        if result == QDialog.DialogCode.Accepted:
             task_config = dialog.get_task_config()
-            self.add_task_to_table(task_config)
+            task_name = task_config["task_name"]
+            try:
+                config_dialog_module = importlib.import_module(f"automated_tasks.{task_name.lower()}.config_dialog")
+                config_dialog_class = getattr(config_dialog_module, "ConfigDialog")
+                config_dialog = config_dialog_class(self)
+                if config_dialog.exec() == QDialog.DialogCode.Accepted:
+                    task_specific_config = config_dialog.get_task_config()
+                    self.add_task_to_table(task_name, task_specific_config)
+            except ModuleNotFoundError:
+                QMessageBox.warning(self, "Error", f"No configuration dialog found for {task_name}")
 
-    def add_task_to_table(self, task_config):
-        task_id = str(uuid.uuid4())  # Generate a unique ID for the task
+    def add_task_to_table(self, task_name, task_config):
+        task_id = str(uuid.uuid4())
         tasks_data[task_id] = {
-            "name": task_config,
+            "name": task_name,
             "status": "Pending",
-            "config": "Default Config",  # Replace with actual config
+            "config": task_config,
             "timestamp": QDateTime.currentDateTime().toString()
         }
         self.taskChanged.emit()
-        task_row_widget = TaskRowWidget(task_config)
+
+        # Execute the task based on its type and configuration
+        task_module = importlib.import_module(f"automated_tasks.{task_name.lower()}.task")
+        task_function = getattr(task_module, "execute_task")
+        task_function(task_config)
+
+        task_row_widget = TaskRowWidget(task_name)
         row_position = self.tableWidget.rowCount()
         self.tableWidget.insertRow(row_position)
         self.tableWidget.setCellWidget(row_position, 0, task_row_widget)
@@ -86,3 +101,5 @@ class TaskScreen(QWidget):
             self.tableWidget.removeRow(row_index)
             del tasks_data[task_id]
             self.taskChanged.emit()
+
+# Additional methods or logic for TaskScreen as required

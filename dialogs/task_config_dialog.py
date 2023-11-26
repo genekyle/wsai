@@ -1,21 +1,26 @@
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QComboBox, QPushButton, QHBoxLayout, QLabel, QWidget
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QComboBox, QPushButton, QHBoxLayout, QLabel, QLineEdit
 
 class TaskConfigDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
+        print("Initializing TaskConfigDialog")  # Debug print
         self.setWindowTitle("Configure Task")
         self.layout = QVBoxLayout()
 
+        # Task selector dropdown
         self.task_selector = QComboBox()
-        self.task_selector.addItems(["Task 1", "Task 2", "Task 3"])
+        self.task_selector.addItems(["Open Browser To Website", "Task 2", "Task 3"])
+        print("Task selector added with items.")  # Debug print
         self.task_selector.currentIndexChanged.connect(self.update_config_options)
         self.layout.addWidget(self.task_selector)
 
-        self.config_options_container = QWidget()
-        self.config_options_layout = QVBoxLayout()
-        self.config_options_container.setLayout(self.config_options_layout)
-        self.layout.addWidget(self.config_options_container)
+        # URL input for the "Open Browser To Website" task
+        self.url_input = QLineEdit()
+        self.layout.addWidget(self.url_input)
+        self.url_input.hide()  # Initially hidden
+        print("URL input initialized and hidden.")  # Debug print
 
+        # Buttons layout
         self.buttons_layout = QHBoxLayout()
         self.submit_button = QPushButton("Submit")
         self.submit_button.clicked.connect(self.accept)
@@ -26,22 +31,23 @@ class TaskConfigDialog(QDialog):
         self.layout.addLayout(self.buttons_layout)
 
         self.setLayout(self.layout)
-        self.update_config_options()
+        print("Layout set for the dialog.")  # Debug print
 
     def update_config_options(self):
-        for i in reversed(range(self.config_options_layout.count())): 
-            widget = self.config_options_layout.takeAt(i).widget()
-            if widget is not None:
-                widget.deleteLater()
-
         task = self.task_selector.currentText()
-        if task == "Task 1":
-            self.config_options_layout.addWidget(QLabel("Config for Task 1"))
-            # Add more widgets as needed...
-        elif task == "Task 2":
-            self.config_options_layout.addWidget(QLabel("Config for Task 2"))
-            # Add more widgets as needed...
-        # ... Handle other tasks similarly ...
+        print(f"Task selected: {task}")  # Debug print
+        if task == "Open Browser To Website":
+            self.url_input.show()
+            print("URL input shown.")  # Debug print
+        else:
+            self.url_input.hide()
+            print("URL input hidden.")  # Debug print
 
     def get_task_config(self):
-        return self.task_selector.currentText()
+        task_name = self.task_selector.currentText()
+        url = self.url_input.text() if task_name == "Open Browser To Website" else ""
+        print(f"Task config collected: Task Name - {task_name}, URL - {url}")  # Debug print
+        return {
+            "task_name": task_name,
+            "url": url
+        }

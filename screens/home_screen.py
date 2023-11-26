@@ -1,6 +1,6 @@
 # screens/home_screen.py
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QTableWidget, 
-                             QTableWidgetItem, QSizePolicy, QSpacerItem)
+from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QTableWidget, 
+                             QTableWidgetItem, QSizePolicy, QHBoxLayout, QSpacerItem)
 from shared.shared_data import tasks_data
 
 class HomeScreen(QWidget):
@@ -12,8 +12,8 @@ class HomeScreen(QWidget):
         layout.addWidget(home_label)
 
         self.preview_table = QTableWidget()
-        self.preview_table.setColumnCount(2)
-        self.preview_table.setHorizontalHeaderLabels(["Task", "Status"])
+        self.preview_table.setColumnCount(3)
+        self.preview_table.setHorizontalHeaderLabels(["Task", "Status", "Config"])
         self.preview_table.setShowGrid(False)
         self.preview_table.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
 
@@ -30,3 +30,4 @@ class HomeScreen(QWidget):
         for i, (task_id, task_info) in enumerate(tasks_data.items()):
             self.preview_table.setItem(i, 0, QTableWidgetItem(task_info["name"]))
             self.preview_table.setItem(i, 1, QTableWidgetItem(task_info["status"]))
+            self.preview_table.setItem(i, 2, QTableWidgetItem(task_info.get("config", "")))
