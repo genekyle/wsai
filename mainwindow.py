@@ -61,6 +61,6 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.central_widget)
 
     def display_screen(self, index):
+        if index == 0:  # index of HomeScreen
+            self.home_screen.update_preview_table()
         self.stacked_widget.setCurrentIndex(index)
-
-# Rest of the MainWindow class (if there's any additional logic)

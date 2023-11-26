@@ -1,8 +1,10 @@
-from PyQt6.QtWidgets import (
-    QWidget, QVBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, 
-    QHeaderView, QHBoxLayout, QDialog, QLabel
-)
+# screens/task_screen.py
+from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QPushButton, QTableWidget, 
+                             QTableWidgetItem, QHeaderView, QHBoxLayout, QLabel, QDialog)
+from PyQt6.QtCore import pyqtSignal, QDateTime
+from shared.shared_data import tasks_data
 from dialogs.task_config_dialog import TaskConfigDialog
+import uuid
 
 # TaskRowWidget class to encapsulate task and action buttons
 class TaskRowWidget(QWidget):
@@ -31,8 +33,9 @@ class TaskRowWidget(QWidget):
 
         self.setLayout(layout)
 
-# TaskScreen class
 class TaskScreen(QWidget):
+    taskChanged = pyqtSignal()
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.layout = QVBoxLayout(self)
@@ -43,7 +46,7 @@ class TaskScreen(QWidget):
 
         self.tableWidget = QTableWidget()
         self.tableWidget.setRowCount(0)
-        self.tableWidget.setColumnCount(1)  # We only need one column for the custom row widget
+        self.tableWidget.setColumnCount(1)
         headers = ["Tasks"]
         self.tableWidget.setHorizontalHeaderLabels(headers)
         self.tableWidget.setShowGrid(False)
@@ -51,7 +54,6 @@ class TaskScreen(QWidget):
         self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.layout.addWidget(self.tableWidget)
 
-        # List to store TaskRowWidget instances
         self.task_row_widgets = []
 
     def open_task_config_dialog(self):
@@ -61,16 +63,26 @@ class TaskScreen(QWidget):
             self.add_task_to_table(task_config)
 
     def add_task_to_table(self, task_config):
+        task_id = str(uuid.uuid4())  # Generate a unique ID for the task
+        tasks_data[task_id] = {
+            "name": task_config,
+            "status": "Pending",
+            "config": "Default Config",  # Replace with actual config
+            "timestamp": QDateTime.currentDateTime().toString()
+        }
+        self.taskChanged.emit()
         task_row_widget = TaskRowWidget(task_config)
         row_position = self.tableWidget.rowCount()
         self.tableWidget.insertRow(row_position)
         self.tableWidget.setCellWidget(row_position, 0, task_row_widget)
         self.task_row_widgets.append(task_row_widget)
 
-        # Connect the delete button's click event to remove the corresponding row widget
-        task_row_widget.deleteButton.clicked.connect(lambda: self.remove_row(task_row_widget))
+        task_row_widget.deleteButton.clicked.connect(lambda: self.remove_row(task_row_widget, task_id))
 
-    def remove_row(self, task_row_widget):
+    def remove_row(self, task_row_widget, task_id):
         if task_row_widget in self.task_row_widgets:
             self.task_row_widgets.remove(task_row_widget)
-            self.tableWidget.removeRow(self.tableWidget.indexAt(task_row_widget.pos()).row())
+            row_index = self.tableWidget.indexAt(task_row_widget.pos()).row()
+            self.tableWidget.removeRow(row_index)
+            del tasks_data[task_id]
+            self.taskChanged.emit()

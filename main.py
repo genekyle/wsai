@@ -1,11 +1,13 @@
+# main.py
 from PyQt6.QtWidgets import QApplication
 from mainwindow import MainWindow
+import sys
 
 def main():
-    app = QApplication([])
+    app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
-    app.exec()
+    sys.exit(app.exec())
 
 if __name__ == "__main__":
     main()
