@@ -1,16 +1,18 @@
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 
-def execute_task(config):
-    url = config.get("url", "http://example.com")  # Default URL if none provided
+def execute_task(config, should_continue):
+    url = config.get("url", "http://example.com")
     try:
         driver = webdriver.Chrome()
         driver.get(url)
-        # Add additional Selenium actions as needed
-        while True:
+        
+        while should_continue[0]:  # Access the flag as a list to ensure it's updated across threads
             pass
+
     except WebDriverException as e:
-        print(f"An error occurred while executing the Selenium task: {e}")
-        # Handle or log the exception as needed
+        print(f"Error during task execution: {e}")
     finally:
-        print("task completed")
+        driver.quit()
+
+

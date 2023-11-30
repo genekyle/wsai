@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QPushButton, QTableWidget, 
                              QTableWidgetItem, QHeaderView, QHBoxLayout, QLabel, QDialog, QMessageBox)
-from PyQt6.QtCore import pyqtSignal, QDateTime
+from PyQt6.QtCore import pyqtSignal, QDateTime, QThread, pyqtSlot
 from shared.shared_data import tasks_data
 from dialogs.task_config_dialog import TaskConfigDialog
 import importlib
@@ -31,6 +31,37 @@ class TaskRowWidget(QWidget):
         layout.setSpacing(10)
         self.setLayout(layout)
 
+class TaskExecutionThread(QThread):
+    def __init__(self, task_function, task_config):
+        super().__init__()
+        self.task_function = task_function
+        self.task_config = task_config
+        self.should_continue = [True]  # Use a list to hold the flag
+
+    def run(self):
+        # Execute the task function with the provided configuration
+        self.task_function(self.task_config, self.should_continue)
+        # When task_function returns, the thread will naturally finish
+
+    def stop(self):
+        # Set the flag to False to signal the task to stop
+        self.should_continue[0] = False
+
+
+class TaskThreadManager:
+    def __init__(self, task_function, task_config):
+        self.task_thread = TaskExecutionThread(task_function, task_config)
+
+    def start_task(self):
+        # Start the task thread
+        self.task_thread.start()
+
+    def stop_task(self):
+        # Signal the thread to stop
+        self.task_thread.stop()
+        # Removed quit() and wait() to prevent blocking the main thread
+
+
 class TaskScreen(QWidget):
     taskChanged = pyqtSignal()
 
@@ -46,6 +77,8 @@ class TaskScreen(QWidget):
         self.tableWidget.setRowCount(0)
         self.tableWidget.setColumnCount(1)
         headers = ["Tasks"]
+        self.task_thread_managers = {}  # To keep track of task threads
+
         self.tableWidget.setHorizontalHeaderLabels(headers)
         self.tableWidget.setShowGrid(False)
         self.tableWidget.verticalHeader().setVisible(False)
@@ -81,10 +114,12 @@ class TaskScreen(QWidget):
         }
         self.taskChanged.emit()
 
-        # Execute the task based on its type and configuration
+        # Start the task in a separate thread
         task_module = importlib.import_module(f"automated_tasks.{task_name.lower()}.task")
         task_function = getattr(task_module, "execute_task")
-        task_function(task_config)
+        task_thread_manager = TaskThreadManager(task_function, task_config)
+        self.task_thread_managers[task_id] = task_thread_manager
+        task_thread_manager.start_task()
 
         task_row_widget = TaskRowWidget(task_name)
         row_position = self.tableWidget.rowCount()
@@ -101,5 +136,11 @@ class TaskScreen(QWidget):
             self.tableWidget.removeRow(row_index)
             del tasks_data[task_id]
             self.taskChanged.emit()
+
+            # Stop the task thread
+            if task_id in self.task_thread_managers:
+                self.task_thread_managers[task_id].stop_task()
+                del self.task_thread_managers[task_id]
+
 
 # Additional methods or logic for TaskScreen as required
