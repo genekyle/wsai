@@ -2,6 +2,7 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QTableWidget, 
                              QTableWidgetItem, QSizePolicy, QHBoxLayout, QSpacerItem)
 from shared.shared_data import tasks_data
+import json
 
 class HomeScreen(QWidget):
     def __init__(self, parent=None):
@@ -30,4 +31,6 @@ class HomeScreen(QWidget):
         for i, (task_id, task_info) in enumerate(tasks_data.items()):
             self.preview_table.setItem(i, 0, QTableWidgetItem(task_info["name"]))
             self.preview_table.setItem(i, 1, QTableWidgetItem(task_info["status"]))
-            self.preview_table.setItem(i, 2, QTableWidgetItem(task_info.get("config", "")))
+            # Convert the config dictionary to a JSON string for display
+            config_str = json.dumps(task_info.get("config", {}), indent=2)
+            self.preview_table.setItem(i, 2, QTableWidgetItem(config_str))
