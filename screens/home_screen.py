@@ -1,4 +1,3 @@
-# screens/home_screen.py
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QTableWidget, 
                              QTableWidgetItem, QSizePolicy, QHBoxLayout, QSpacerItem)
 from shared.shared_data import tasks_data
