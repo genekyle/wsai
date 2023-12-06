@@ -30,6 +30,10 @@ class TaskRowWidget(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(10)
         self.setLayout(layout)
+        self.playButton.setEnabled(True)
+
+    def setPlayButtonEnabled(self, enabled):
+        self.playButton.setEnabled(enabled)
 
 class TaskScreen(QWidget):
     taskChanged = pyqtSignal()
@@ -96,15 +100,21 @@ class TaskScreen(QWidget):
             task_orchestrator.moveToThread(thread)
             thread.started.connect(task_orchestrator.execute)
             thread.finished.connect(thread.deleteLater)
-            thread.finished.connect(lambda: self.on_thread_finished(task_id))  # New line
+            thread.finished.connect(lambda: self.on_thread_finished(task_id))
             thread.start()
             print("Thread started")  # Debugging print
 
             self.tasks_data[task_id] = {"orchestrator": task_orchestrator, "thread": thread, "status": "Running"}
             self.taskChanged.emit()
+
+            # Disable the Play button for this task
+            row_widget = self.find_task_row_widget(task_name)
+            if row_widget:
+                row_widget.setPlayButtonEnabled(False)
         except Exception as e:
             print(f"Error starting task: {e}")  # Debugging print
             QMessageBox.warning(self, "Error", f"Failed to start task {task_name}: {str(e)}")
+
 
     def remove_row(self, task_row_widget, task_id):
         if task_row_widget in self.task_row_widgets:
@@ -114,10 +124,13 @@ class TaskScreen(QWidget):
             if task_id in self.tasks_data:
                 task_info = self.tasks_data[task_id]
                 if "thread" in task_info and task_info["thread"].isRunning():
-                    print("Stopping thread for task", task_id)  # Debugging print
-                    self.stop_task_thread(task_info)
-                # Don't immediately delete the task data here
+                    print("Stopping thread for task", task_id)
+                    task_info["orchestrator"].stop_task()
+                    task_info["thread"].quit()
+                    task_info["thread"].wait(1000)
+                del self.tasks_data[task_id]
             self.taskChanged.emit()
+
 
     def stop_task_thread(self, task_info):
         if "orchestrator" in task_info:
@@ -129,8 +142,21 @@ class TaskScreen(QWidget):
             # Removed the wait() call to prevent blocking
 
     def on_thread_finished(self, task_id):
-        # Thread cleanup after execution
         if task_id in self.tasks_data:
+            task_name = self.tasks_data[task_id]["name"]
             del self.tasks_data[task_id]
             print(f"Thread for task {task_id} finished and cleaned up")
+
+            row_widget = self.find_task_row_widget(task_name)
+            if row_widget:
+                row_widget.setPlayButtonEnabled(True)
+
+
+    def find_task_row_widget(self, task_name):
+        for row_widget in self.task_row_widgets:
+            if row_widget.task_label.text() == task_name:
+                return row_widgepyt
+        return None
+
+
 
