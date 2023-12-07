@@ -1,10 +1,10 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QPushButton, QTableWidget, 
                              QTableWidgetItem, QHeaderView, QHBoxLayout, QLabel, QDialog, QMessageBox)
-from PyQt6.QtCore import pyqtSignal, QDateTime, QThread, pyqtSlot
-from shared.shared_data import tasks_data
-from dialogs.task_config_dialog import TaskConfigDialog
+from PyQt6.QtCore import pyqtSignal, QDateTime, QThread
 import importlib
 import uuid
+import os
+
 
 class TaskRowWidget(QWidget):
     def __init__(self, task_name, parent=None):
@@ -30,37 +30,10 @@ class TaskRowWidget(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(10)
         self.setLayout(layout)
+        self.playButton.setEnabled(True)
 
-class TaskExecutionThread(QThread):
-    def __init__(self, task_function, task_config):
-        super().__init__()
-        self.task_function = task_function
-        self.task_config = task_config
-        self.should_continue = [True]  # Use a list to hold the flag
-
-    def run(self):
-        # Execute the task function with the provided configuration
-        self.task_function(self.task_config, self.should_continue)
-        # When task_function returns, the thread will naturally finish
-
-    def stop(self):
-        # Set the flag to False to signal the task to stop
-        self.should_continue[0] = False
-
-
-class TaskThreadManager:
-    def __init__(self, task_function, task_config):
-        self.task_thread = TaskExecutionThread(task_function, task_config)
-
-    def start_task(self):
-        # Start the task thread
-        self.task_thread.start()
-
-    def stop_task(self):
-        # Signal the thread to stop
-        self.task_thread.stop()
-        # Removed quit() and wait() to prevent blocking the main thread
-
+    def setPlayButtonEnabled(self, enabled):
+        self.playButton.setEnabled(enabled)
 
 class TaskScreen(QWidget):
     taskChanged = pyqtSignal()
@@ -68,6 +41,7 @@ class TaskScreen(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.layout = QVBoxLayout(self)
+        self.tasks_data = {}
 
         self.add_task_button = QPushButton("Add Task")
         self.add_task_button.clicked.connect(self.open_task_config_dialog)
@@ -77,8 +51,6 @@ class TaskScreen(QWidget):
         self.tableWidget.setRowCount(0)
         self.tableWidget.setColumnCount(1)
         headers = ["Tasks"]
-        self.task_thread_managers = {}  # To keep track of task threads
-
         self.tableWidget.setHorizontalHeaderLabels(headers)
         self.tableWidget.setShowGrid(False)
         self.tableWidget.verticalHeader().setVisible(False)
@@ -88,25 +60,18 @@ class TaskScreen(QWidget):
         self.task_row_widgets = []
 
     def open_task_config_dialog(self):
+        task_config_module = importlib.import_module("dialogs.task_config_dialog")
+        TaskConfigDialog = getattr(task_config_module, "TaskConfigDialog")
         dialog = TaskConfigDialog(self)
         result = dialog.exec()
-        print(f"Dialog result: {result}")  # Debug print
         if result == QDialog.DialogCode.Accepted:
             task_config = dialog.get_task_config()
-            task_name = task_config["task_name"]
-            try:
-                config_dialog_module = importlib.import_module(f"automated_tasks.{task_name.lower()}.config_dialog")
-                config_dialog_class = getattr(config_dialog_module, "ConfigDialog")
-                config_dialog = config_dialog_class(self)
-                if config_dialog.exec() == QDialog.DialogCode.Accepted:
-                    task_specific_config = config_dialog.get_task_config()
-                    self.add_task_to_table(task_name, task_specific_config)
-            except ModuleNotFoundError:
-                QMessageBox.warning(self, "Error", f"No configuration dialog found for {task_name}")
+            if 'task_name' in task_config:
+                self.add_task_to_table(task_config["task_name"], task_config)
 
     def add_task_to_table(self, task_name, task_config):
         task_id = str(uuid.uuid4())
-        tasks_data[task_id] = {
+        self.tasks_data[task_id] = {
             "name": task_name,
             "status": "Pending",
             "config": task_config,
@@ -114,33 +79,84 @@ class TaskScreen(QWidget):
         }
         self.taskChanged.emit()
 
-        # Start the task in a separate thread
-        task_module = importlib.import_module(f"automated_tasks.{task_name.lower()}.task")
-        task_function = getattr(task_module, "execute_task")
-        task_thread_manager = TaskThreadManager(task_function, task_config)
-        self.task_thread_managers[task_id] = task_thread_manager
-        task_thread_manager.start_task()
+        task_row_widget = TaskRowWidget(task_name, self)
+        task_row_widget.playButton.clicked.connect(lambda: self.start_task(task_id, task_name, task_config))
+        task_row_widget.deleteButton.clicked.connect(lambda: self.remove_row(task_row_widget, task_id))
 
-        task_row_widget = TaskRowWidget(task_name)
         row_position = self.tableWidget.rowCount()
         self.tableWidget.insertRow(row_position)
         self.tableWidget.setCellWidget(row_position, 0, task_row_widget)
         self.task_row_widgets.append(task_row_widget)
 
-        task_row_widget.deleteButton.clicked.connect(lambda: self.remove_row(task_row_widget, task_id))
+    def start_task(self, task_id, task_name, task_config):
+        print(f"Starting task: {task_name}")  # Debugging print
+        try:
+            task_orchestrator_module = importlib.import_module(f"automated_tasks.tasks.{task_name}.task_orchestrator")
+            task_orchestrator_class = getattr(task_orchestrator_module, f"{task_name}Orchestrator")
+            task_orchestrator = task_orchestrator_class(task_config)
+            print("Task Orchestrator created")  # Debugging print
+
+            thread = QThread()
+            task_orchestrator.moveToThread(thread)
+            thread.started.connect(task_orchestrator.execute)
+            thread.finished.connect(thread.deleteLater)
+            thread.finished.connect(lambda: self.on_thread_finished(task_id))
+            thread.start()
+            print("Thread started")  # Debugging print
+
+            self.tasks_data[task_id] = {"orchestrator": task_orchestrator, "thread": thread, "status": "Running"}
+            self.taskChanged.emit()
+
+            # Disable the Play button for this task
+            row_widget = self.find_task_row_widget(task_name)
+            if row_widget:
+                row_widget.setPlayButtonEnabled(False)
+        except Exception as e:
+            print(f"Error starting task: {e}")  # Debugging print
+            QMessageBox.warning(self, "Error", f"Failed to start task {task_name}: {str(e)}")
+
 
     def remove_row(self, task_row_widget, task_id):
         if task_row_widget in self.task_row_widgets:
             self.task_row_widgets.remove(task_row_widget)
             row_index = self.tableWidget.indexAt(task_row_widget.pos()).row()
             self.tableWidget.removeRow(row_index)
-            del tasks_data[task_id]
+            if task_id in self.tasks_data:
+                task_info = self.tasks_data[task_id]
+                if "thread" in task_info and task_info["thread"].isRunning():
+                    print("Stopping thread for task", task_id)
+                    task_info["orchestrator"].stop_task()
+                    task_info["thread"].quit()
+                    task_info["thread"].wait(1000)
+                del self.tasks_data[task_id]
             self.taskChanged.emit()
 
-            # Stop the task thread
-            if task_id in self.task_thread_managers:
-                self.task_thread_managers[task_id].stop_task()
-                del self.task_thread_managers[task_id]
+
+    def stop_task_thread(self, task_info):
+        if "orchestrator" in task_info:
+            task_info["orchestrator"].stop_task()  # Signal the task to stop
+
+        # Forcefully quit the thread if needed
+        if task_info["thread"].isRunning():
+            task_info["thread"].quit()
+            # Removed the wait() call to prevent blocking
+
+    def on_thread_finished(self, task_id):
+        if task_id in self.tasks_data:
+            task_name = self.tasks_data[task_id]["name"]
+            del self.tasks_data[task_id]
+            print(f"Thread for task {task_id} finished and cleaned up")
+
+            row_widget = self.find_task_row_widget(task_name)
+            if row_widget:
+                row_widget.setPlayButtonEnabled(True)
 
 
-# Additional methods or logic for TaskScreen as required
+    def find_task_row_widget(self, task_name):
+        for row_widget in self.task_row_widgets:
+            if row_widget.task_label.text() == task_name:
+                return row_widgepyt
+        return None
+
+
+
