@@ -17,18 +17,18 @@ class CheckEmailsOrchestrator(QObject):
         try:
             self.state_manager.update_state("Initializing Browser")
             self.driver = initialize_browser()
-
+            
             while not self._should_stop:
                 self.state_manager.update_state("Navigating to Email Service")
                 navigate_to(self.driver, self.config['url'])
 
-                # Break the operation into smaller steps to frequently check for stop signal
-                for _ in range(10):
-                    time.sleep(0.5)
-                    if self._should_stop:
-                        return  # Exit the method if stopping is requested
+                # Here, break the operation into smaller checks for stop signal
+                time.sleep(2)  # Example: Pause for a second
+                if self._should_stop:
+                    break  # Exit the loop if stop signal is received
 
                 # Add additional email checking logic here...
+                # Remember to check self._should_stop periodically
 
             self.state_manager.update_state("Completed")
         finally:
@@ -38,4 +38,4 @@ class CheckEmailsOrchestrator(QObject):
                 self.state_manager.update_state("Browser Closed")
 
     def stop_task(self):
-        self._should_stop = True
+        self._should_stop = True  # Set the flag to signal stopping the task

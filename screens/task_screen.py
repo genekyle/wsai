@@ -84,37 +84,26 @@ class TaskScreen(QWidget):
 
     def start_task(self, task_id, task_name, task_config):
         try:
-            # Dynamically import the task orchestrator module
-            # Make sure the module name matches your file structure
             module_name = f"automated_tasks.tasks.{task_name}.task_orchestrator"
             task_orchestrator_module = importlib.import_module(module_name)
-            
-            # The class name inside the module - make sure it matches exactly
             class_name = f"{task_name}Orchestrator"
             task_orchestrator_class = getattr(task_orchestrator_module, class_name)
-            
-            # Instantiate the orchestrator with the provided configuration
             task_orchestrator = task_orchestrator_class(task_config)
 
-            # Create and setup a new QThread
             thread = QThread()
             task_orchestrator.moveToThread(thread)
             thread.started.connect(task_orchestrator.execute)
             thread.finished.connect(lambda: self.thread_finished(task_id))
+            thread.start()
 
-            # Store references to the orchestrator and the thread
             self.tasks_data[task_id] = {
                 "orchestrator": task_orchestrator,
                 "thread": thread,
                 "status": "Running"
             }
-
-            # Start the thread
-            thread.start()
+            self.taskChanged.emit()
         except Exception as e:
-            # Show an error message if the task fails to start
             QMessageBox.warning(self, "Error", f"Failed to start task {task_name}: {str(e)}")
-
 
     def thread_finished(self, task_id):
         if task_id in self.tasks_data:
@@ -131,13 +120,16 @@ class TaskScreen(QWidget):
             if thread:
                 thread.quit()
                 if not thread.wait(1000):  # Wait for 1 second
-                    thread.terminate()
-                thread.wait()  # Ensure the thread has completely finished
+                    thread.terminate()  # Force termination if not stopped
+                thread.wait()  # Ensure thread is fully terminated
 
             del self.tasks_data[task_id]
 
         if task_row_widget in self.task_row_widgets:
             self.task_row_widgets.remove(task_row_widget)
+            row_index = self.tableWidget.indexAt(task_row_widget.pos()).row()
+            self.tableWidget.removeRow(row_index)
+            self.taskChanged.emit()
 
         row_index = self.tableWidget.indexAt(task_row_widget.pos()).row()
         self.tableWidget.removeRow(row_index)
