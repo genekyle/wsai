@@ -5,6 +5,8 @@ from ui.custom_title_bar import CustomTitleBar
 from ui.icon_button import IconButton
 from screens.task_screen import TaskScreen
 from screens.home_screen import HomeScreen
+from task_management.task_manager import TaskManager
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -37,9 +39,12 @@ class MainWindow(QMainWindow):
         self.sidebar_layout.addStretch()
         self.sidebar_container.setLayout(self.sidebar_layout)
 
+        self.task_manager = TaskManager()
+
         self.stacked_widget = QStackedWidget()
         self.home_screen = HomeScreen()
-        self.tasks_screen = TaskScreen()
+        self.tasks_screen = TaskScreen(task_manager=self.task_manager)  # Pass TaskManager to TaskScreen
+        
         self.stacked_widget.addWidget(self.home_screen)
         self.stacked_widget.addWidget(self.tasks_screen)
 
