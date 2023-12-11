@@ -38,4 +38,6 @@ class CheckEmailsOrchestrator(QObject):
                 self.state_manager.update_state("Browser Closed")
 
     def stop_task(self):
-        self._should_stop = True  # Set the flag to signal stopping the task
+        self._should_stop = True
+        if self.driver:
+            self.driver.quit()

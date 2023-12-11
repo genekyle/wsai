@@ -1,9 +1,11 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QPushButton, QTableWidget, 
                              QTableWidgetItem, QHeaderView, QHBoxLayout, QLabel, QDialog, QMessageBox)
 from PyQt6.QtCore import pyqtSignal, QDateTime, QThread
+from task_management.task_manager import TaskManager
 import importlib
 import uuid
 import os
+
 
 class TaskRowWidget(QWidget):
     def __init__(self, task_name, parent=None):
@@ -32,10 +34,11 @@ class TaskRowWidget(QWidget):
 class TaskScreen(QWidget):
     taskChanged = pyqtSignal()
 
-    def __init__(self, parent=None):
+    def __init__(self, task_manager: TaskManager, parent=None):
         super().__init__(parent)
-        self.layout = QVBoxLayout(self)
+        self.task_manager = task_manager
         self.tasks_data = {}
+        self.layout = QVBoxLayout(self)
 
         self.add_task_button = QPushButton("Add Task")
         self.add_task_button.clicked.connect(self.open_task_config_dialog)
@@ -82,35 +85,26 @@ class TaskScreen(QWidget):
         self.tableWidget.setCellWidget(row_position, 0, task_row_widget)
         self.task_row_widgets.append(task_row_widget)
 
+   # Replace the start_task method with:
     def start_task(self, task_id, task_name, task_config):
-        try:
-            module_name = f"automated_tasks.tasks.{task_name}.task_orchestrator"
-            task_orchestrator_module = importlib.import_module(module_name)
-            class_name = f"{task_name}Orchestrator"
-            task_orchestrator_class = getattr(task_orchestrator_module, class_name)
-            task_orchestrator = task_orchestrator_class(task_config)
+        # Dynamically import the task orchestrator class
+        module_name = f"automated_tasks.tasks.{task_name}.task_orchestrator"
+        task_orchestrator_module = importlib.import_module(module_name)
+        class_name = f"{task_name}Orchestrator"
+        task_orchestrator_class = getattr(task_orchestrator_module, class_name)
 
-            thread = QThread()
-            task_orchestrator.moveToThread(thread)
-            thread.started.connect(task_orchestrator.execute)
-            thread.finished.connect(lambda: self.thread_finished(task_id))
-            thread.start()
-
-            self.tasks_data[task_id] = {
-                "orchestrator": task_orchestrator,
-                "thread": thread,
-                "status": "Running"
-            }
-            self.taskChanged.emit()
-        except Exception as e:
-            QMessageBox.warning(self, "Error", f"Failed to start task {task_name}: {str(e)}")
-
+        # Start the task using TaskManager
+        self.task_manager.start_task(task_id, task_orchestrator_class, task_config)
+        self.tasks_data[task_id] = {"status": "Running"}
+        self.taskChanged.emit()
+        
     def thread_finished(self, task_id):
         if task_id in self.tasks_data:
             self.tasks_data[task_id]["status"] = "Finished"
             print(f"Task {task_id} finished.")
 
     def remove_row(self, task_row_widget, task_id):
+        self.task_manager.stop_task(task_id)
         if task_id in self.tasks_data:
             orchestrator = self.tasks_data[task_id].get("orchestrator")
             if orchestrator and hasattr(orchestrator, 'stop_task'):
