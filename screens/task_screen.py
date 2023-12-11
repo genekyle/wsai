@@ -8,8 +8,10 @@ import os
 
 
 class TaskRowWidget(QWidget):
-    def __init__(self, task_name, parent=None):
+    def __init__(self, task_name, task_id, task_screen, parent=None):
         super().__init__(parent)
+        self.task_id = task_id  # Store the task ID
+        self.task_screen = task_screen  # Store a reference to the TaskScreen
         layout = QHBoxLayout()
 
         self.task_label = QLabel(task_name)
@@ -30,6 +32,10 @@ class TaskRowWidget(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(10)
         self.setLayout(layout)
+
+        # Update button connections to use the task ID
+        self.playButton.clicked.connect(lambda: self.task_screen.start_task(self.task_id))
+        self.deleteButton.clicked.connect(lambda: self.task_screen.remove_row(self, self.task_id))
 
 class TaskScreen(QWidget):
     taskChanged = pyqtSignal()
@@ -70,18 +76,18 @@ class TaskScreen(QWidget):
 
     def add_task_to_table(self, task_name, task_config):
         task_id = str(uuid.uuid4())
-        display_name = self.get_display_name(task_name)
-
         self.tasks_data[task_id] = {
-            "name": display_name,
+            "name": task_name,
             "status": "Pending",
             "config": task_config,
             "timestamp": QDateTime.currentDateTime().toString()
         }
         self.taskChanged.emit()
 
-        task_row_widget = TaskRowWidget(display_name, self)
-        task_row_widget.playButton.clicked.connect(lambda: self.start_task(task_id, task_name, task_config))
+        # Create a TaskRowWidget for the new task
+        task_row_widget = TaskRowWidget(task_name, task_id, self)  # Pass 'self' and 'task_id' to TaskRowWidget
+        # Removed the redundant connection here
+        # task_row_widget.playButton.clicked.connect(lambda: self.start_task(task_id))
         task_row_widget.deleteButton.clicked.connect(lambda: self.remove_row(task_row_widget, task_id))
 
         row_position = self.tableWidget.rowCount()
@@ -89,18 +95,14 @@ class TaskScreen(QWidget):
         self.tableWidget.setCellWidget(row_position, 0, task_row_widget)
         self.task_row_widgets.append(task_row_widget)
 
-   # Replace the start_task method with:
-    def start_task(self, task_id, task_name, task_config):
-        # Dynamically import the task orchestrator class
-        module_name = f"automated_tasks.tasks.{task_name}.task_orchestrator"
-        task_orchestrator_module = importlib.import_module(module_name)
-        class_name = f"{task_name}Orchestrator"
-        task_orchestrator_class = getattr(task_orchestrator_module, class_name)
 
-        # Start the task using TaskManager
-        self.task_manager.start_task(task_id, task_orchestrator_class, task_config)
-        self.tasks_data[task_id] = {"status": "Running"}
-        self.taskChanged.emit()
+    def start_task(self, task_id):
+        task_data = self.tasks_data.get(task_id)
+        if task_data:
+            # Start the task using TaskManager
+            self.task_manager.start_task(task_id, task_data['name'], task_data['config'])
+            task_data["status"] = "Running"
+            self.taskChanged.emit()
     
     def get_display_name(self, task_name):
         """ Generate a unique display name for the task """
@@ -115,29 +117,14 @@ class TaskScreen(QWidget):
 
     def remove_row(self, task_row_widget, task_id):
         self.task_manager.stop_task(task_id)
+
+        # Remove task data and update the UI
         if task_id in self.tasks_data:
-            orchestrator = self.tasks_data[task_id].get("orchestrator")
-            if orchestrator and hasattr(orchestrator, 'stop_task'):
-                orchestrator.stop_task()
-
-            thread = self.tasks_data[task_id].get("thread")
-            if thread:
-                thread.quit()
-                if not thread.wait(1000):  # Wait for 1 second
-                    thread.terminate()  # Force termination if not stopped
-                thread.wait()  # Ensure thread is fully terminated
-
             del self.tasks_data[task_id]  # Remove task data
-            task_name = task_row_widget.task_label.text().rsplit(' ', 1)[0]
-            self.task_count[task_name] = max(0, self.task_count.get(task_name, 0) - 1)
             self.taskChanged.emit()
 
         if task_row_widget in self.task_row_widgets:
-            self.task_row_widgets.remove(task_row_widget)
             row_index = self.tableWidget.indexAt(task_row_widget.pos()).row()
             self.tableWidget.removeRow(row_index)
-            self.taskChanged.emit()
+            self.task_row_widgets.remove(task_row_widget)
 
-        row_index = self.tableWidget.indexAt(task_row_widget.pos()).row()
-        self.tableWidget.removeRow(row_index)
-        self.taskChanged.emit()
