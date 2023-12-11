@@ -38,6 +38,8 @@ class TaskScreen(QWidget):
         super().__init__(parent)
         self.task_manager = task_manager
         self.tasks_data = {}
+        self.task_count = {}
+
         self.layout = QVBoxLayout(self)
 
         self.add_task_button = QPushButton("Add Task")
@@ -68,15 +70,17 @@ class TaskScreen(QWidget):
 
     def add_task_to_table(self, task_name, task_config):
         task_id = str(uuid.uuid4())
+        display_name = self.get_display_name(task_name)
+
         self.tasks_data[task_id] = {
-            "name": task_name,
+            "name": display_name,
             "status": "Pending",
             "config": task_config,
             "timestamp": QDateTime.currentDateTime().toString()
         }
         self.taskChanged.emit()
 
-        task_row_widget = TaskRowWidget(task_name, self)
+        task_row_widget = TaskRowWidget(display_name, self)
         task_row_widget.playButton.clicked.connect(lambda: self.start_task(task_id, task_name, task_config))
         task_row_widget.deleteButton.clicked.connect(lambda: self.remove_row(task_row_widget, task_id))
 
@@ -97,7 +101,13 @@ class TaskScreen(QWidget):
         self.task_manager.start_task(task_id, task_orchestrator_class, task_config)
         self.tasks_data[task_id] = {"status": "Running"}
         self.taskChanged.emit()
-        
+    
+    def get_display_name(self, task_name):
+        """ Generate a unique display name for the task """
+        count = self.task_count.get(task_name, 0) + 1
+        self.task_count[task_name] = count
+        return f"{task_name} {count}" if count > 1 else task_name
+
     def thread_finished(self, task_id):
         if task_id in self.tasks_data:
             self.tasks_data[task_id]["status"] = "Finished"
@@ -117,7 +127,10 @@ class TaskScreen(QWidget):
                     thread.terminate()  # Force termination if not stopped
                 thread.wait()  # Ensure thread is fully terminated
 
-            del self.tasks_data[task_id]
+            del self.tasks_data[task_id]  # Remove task data
+            task_name = task_row_widget.task_label.text().rsplit(' ', 1)[0]
+            self.task_count[task_name] = max(0, self.task_count.get(task_name, 0) - 1)
+            self.taskChanged.emit()
 
         if task_row_widget in self.task_row_widgets:
             self.task_row_widgets.remove(task_row_widget)
