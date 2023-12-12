@@ -28,9 +28,13 @@ class TaskManager:
 
     def stop_task(self, task_id):
         if task_id in self.workers:
-            self.workers[task_id].stop()
+            worker = self.workers[task_id]
+            worker.stop()
+            # Do not delete the worker here, as it's still completing the stop process
+
 
     def on_task_finished(self, task_id):
+        # Perform any cleanup needed for the task
         if task_id in self.workers:
             del self.workers[task_id]
 

@@ -25,12 +25,10 @@ class TaskWorker(QRunnable):
             self.signals.finished.emit()
 
     def stop(self):
-        # Mark stop as requested
         self._stop_requested = True
-
-        # If the task is currently running, call its stop_task method
         if hasattr(self.task_orchestrator, 'stop_task'):
             self.task_orchestrator.stop_task()
+            # Do not wait/block here; let the task complete its stopping process in its own thread
 
     def handle_stop_request(self):
         # Implement any additional clean-up required when a stop is requested

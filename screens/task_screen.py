@@ -117,10 +117,9 @@ class TaskScreen(QWidget):
 
     def remove_row(self, task_row_widget, task_id):
         self.task_manager.stop_task(task_id)
-
-        # Remove task data and update the UI
+        # Update GUI immediately
         if task_id in self.tasks_data:
-            del self.tasks_data[task_id]  # Remove task data
+            del self.tasks_data[task_id]
             self.taskChanged.emit()
 
         if task_row_widget in self.task_row_widgets:

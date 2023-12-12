@@ -1,4 +1,4 @@
-from PyQt6.QtCore import QObject
+from PyQt6.QtCore import QObject, QThreadPool
 from .state_manager import CheckEmailsStateManager
 from automated_tasks.subtasks.initialize_browser import initialize_browser
 from automated_tasks.subtasks.navigate_to import navigate_to
@@ -34,10 +34,14 @@ class CheckEmailsOrchestrator(QObject):
         finally:
             if self.driver:
                 self.state_manager.update_state("Closing Browser")
-                close_browser(self.driver)
-                self.state_manager.update_state("Browser Closed")
+                QThreadPool.globalInstance().start(lambda: self.close_browser_async())
+    
+    def close_browser_async(self):
+        close_browser(self.driver)
+        self.driver = None
+        self.state_manager.update_state("Browser Closed")
 
     def stop_task(self):
         self._should_stop = True
         if self.driver:
-            self.driver.quit()
+            QThreadPool.globalInstance().start(self.driver.quit)
