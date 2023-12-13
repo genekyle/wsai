@@ -1,9 +1,13 @@
-from PyQt6.QtCore import QThreadPool
-from task_management.task_worker import TaskWorker
+from PyQt6.QtCore import QObject, QThreadPool, pyqtSignal
 import importlib
+from task_management.task_worker import TaskWorker
 
-class TaskManager:
+class TaskManager(QObject):  # Inherit from QObject
+    taskStarted = pyqtSignal(str)  # Signal for when a task starts
+    taskStopped = pyqtSignal(str)  # Signal for when a task stops
+
     def __init__(self):
+        super(TaskManager, self).__init__()  # Initialize the QObject base class
         self.thread_pool = QThreadPool()
         self.workers = {}
 
@@ -13,12 +17,18 @@ class TaskManager:
         task_orchestrator_module = importlib.import_module(module_name)
         class_name = f"{task_name}Orchestrator"
         task_orchestrator_class = getattr(task_orchestrator_module, class_name)
+        task_config['task_id'] = task_id  # Add this line to ensure task_id is in the config
 
         # Instantiate the orchestrator and create a worker for the task
         task_orchestrator = task_orchestrator_class(task_config)
-        worker = TaskWorker(task_orchestrator_class, task_config)  # Corrected here
+        worker = TaskWorker(task_orchestrator_class, task_config) 
+        self.taskStarted.emit(task_id)  # Emit the taskStarted signal
+
         worker.signals.finished.connect(lambda: self.on_task_finished(task_id))
         worker.signals.error.connect(lambda e: self.on_task_error(task_id, e))
+
+        task_orchestrator.taskStarted.connect(lambda task_id=task_id: self.on_task_started(task_id))
+        task_orchestrator.taskStopped.connect(lambda task_id=task_id: self.on_task_stopped(task_id))
 
         # Store the worker reference
         self.workers[task_id] = worker
@@ -34,9 +44,9 @@ class TaskManager:
 
 
     def on_task_finished(self, task_id):
-        # Perform any cleanup needed for the task
         if task_id in self.workers:
             del self.workers[task_id]
+            self.taskStopped.emit(task_id)
 
     def on_task_error(self, task_id, error):
         print(f"Error in task {task_id}: {error}")

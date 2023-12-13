@@ -43,6 +43,11 @@ class TaskScreen(QWidget):
     def __init__(self, task_manager: TaskManager, parent=None):
         super().__init__(parent)
         self.task_manager = task_manager
+        
+        # Connect signals
+        self.task_manager.taskStarted.connect(self.on_task_started)
+        self.task_manager.taskStopped.connect(self.on_task_stopped)
+
         self.tasks_data = {}
         self.task_count = {}
 
@@ -63,6 +68,10 @@ class TaskScreen(QWidget):
         self.layout.addWidget(self.tableWidget)
 
         self.task_row_widgets = []
+
+        self.task_manager.taskStarted.connect(self.on_task_started)
+        self.task_manager.taskStopped.connect(self.on_task_stopped)
+
 
     def open_task_config_dialog(self):
         task_config_module = importlib.import_module("dialogs.task_config_dialog")
@@ -127,3 +136,14 @@ class TaskScreen(QWidget):
             self.tableWidget.removeRow(row_index)
             self.task_row_widgets.remove(task_row_widget)
 
+    def on_task_started(self, task_id):
+        for task_row_widget in self.task_row_widgets:
+            if task_row_widget.task_id == task_id:
+                task_row_widget.playButton.setEnabled(False)
+                break
+
+    def on_task_stopped(self, task_id):
+        for task_row_widget in self.task_row_widgets:
+            if task_row_widget.task_id == task_id:
+                task_row_widget.playButton.setEnabled(True)
+                break
