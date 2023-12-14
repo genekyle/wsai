@@ -58,7 +58,13 @@ class TaskConfigDialog(QDialog):
         # Reverse map to find the actual task name
         task_name = next((name for name, disp_name in TASK_DISPLAY_NAMES.items() if disp_name == display_name), display_name)
         config_dialog = self.config_dialogs.get(task_name)
+
         if config_dialog:
-            config_dialog.exec()  # Execute the configuration dialog
-            return config_dialog.get_config()
-        return {"task_name": task_name}
+            result = config_dialog.exec()  # Execute the configuration dialog and store the result
+            if result == QDialog.DialogCode.Accepted:
+                return config_dialog.get_config()  # Return the config if the dialog was accepted
+            else:
+                return None  # Return None or an appropriate value if the dialog was cancelled
+
+        return {"task_name": task_name}  # Fallback return if no config dialog is found for the task
+

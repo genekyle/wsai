@@ -78,9 +78,10 @@ class TaskScreen(QWidget):
         TaskConfigDialog = getattr(task_config_module, "TaskConfigDialog")
         dialog = TaskConfigDialog(self)
         result = dialog.exec()
+
         if result == QDialog.DialogCode.Accepted:
             task_config = dialog.get_task_config()
-            if 'task_name' in task_config:
+            if task_config and 'task_name' in task_config:
                 self.add_task_to_table(task_config["task_name"], task_config)
 
     def add_task_to_table(self, task_name, task_config):
