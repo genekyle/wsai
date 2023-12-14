@@ -27,10 +27,14 @@ class TaskConfigDialog(QDialog):
     def load_tasks(self):
         tasks_path = 'automated_tasks/tasks'
         for task_name in os.listdir(tasks_path):
-            if os.path.isdir(os.path.join(tasks_path, task_name)):
-                display_name = TASK_DISPLAY_NAMES.get(task_name, task_name)  # Fallback to task_name if not found
-                self.task_selector.addItem(display_name)
-                self.load_config_dialog(task_name)
+            # Skip non-directory files and __pycache__ directories
+            if task_name == "__pycache__" or not os.path.isdir(os.path.join(tasks_path, task_name)):
+                continue
+
+            display_name = TASK_DISPLAY_NAMES.get(task_name, task_name)  # Fallback to task_name if not found
+            self.task_selector.addItem(display_name)
+            self.load_config_dialog(task_name)
+
 
     def load_config_dialog(self, task_name):
         try:
