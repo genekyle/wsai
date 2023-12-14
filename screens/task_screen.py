@@ -6,6 +6,10 @@ import importlib
 import uuid
 import os
 
+TASK_DISPLAY_NAMES = {
+    "CheckEmails": "Check Emails",
+    # Add other tasks here
+}
 
 class TaskRowWidget(QWidget):
     def __init__(self, task_name, task_id, task_screen, parent=None):
@@ -85,9 +89,11 @@ class TaskScreen(QWidget):
                 self.add_task_to_table(task_config["task_name"], task_config)
 
     def add_task_to_table(self, task_name, task_config):
+        display_name = TASK_DISPLAY_NAMES.get(task_name, task_name)  # Get the display name
+
         task_id = str(uuid.uuid4())
         self.tasks_data[task_id] = {
-            "name": task_name,
+            "name": display_name,  # Use the display name
             "status": "Pending",
             "config": task_config,
             "timestamp": QDateTime.currentDateTime().toString()
@@ -95,8 +101,7 @@ class TaskScreen(QWidget):
         self.taskChanged.emit()
 
         # Create a TaskRowWidget for the new task
-        task_row_widget = TaskRowWidget(task_name, task_id, self)  # Pass 'self' and 'task_id' to TaskRowWidget
-        # Removed the redundant connection here
+        task_row_widget = TaskRowWidget(display_name, task_id, self)  # Pass the display name
         # task_row_widget.playButton.clicked.connect(lambda: self.start_task(task_id))
         task_row_widget.deleteButton.clicked.connect(lambda: self.remove_row(task_row_widget, task_id))
 
@@ -109,10 +114,11 @@ class TaskScreen(QWidget):
     def start_task(self, task_id):
         task_data = self.tasks_data.get(task_id)
         if task_data:
-            # Start the task using TaskManager
-            self.task_manager.start_task(task_id, task_data['name'], task_data['config'])
+            task_name = next(key for key, value in TASK_DISPLAY_NAMES.items() if value == task_data['name'])
+            self.task_manager.start_task(task_id, task_name, task_data['config'])  # Use technical task name
             task_data["status"] = "Running"
             self.taskChanged.emit()
+
     
     def get_display_name(self, task_name):
         """ Generate a unique display name for the task """
