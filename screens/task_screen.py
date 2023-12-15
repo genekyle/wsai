@@ -2,20 +2,16 @@ from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QPushButton, QTableWidget,
                              QTableWidgetItem, QHeaderView, QHBoxLayout, QLabel, QDialog, QMessageBox)
 from PyQt6.QtCore import pyqtSignal, QDateTime, QThread
 from task_management.task_manager import TaskManager
+from shared.shared_data import tasks_data, TASK_DISPLAY_NAMES
 import importlib
 import uuid
 import os
 
-TASK_DISPLAY_NAMES = {
-    "CheckEmails": "Check Emails",
-    # Add other tasks here
-}
-
 class TaskRowWidget(QWidget):
     def __init__(self, task_name, task_id, task_screen, parent=None):
         super().__init__(parent)
-        self.task_id = task_id  # Store the task ID
-        self.task_screen = task_screen  # Store a reference to the TaskScreen
+        self.task_id = task_id
+        self.task_screen = task_screen
         layout = QHBoxLayout()
 
         self.task_label = QLabel(task_name)
@@ -37,7 +33,6 @@ class TaskRowWidget(QWidget):
         layout.setSpacing(10)
         self.setLayout(layout)
 
-        # Update button connections to use the task ID
         self.playButton.clicked.connect(lambda: self.task_screen.start_task(self.task_id))
         self.deleteButton.clicked.connect(lambda: self.task_screen.remove_row(self, self.task_id))
 
@@ -47,11 +42,6 @@ class TaskScreen(QWidget):
     def __init__(self, task_manager: TaskManager, parent=None):
         super().__init__(parent)
         self.task_manager = task_manager
-        
-        # Connect signals
-        self.task_manager.taskStarted.connect(self.on_task_started)
-        self.task_manager.taskStopped.connect(self.on_task_stopped)
-
         self.tasks_data = {}
         self.task_count = {}
 
@@ -76,7 +66,6 @@ class TaskScreen(QWidget):
         self.task_manager.taskStarted.connect(self.on_task_started)
         self.task_manager.taskStopped.connect(self.on_task_stopped)
 
-
     def open_task_config_dialog(self):
         task_config_module = importlib.import_module("dialogs.task_config_dialog")
         TaskConfigDialog = getattr(task_config_module, "TaskConfigDialog")
@@ -89,33 +78,27 @@ class TaskScreen(QWidget):
                 self.add_task_to_table(task_config["task_name"], task_config)
 
     def add_task_to_table(self, task_name, task_config):
-        display_name = TASK_DISPLAY_NAMES.get(task_name, task_name)  # Get the display name
+        display_name = TASK_DISPLAY_NAMES.get(task_name, task_name)
 
         task_id = str(uuid.uuid4())
         self.tasks_data[task_id] = {
-            "name": display_name,  # Use the display name
+            "name": display_name,
             "status": "Pending",
             "config": task_config,
             "timestamp": QDateTime.currentDateTime().toString()
         }
         self.taskChanged.emit()
 
-        # Create a TaskRowWidget for the new task
-        task_row_widget = TaskRowWidget(display_name, task_id, self)  # Pass the display name
-        # task_row_widget.playButton.clicked.connect(lambda: self.start_task(task_id))
-        task_row_widget.deleteButton.clicked.connect(lambda: self.remove_row(task_row_widget, task_id))
-
-        row_position = self.tableWidget.rowCount()
-        self.tableWidget.insertRow(row_position)
-        self.tableWidget.setCellWidget(row_position, 0, task_row_widget)
+        task_row_widget = TaskRowWidget(display_name, task_id, self)
+        self.tableWidget.insertRow(self.tableWidget.rowCount())
+        self.tableWidget.setCellWidget(self.tableWidget.rowCount() - 1, 0, task_row_widget)
         self.task_row_widgets.append(task_row_widget)
-
 
     def start_task(self, task_id):
         task_data = self.tasks_data.get(task_id)
         if task_data:
             task_name = next(key for key, value in TASK_DISPLAY_NAMES.items() if value == task_data['name'])
-            self.task_manager.start_task(task_id, task_name, task_data['config'])  # Use technical task name
+            self.task_manager.start_task(task_id, task_name, task_data['config'])
             task_data["status"] = "Running"
             self.taskChanged.emit()
 

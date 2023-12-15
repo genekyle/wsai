@@ -1,14 +1,7 @@
-# dialogs/task_config_dialog.py
-
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QComboBox, QPushButton, QHBoxLayout
+from shared.shared_data import TASK_DISPLAY_NAMES
 import importlib
 import os
-
-TASK_DISPLAY_NAMES = {
-    "CheckEmails": "Check Emails",
-    "AnotherTask": "Another Task",
-    # Add other tasks here
-}
 
 class TaskConfigDialog(QDialog):
     def __init__(self, parent=None):
@@ -27,14 +20,12 @@ class TaskConfigDialog(QDialog):
     def load_tasks(self):
         tasks_path = 'automated_tasks/tasks'
         for task_name in os.listdir(tasks_path):
-            # Skip non-directory files and __pycache__ directories
             if task_name == "__pycache__" or not os.path.isdir(os.path.join(tasks_path, task_name)):
                 continue
 
-            display_name = TASK_DISPLAY_NAMES.get(task_name, task_name)  # Fallback to task_name if not found
+            display_name = TASK_DISPLAY_NAMES.get(task_name, task_name)
             self.task_selector.addItem(display_name)
             self.load_config_dialog(task_name)
-
 
     def load_config_dialog(self, task_name):
         try:
@@ -55,16 +46,14 @@ class TaskConfigDialog(QDialog):
 
     def get_task_config(self):
         display_name = self.task_selector.currentText()
-        # Reverse map to find the actual task name
         task_name = next((name for name, disp_name in TASK_DISPLAY_NAMES.items() if disp_name == display_name), display_name)
         config_dialog = self.config_dialogs.get(task_name)
 
         if config_dialog:
-            result = config_dialog.exec()  # Execute the configuration dialog and store the result
+            result = config_dialog.exec()
             if result == QDialog.DialogCode.Accepted:
-                return config_dialog.get_config()  # Return the config if the dialog was accepted
+                return config_dialog.get_config()
             else:
-                return None  # Return None or an appropriate value if the dialog was cancelled
+                return None
 
         return {"task_name": task_name}  # Fallback return if no config dialog is found for the task
-
