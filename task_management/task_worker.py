@@ -5,18 +5,15 @@ class WorkerSignals(QObject):
     error = pyqtSignal(Exception)
 
 class TaskWorker(QRunnable):
-    def __init__(self, task_orchestrator_class, task_config):
+    def __init__(self, task_orchestrator, task_config):
         super(TaskWorker, self).__init__()
         self.signals = WorkerSignals()
-        self.task_orchestrator = task_orchestrator_class(task_config)
+        self.task_orchestrator = task_orchestrator  # Already an instance, no need to instantiate
         self._stop_requested = False
 
     def run(self):
         try:
-            # Execute the task
             self.task_orchestrator.execute()
-
-            # If a stop was requested during execution, handle any additional clean-up if needed
             if self._stop_requested:
                 self.handle_stop_request()
         except Exception as e:
@@ -28,10 +25,8 @@ class TaskWorker(QRunnable):
         self._stop_requested = True
         if hasattr(self.task_orchestrator, 'stop_task'):
             self.task_orchestrator.stop_task()
-            # Do not wait/block here; let the task complete its stopping process in its own thread
 
     def handle_stop_request(self):
-        # Implement any additional clean-up required when a stop is requested
         pass
 
     def is_stop_requested(self):

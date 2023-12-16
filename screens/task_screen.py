@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QPushButton, QTableWidget, 
                              QTableWidgetItem, QHeaderView, QHBoxLayout, QLabel, QDialog, QMessageBox)
-from PyQt6.QtCore import pyqtSignal, QDateTime, QThread
+from PyQt6.QtCore import pyqtSignal, QDateTime, QThread, QObject
 from task_management.task_manager import TaskManager
 from shared.shared_data import tasks_data, TASK_DISPLAY_NAMES
 import importlib
@@ -78,21 +78,36 @@ class TaskScreen(QWidget):
                 self.add_task_to_table(task_config["task_name"], task_config)
 
     def add_task_to_table(self, task_name, task_config):
-        display_name = TASK_DISPLAY_NAMES.get(task_name, task_name)
-
         task_id = str(uuid.uuid4())
         self.tasks_data[task_id] = {
-            "name": display_name,
+            "name": TASK_DISPLAY_NAMES.get(task_name, task_name),
             "status": "Pending",
             "config": task_config,
             "timestamp": QDateTime.currentDateTime().toString()
         }
         self.taskChanged.emit()
 
-        task_row_widget = TaskRowWidget(display_name, task_id, self)
-        self.tableWidget.insertRow(self.tableWidget.rowCount())
-        self.tableWidget.setCellWidget(self.tableWidget.rowCount() - 1, 0, task_row_widget)
+        task_row_widget = TaskRowWidget(TASK_DISPLAY_NAMES.get(task_name, task_name), task_id, self)
+        row_position = self.tableWidget.rowCount()
+        self.tableWidget.insertRow(row_position)
+        self.tableWidget.setCellWidget(row_position, 0, task_row_widget)
         self.task_row_widgets.append(task_row_widget)
+
+        # Start the task before connecting the stateChanged signal
+        self.task_manager.start_task(task_id, task_name, task_config)
+        self.tasks_data[task_id]["status"] = "Running"
+        self.taskChanged.emit()
+
+        # Connect the stateChanged signal from the orchestrator
+        # Ensure this is done after starting the task
+        orchestrator = self.task_manager.get_orchestrator(task_id)
+        if orchestrator:
+            print(f"Connecting stateChanged signal for task {task_id}")
+            orchestrator.stateChanged.connect(lambda task_id, state: self.update_status(task_id, "Playing: " + state))
+            print(f"Connected stateChanged signal for task {task_id}")
+        else:
+            print(f"No orchestrator found for task {task_id}")
+
 
     def start_task(self, task_id):
         task_data = self.tasks_data.get(task_id)
@@ -115,6 +130,7 @@ class TaskScreen(QWidget):
             print(f"Task {task_id} finished.")
 
     def remove_row(self, task_row_widget, task_id):
+        print(f"Attempting to stop task with ID: {task_id}")
         self.task_manager.stop_task(task_id)
         # Update GUI immediately
         if task_id in self.tasks_data:
@@ -137,3 +153,26 @@ class TaskScreen(QWidget):
             if task_row_widget.task_id == task_id:
                 task_row_widget.playButton.setEnabled(True)
                 break
+
+    def update_status(self, task_id, new_status):
+        print(f"Task ID: {task_id}, New Status: {new_status}")
+        if task_id in self.tasks_data:
+            print(f"Inside if condition with task_id: {task_id}")
+            self.tasks_data[task_id]["status"] = new_status
+            print(f"Updated tasks_data status: {self.tasks_data[task_id]['status']}")
+            self.update_status_ui(task_id, new_status)
+        else:
+            print(f"Task ID {task_id} not found in tasks_data")
+
+    def update_status_ui(self, task_id, new_status):
+        print(f"Updating UI for {len(self.task_row_widgets)} task row widgets")
+        for row_widget in self.task_row_widgets:
+            print(f"Checking widget with task_id {row_widget.task_id}")
+            if row_widget.task_id == task_id:
+                print(f"Found widget for task_id {task_id}")
+                row_widget.status_label.setText(new_status)
+                row_widget.status_label.repaint()
+                found = True
+                break
+        if not found:
+            print(f"Widget for task_id {task_id} not found among {len(self.task_row_widgets)} widgets")

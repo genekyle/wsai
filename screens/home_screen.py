@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QTableWidget, 
                              QTableWidgetItem, QSizePolicy, QHBoxLayout, QSpacerItem)
-from shared.shared_data import tasks_data
+from shared.shared_data import tasks_data, TASK_DISPLAY_NAMES
 import json
 
 class HomeScreen(QWidget):
@@ -28,7 +28,9 @@ class HomeScreen(QWidget):
     def update_preview_table(self):
         self.preview_table.setRowCount(len(tasks_data))
         for i, (task_id, task_info) in enumerate(tasks_data.items()):
-            self.preview_table.setItem(i, 0, QTableWidgetItem(task_info["name"]))
+            # Use TASK_DISPLAY_NAMES for user-friendly task names
+            task_name_display = TASK_DISPLAY_NAMES.get(task_info["name"], task_info["name"])
+            self.preview_table.setItem(i, 0, QTableWidgetItem(task_name_display))
             self.preview_table.setItem(i, 1, QTableWidgetItem(task_info["status"]))
             # Convert the config dictionary to a JSON string for display
             config_str = json.dumps(task_info.get("config", {}), indent=2)

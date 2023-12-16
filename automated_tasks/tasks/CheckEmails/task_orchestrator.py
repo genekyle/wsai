@@ -8,50 +8,56 @@ import time
 class CheckEmailsOrchestrator(QObject):
     taskStarted = pyqtSignal(str)
     taskStopped = pyqtSignal(str)
+    stateChanged = pyqtSignal(str, str)  # New signal for state changes
 
     def __init__(self, config):
         super().__init__()
         self.config = config
         self.task_id = config.get('task_id')  # Store the task_id
-
         self.state_manager = CheckEmailsStateManager()
         self.driver = None
         self._should_stop = False
 
     def execute(self):
         try:
-            self.taskStarted.emit(self.task_id)  # Use stored task_id
-            self.state_manager.update_state("Initializing Browser")
-            self.driver = initialize_browser()
-            
+            self.taskStarted.emit(self.task_id)
+            self.update_state("Initializing Browser")
+            self.driver = initialize_browser()  # Initialize the WebDriver here
+
             while not self._should_stop:
-                self.state_manager.update_state("Navigating to Email Service")
+                self.update_state("Navigating to Email Service")
                 navigate_to(self.driver, self.config['url'])
 
-                # Here, break the operation into smaller checks for stop signal
-                time.sleep(2)  # Example: Pause for a second
+                # Break operation for stop signal
+                time.sleep(2)
                 if self._should_stop:
-                    break  # Exit the loop if stop signal is received
+                    break
 
-                # Add additional email checking logic here...
-                # Remember to check self._should_stop periodically
+                # Additional logic...
 
-            self.state_manager.update_state("Completed")
+            self.update_state("Completed")
         finally:
-            self.taskStopped.emit(self.task_id)  # Use stored task_id
+            self.taskStopped.emit(self.task_id)
             if self.driver:
-                self.state_manager.update_state("Closing Browser")
+                self.update_state("Closing Browser")
                 QThreadPool.globalInstance().start(lambda: self.close_browser_async())
+
     
     def close_browser_async(self):
         close_browser(self.driver)
         self.driver = None
-        self.state_manager.update_state("Browser Closed")
+        self.update_state("Browser Closed")
 
     def stop_task(self):
         self._should_stop = True
         if self.driver:
             QThreadPool.globalInstance().start(self.driver.quit)
 
-    def start_task(self, task_id, task_name, task_config):
-        task_config['task_id'] = task_id
+    def update_state(self, new_state):
+        self.state_manager.update_state(new_state)
+        print(f"Emitting stateChanged signal for {self.task_id} with state {new_state}")
+        self.stateChanged.emit(self.task_id, new_state)
+   
+
+
+    # Removed start_task method, as it seems unnecessary
