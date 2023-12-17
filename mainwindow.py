@@ -1,12 +1,11 @@
 from PyQt6.QtWidgets import QMainWindow, QStackedWidget, QWidget, QVBoxLayout, QHBoxLayout
-from PyQt6.QtCore import QSize, Qt
+from PyQt6.QtCore import QSize, Qt, QEvent
 from PyQt6.QtGui import QPalette, QColor
 from ui.custom_title_bar import CustomTitleBar
 from ui.icon_button import IconButton
 from screens.task_screen import TaskScreen
 from screens.home_screen import HomeScreen
 from task_management.task_manager import TaskManager
-
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -43,7 +42,7 @@ class MainWindow(QMainWindow):
 
         self.stacked_widget = QStackedWidget()
         self.home_screen = HomeScreen()
-        self.tasks_screen = TaskScreen(task_manager=self.task_manager)  # Pass TaskManager to TaskScreen
+        self.tasks_screen = TaskScreen(task_manager=self.task_manager)
         
         self.stacked_widget.addWidget(self.home_screen)
         self.stacked_widget.addWidget(self.tasks_screen)
@@ -65,7 +64,16 @@ class MainWindow(QMainWindow):
         self.central_widget.setLayout(self.overall_layout)
         self.setCentralWidget(self.central_widget)
 
+        self.task_manager.tasksDataChanged.connect(self.home_screen.update_preview_table)
+        print("Connected tasksDataChanged signal to HomeScreen's update_preview_table method.")
+
+
     def display_screen(self, index):
-        if index == 0:  # index of HomeScreen
+        if index == 0:
             self.home_screen.update_preview_table()
         self.stacked_widget.setCurrentIndex(index)
+    
+    def closeEvent(self, event: QEvent):
+        print("Closing MainWindow. Stopping all tasks.")
+        self.task_manager.stop_all_tasks()
+        event.accept()

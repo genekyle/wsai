@@ -1,5 +1,5 @@
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QLabel, QTableWidget, 
-                             QTableWidgetItem, QSizePolicy, QHBoxLayout, QSpacerItem)
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QTableWidget, \
+                           QTableWidgetItem, QSizePolicy, QHBoxLayout, QSpacerItem
 from shared.shared_data import tasks_data, TASK_DISPLAY_NAMES
 import json
 
@@ -12,8 +12,8 @@ class HomeScreen(QWidget):
         layout.addWidget(home_label)
 
         self.preview_table = QTableWidget()
-        self.preview_table.setColumnCount(3)
-        self.preview_table.setHorizontalHeaderLabels(["Task", "Status", "Config"])
+        self.preview_table.setColumnCount(2)  # Set to 2 columns
+        self.preview_table.setHorizontalHeaderLabels(["Task", "Status"])
         self.preview_table.setShowGrid(False)
         self.preview_table.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
 
@@ -26,12 +26,14 @@ class HomeScreen(QWidget):
         self.update_preview_table()
 
     def update_preview_table(self):
-        self.preview_table.setRowCount(len(tasks_data))
+        # Clear the table first
+        self.preview_table.setRowCount(0)
+
+        # Repopulate the table with updated tasks data
         for i, (task_id, task_info) in enumerate(tasks_data.items()):
-            # Use TASK_DISPLAY_NAMES for user-friendly task names
             task_name_display = TASK_DISPLAY_NAMES.get(task_info["name"], task_info["name"])
+            self.preview_table.insertRow(i)
             self.preview_table.setItem(i, 0, QTableWidgetItem(task_name_display))
             self.preview_table.setItem(i, 1, QTableWidgetItem(task_info["status"]))
-            # Convert the config dictionary to a JSON string for display
             config_str = json.dumps(task_info.get("config", {}), indent=2)
             self.preview_table.setItem(i, 2, QTableWidgetItem(config_str))
