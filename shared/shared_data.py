@@ -5,6 +5,6 @@ tasks_data = {}
 
 # Mapping of technical task names to user-friendly display names
 TASK_DISPLAY_NAMES = {
-    "CheckEmails": "Check Emails",
+    "CheckEmails": "Test Task(Browser Open)",
     # Add other tasks here
 }
