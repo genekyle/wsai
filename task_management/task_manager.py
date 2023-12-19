@@ -2,45 +2,60 @@ from PyQt6.QtCore import QObject, QThreadPool, pyqtSignal
 import importlib
 from task_management.task_worker import TaskWorker
 from shared.shared_data import tasks_data
-
+from automated_tasks.browser_session_manager import BrowserSessionManager  # Import the session manager
 
 class TaskManager(QObject):
     taskStarted = pyqtSignal(str)
     taskStopped = pyqtSignal(str)
-    tasksDataChanged = pyqtSignal()  # New signal
-
+    tasksDataChanged = pyqtSignal()
 
     def __init__(self):
         super().__init__()
         self.thread_pool = QThreadPool()
         self.workers = {}
-        self.orchestrators = {}  # Store references to orchestrators
+        self.orchestrators = {}
+        self.session_manager = BrowserSessionManager()  # Instantiate the session manager
 
     def start_task(self, task_id, task_name, task_config):
+        # Import the module containing the task orchestrator
         module_name = f"automated_tasks.tasks.{task_name}.task_orchestrator"
         task_orchestrator_module = importlib.import_module(module_name)
+
+        # Get the class name of the orchestrator
         class_name = f"{task_name}Orchestrator"
         task_orchestrator_class = getattr(task_orchestrator_module, class_name)
+
+        # Add the task ID to the task configuration
         task_config['task_id'] = task_id
 
-        task_orchestrator = task_orchestrator_class(task_config)
-        self.orchestrators[task_id] = task_orchestrator  # Instantiate and store first
-        print(f"Instantiating orchestrator for task {task_id}")
+        # Create a new browser session for the task
+        # You might want to modify this part to reuse existing sessions or based on specific conditions
+        session_id, _ = self.session_manager.create_browser_session()  # For simplicity, creating a new session
 
+        # Instantiate the task orchestrator with the task configuration, session manager, and session ID
+        task_orchestrator = task_orchestrator_class(task_config, self.session_manager, session_id)
+
+        # Store the orchestrator reference
+        self.orchestrators[task_id] = task_orchestrator
+
+        # Create a worker for the task and start it in a new thread
         worker = TaskWorker(task_orchestrator, task_config)
         self.workers[task_id] = worker
-
         self.thread_pool.start(worker)
+
+        # Emit the signal indicating the task has started
         self.taskStarted.emit(task_id)
-                
+                    
+        # Update the shared task data with the new task's information
         tasks_data[task_id] = {
             "name": task_name,
             "status": "Running",
             "config": task_config
         }
 
+        # Emit a signal to indicate the tasks data has changed
         print("Task started, emitting tasksDataChanged signal.")
-        self.tasksDataChanged.emit()  # Emit signal after starting a task
+        self.tasksDataChanged.emit()
 
 
     def stop_task(self, task_id):

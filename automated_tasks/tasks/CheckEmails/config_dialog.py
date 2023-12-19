@@ -6,10 +6,12 @@ class CheckEmailsConfigDialog(QDialog):
         self.setWindowTitle("Check Emails Configuration")
         self.layout = QVBoxLayout(self)
 
+        # Email service URL input
         self.layout.addWidget(QLabel("Email Service URL:"))
         self.url_input = QLineEdit()
         self.layout.addWidget(self.url_input)
 
+        # Buttons layout
         self.buttons_layout = QHBoxLayout()
         self.submit_button = QPushButton("Submit")
         self.submit_button.clicked.connect(self.accept)

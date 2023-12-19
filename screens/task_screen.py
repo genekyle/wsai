@@ -1,9 +1,9 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QPushButton, QTableWidget, 
-                             QTableWidgetItem, QHeaderView, QHBoxLayout, QLabel, QDialog, QMessageBox)
-from PyQt6.QtCore import pyqtSignal, QDateTime, QThread, QObject
+                             QTableWidgetItem, QHeaderView, QHBoxLayout, QLabel, QDialog)
+from PyQt6.QtCore import pyqtSignal, QDateTime
 from task_management.task_manager import TaskManager
 from shared.shared_data import tasks_data, TASK_DISPLAY_NAMES
-import importlib
+from dialogs.task_config_dialog import TaskConfigDialog  # Import the TaskConfigDialog
 import uuid
 import os
 
@@ -21,20 +21,22 @@ class TaskRowWidget(QWidget):
         layout.addWidget(self.status_label)
 
         self.playButton = QPushButton("Play")
+        self.playButton.clicked.connect(lambda: self.task_screen.start_task(self.task_id))
         layout.addWidget(self.playButton)
+
         self.pauseButton = QPushButton("Pause")
         layout.addWidget(self.pauseButton)
+
         self.editButton = QPushButton("Edit")
         layout.addWidget(self.editButton)
+
         self.deleteButton = QPushButton("Delete")
+        self.deleteButton.clicked.connect(lambda: self.task_screen.remove_row(self, self.task_id))
         layout.addWidget(self.deleteButton)
 
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(10)
         self.setLayout(layout)
-
-        self.playButton.clicked.connect(lambda: self.task_screen.start_task(self.task_id))
-        self.deleteButton.clicked.connect(lambda: self.task_screen.remove_row(self, self.task_id))
 
 class TaskScreen(QWidget):
     taskChanged = pyqtSignal()
@@ -67,9 +69,7 @@ class TaskScreen(QWidget):
         self.task_manager.taskStopped.connect(self.on_task_stopped)
 
     def open_task_config_dialog(self):
-        task_config_module = importlib.import_module("dialogs.task_config_dialog")
-        TaskConfigDialog = getattr(task_config_module, "TaskConfigDialog")
-        dialog = TaskConfigDialog(self)
+        dialog = TaskConfigDialog(parent=self, session_manager=self.task_manager.session_manager)
         result = dialog.exec()
 
         if result == QDialog.DialogCode.Accepted:
@@ -93,21 +93,13 @@ class TaskScreen(QWidget):
         self.tableWidget.setCellWidget(row_position, 0, task_row_widget)
         self.task_row_widgets.append(task_row_widget)
 
-        # Start the task before connecting the stateChanged signal
         self.task_manager.start_task(task_id, task_name, task_config)
         self.tasks_data[task_id]["status"] = "Running"
         self.taskChanged.emit()
 
-        # Connect the stateChanged signal from the orchestrator
-        # Ensure this is done after starting the task
         orchestrator = self.task_manager.get_orchestrator(task_id)
         if orchestrator:
-            print(f"Connecting stateChanged signal for task {task_id}")
             orchestrator.stateChanged.connect(lambda task_id, state: self.update_status(task_id, "Playing: " + state))
-            print(f"Connected stateChanged signal for task {task_id}")
-        else:
-            print(f"No orchestrator found for task {task_id}")
-
 
     def start_task(self, task_id):
         task_data = self.tasks_data.get(task_id)
@@ -117,22 +109,8 @@ class TaskScreen(QWidget):
             task_data["status"] = "Running"
             self.taskChanged.emit()
 
-    
-    def get_display_name(self, task_name):
-        """ Generate a unique display name for the task """
-        count = self.task_count.get(task_name, 0) + 1
-        self.task_count[task_name] = count
-        return f"{task_name} {count}" if count > 1 else task_name
-
-    def thread_finished(self, task_id):
-        if task_id in self.tasks_data:
-            self.tasks_data[task_id]["status"] = "Finished"
-            print(f"Task {task_id} finished.")
-
     def remove_row(self, task_row_widget, task_id):
-        print(f"Attempting to stop task with ID: {task_id}")
         self.task_manager.stop_task(task_id)
-        # Update GUI immediately
         if task_id in self.tasks_data:
             del self.tasks_data[task_id]
             self.taskChanged.emit()
@@ -146,33 +124,17 @@ class TaskScreen(QWidget):
         for task_row_widget in self.task_row_widgets:
             if task_row_widget.task_id == task_id:
                 task_row_widget.playButton.setEnabled(False)
-                break
 
     def on_task_stopped(self, task_id):
         for task_row_widget in self.task_row_widgets:
             if task_row_widget.task_id == task_id:
                 task_row_widget.playButton.setEnabled(True)
-                break
 
     def update_status(self, task_id, new_status):
-        print(f"Task ID: {task_id}, New Status: {new_status}")
-        if task_id in self.tasks_data:
-            print(f"Inside if condition with task_id: {task_id}")
-            self.tasks_data[task_id]["status"] = new_status
-            print(f"Updated tasks_data status: {self.tasks_data[task_id]['status']}")
-            self.update_status_ui(task_id, new_status)
-        else:
-            print(f"Task ID {task_id} not found in tasks_data")
-
-    def update_status_ui(self, task_id, new_status):
-        print(f"Updating UI for {len(self.task_row_widgets)} task row widgets")
         for row_widget in self.task_row_widgets:
-            print(f"Checking widget with task_id {row_widget.task_id}")
             if row_widget.task_id == task_id:
-                print(f"Found widget for task_id {task_id}")
                 row_widget.status_label.setText(new_status)
                 row_widget.status_label.repaint()
-                found = True
                 break
-        if not found:
-            print(f"Widget for task_id {task_id} not found among {len(self.task_row_widgets)} widgets")
+
+    # ... any additional methods or code for TaskScreen ...
