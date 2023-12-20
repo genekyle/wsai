@@ -31,11 +31,12 @@ class CheckEmailsOrchestrator(QObject):
 
             while not self._should_stop:
                 self.update_state("Navigating to Email Service")
-                navigate_to(self.driver, self.config['url'])
-
+                navigate_to(self.session_manager, self.session_id, self.config['url'])
+                
                 # Break operation for stop signal
                 time.sleep(2)
                 if self._should_stop:
+                    print("_should_stop triggered at execution")
                     break
 
                 # Additional task-specific logic can be added here
