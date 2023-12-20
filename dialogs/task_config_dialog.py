@@ -39,9 +39,11 @@ class TaskConfigDialog(QDialog):
 
     def populate_sessions(self):
         for session_detail in self.session_manager.list_sessions():
-            label = f"Session {session_detail['id']} - {session_detail['status']}"
+            in_use_status = " (In Use)" if session_detail["in_use"] else ""
+            label = f"Session {session_detail['id']} - {session_detail['status']}{in_use_status}"
             self.session_selector.addItem(label, session_detail['id'])
         self.session_selector.addItem("New Session", None)
+
 
     def load_config_dialog(self, task_name):
         try:
