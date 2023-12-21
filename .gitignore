@@ -411,3 +411,12 @@ wsaienv/Lib/site-packages/urllib3/util/__pycache__/timeout.cpython-312.pyc
 wsaienv/Lib/site-packages/urllib3/util/__pycache__/url.cpython-312.pyc
 wsaienv/Lib/site-packages/urllib3/util/__pycache__/util.cpython-312.pyc
 wsaienv/Lib/site-packages/urllib3/util/__pycache__/wait.cpython-312.pyc
+__pycache__/mainwindow.cpython-312.pyc
+automated_tasks/__pycache__/browser_session_manager.cpython-312.pyc
+automated_tasks/subtasks/__pycache__/navigate_to.cpython-312.pyc
+automated_tasks/tasks/CheckEmails/__pycache__/config_dialog.cpython-312.pyc
+automated_tasks/tasks/CheckEmails/__pycache__/task_orchestrator.cpython-312.pyc
+dialogs/__pycache__/task_config_dialog.cpython-312.pyc
+screens/__pycache__/home_screen.cpython-312.pyc
+screens/__pycache__/task_screen.cpython-312.pyc
+shared/__pycache__/shared_data.cpython-312.pyc
