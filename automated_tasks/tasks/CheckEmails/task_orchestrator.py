@@ -1,4 +1,4 @@
-from PyQt6.QtCore import QObject, QThreadPool, pyqtSignal
+from PyQt6.QtCore import QObject, QThreadPool, pyqtSignal, QMutex, QWaitCondition
 from .state_manager import CheckEmailsStateManager
 from automated_tasks.subtasks.navigate_to import navigate_to
 from automated_tasks.browser_session_manager import BrowserSessionManager
@@ -17,45 +17,61 @@ class CheckEmailsOrchestrator(QObject):
         self.session_manager = session_manager
         self.session_id = session_id
         self._should_stop = False
+        self._is_paused = False
+        self.pause_condition = QWaitCondition()
+        self.mutex = QMutex()
 
     def execute(self):
+        self.session_manager.mark_session_in_use(self.session_id, in_use=True)
         try:
             self.taskStarted.emit(self.task_id)
             self.update_state("Initializing Browser")
-            # Check if the session ID corresponds to an existing session
+            
             if self.session_id and self.session_id in self.session_manager.sessions:
                 self.driver = self.session_manager.get_browser_session(self.session_id)
             else:
-                # If no valid session ID, create a new session
                 self.session_id, self.driver = self.session_manager.create_browser_session(is_warm_up=False)
 
             while not self._should_stop:
+                self.mutex.lock()
+                while self._is_paused:
+                    self.pause_condition.wait(self.mutex)
+                self.mutex.unlock()
+
                 self.update_state("Navigating to Email Service")
                 navigate_to(self.session_manager, self.session_id, self.config['url'])
-                
-                # Break operation for stop signal
+                print("sleeping pretending to be complex equation")
                 time.sleep(2)
+                print("sleeping...")
+                time.sleep(1)
                 if self._should_stop:
-                    print("_should_stop triggered at execution")
-                    break
-
-                # Additional task-specific logic can be added here
+                    break   
 
             self.update_state("Completed")
         finally:
+            self.session_manager.mark_session_in_use(self.session_id, in_use=False)
             self.taskStopped.emit(self.task_id)
             self.update_state("Closing Browser")
             QThreadPool.globalInstance().start(lambda: self.close_browser_async())
 
     def close_browser_async(self):
-        # Use the session manager to close the browser session
         self.session_manager.close_browser_session(self.session_id)
         self.update_state("Browser Closed")
 
     def stop_task(self):
         self._should_stop = True
-        # Release the browser session when stopping the task
         self.session_manager.release_browser_session(self.session_id)
+
+    def pause_task(self):
+        self.mutex.lock()
+        self._is_paused = True
+        self.mutex.unlock()
+
+    def resume_task(self):
+        self.mutex.lock()
+        self._is_paused = False
+        self.pause_condition.wakeAll()
+        self.mutex.unlock()
 
     def update_state(self, new_state):
         self.state_manager.update_state(new_state)

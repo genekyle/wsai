@@ -2,7 +2,7 @@ from PyQt6.QtCore import QObject, QThreadPool, pyqtSignal
 import importlib
 from task_management.task_worker import TaskWorker
 from shared.shared_data import tasks_data
-from automated_tasks.browser_session_manager import BrowserSessionManager  # Import the session manager
+from automated_tasks.browser_session_manager import BrowserSessionManager
 
 class TaskManager(QObject):
     taskStarted = pyqtSignal(str)
@@ -14,49 +14,47 @@ class TaskManager(QObject):
         self.thread_pool = QThreadPool()
         self.workers = {}
         self.orchestrators = {}
-        self.session_manager = BrowserSessionManager()  # Instantiate the session manager
+        self.session_manager = BrowserSessionManager()
 
     def start_task(self, task_id, task_name, task_config):
-        # Import the module containing the task orchestrator
         module_name = f"automated_tasks.tasks.{task_name}.task_orchestrator"
         task_orchestrator_module = importlib.import_module(module_name)
 
-        # Get the class name of the orchestrator
         class_name = f"{task_name}Orchestrator"
         task_orchestrator_class = getattr(task_orchestrator_module, class_name)
 
-        # Add the task ID to the task configuration
         task_config['task_id'] = task_id
 
-        # Create a new browser session for the task
-        # You might want to modify this part to reuse existing sessions or based on specific conditions
-        session_id, _ = self.session_manager.create_browser_session()  # For simplicity, creating a new session
+        session_id = task_config.get('session_id')
+        session_in_use = False
+        is_warm_up_session = False
 
-        # Instantiate the task orchestrator with the task configuration, session manager, and session ID
+        if session_id and session_id in self.session_manager.sessions:
+            session_in_use = self.session_manager.sessions[session_id].get('in_use', False)
+            is_warm_up_session = self.session_manager.sessions[session_id].get('is_warm_up', False)
+
+        if not session_id or session_in_use or not is_warm_up_session:
+            session_id, _ = self.session_manager.create_browser_session()
+        else:
+            self.session_manager.mark_session_in_use(session_id, in_use=True)
+
         task_orchestrator = task_orchestrator_class(task_config, self.session_manager, session_id)
-
-        # Store the orchestrator reference
         self.orchestrators[task_id] = task_orchestrator
 
-        # Create a worker for the task and start it in a new thread
         worker = TaskWorker(task_orchestrator, task_config)
         self.workers[task_id] = worker
         self.thread_pool.start(worker)
 
-        # Emit the signal indicating the task has started
         self.taskStarted.emit(task_id)
                     
-        # Update the shared task data with the new task's information
         tasks_data[task_id] = {
             "name": task_name,
             "status": "Running",
             "config": task_config
         }
 
-        # Emit a signal to indicate the tasks data has changed
-        print("Task started, emitting tasksDataChanged signal.")
+        print(f"Task '{task_name}' with ID {task_id} started, using session ID {session_id}. Session in use: {session_in_use}, Is warm-up: {is_warm_up_session}")
         self.tasksDataChanged.emit()
-
 
     def stop_task(self, task_id):
         print(f"Stopping task with ID: {task_id}")
@@ -64,27 +62,24 @@ class TaskManager(QObject):
             worker = self.workers[task_id]
             worker.stop()
 
-            # Remove the task from tasks_data if it exists
             if task_id in tasks_data:
                 del tasks_data[task_id]
                 print(f"Task {task_id} removed from tasks_data.")
 
-            # Emit the signal to indicate tasks data has changed
+            session_id = self.orchestrators[task_id].session_id
+            self.session_manager.mark_session_in_use(session_id, in_use=False)
+
             self.tasksDataChanged.emit()
         else:
             print(f"No worker found for task ID: {task_id}")
 
     def stop_all_tasks(self):
-        """
-        Stop all running tasks.
-        """
         print("Stopping all running tasks.")
-        for task_id in list(self.workers.keys()):  # Iterate over a copy of the keys
+        for task_id in list(self.workers.keys()):
             self.stop_task(task_id)
 
-        # Optionally, wait for all tasks to finish if needed
         self.thread_pool.waitForDone()
-            
+
     def get_orchestrator(self, task_id):
         orchestrator = self.orchestrators.get(task_id, None)
         print(f"Retrieving orchestrator for task {task_id}: {orchestrator}")
@@ -103,8 +98,6 @@ class TaskManager(QObject):
     def on_task_error(self, task_id, error):
         print(f"Error in task {task_id}: {error}")
         if task_id in self.workers and task_id in tasks_data:
-            # Optionally, you can update tasks_data with error details
-            # tasks_data[task_id]["status"] = "Error"
             del tasks_data[task_id]
             print(f"Task {task_id} removed from tasks_data due to error.")
 

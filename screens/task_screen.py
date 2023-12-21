@@ -3,15 +3,15 @@ from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QPushButton, QTableWidget,
 from PyQt6.QtCore import pyqtSignal, QDateTime
 from task_management.task_manager import TaskManager
 from shared.shared_data import tasks_data, TASK_DISPLAY_NAMES
-from dialogs.task_config_dialog import TaskConfigDialog  # Import the TaskConfigDialog
+from dialogs.task_config_dialog import TaskConfigDialog
 import uuid
-import os
 
 class TaskRowWidget(QWidget):
     def __init__(self, task_name, task_id, task_screen, parent=None):
         super().__init__(parent)
         self.task_id = task_id
         self.task_screen = task_screen
+        self.is_paused = False  # To track pause state
         layout = QHBoxLayout()
 
         self.task_label = QLabel(task_name)
@@ -25,6 +25,7 @@ class TaskRowWidget(QWidget):
         layout.addWidget(self.playButton)
 
         self.pauseButton = QPushButton("Pause")
+        self.pauseButton.clicked.connect(self.toggle_pause_resume)
         layout.addWidget(self.pauseButton)
 
         self.editButton = QPushButton("Edit")
@@ -37,6 +38,16 @@ class TaskRowWidget(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(10)
         self.setLayout(layout)
+
+    def toggle_pause_resume(self):
+        if self.is_paused:
+            self.task_screen.resume_task(self.task_id)
+            self.pauseButton.setText("Pause")
+            self.is_paused = False
+        else:
+            self.task_screen.pause_task(self.task_id)
+            self.pauseButton.setText("Resume")
+            self.is_paused = True
 
 class TaskScreen(QWidget):
     taskChanged = pyqtSignal()
@@ -67,6 +78,7 @@ class TaskScreen(QWidget):
 
         self.task_manager.taskStarted.connect(self.on_task_started)
         self.task_manager.taskStopped.connect(self.on_task_stopped)
+
 
     def open_task_config_dialog(self):
         dialog = TaskConfigDialog(parent=self, session_manager=self.task_manager.session_manager)
@@ -108,6 +120,16 @@ class TaskScreen(QWidget):
             self.task_manager.start_task(task_id, task_name, task_data['config'])
             task_data["status"] = "Running"
             self.taskChanged.emit()
+
+    def pause_task(self, task_id):
+        orchestrator = self.task_manager.get_orchestrator(task_id)
+        if orchestrator:
+            orchestrator.pause_task()
+
+    def resume_task(self, task_id):
+        orchestrator = self.task_manager.get_orchestrator(task_id)
+        if orchestrator:
+            orchestrator.resume_task()
 
     def remove_row(self, task_row_widget, task_id):
         self.task_manager.stop_task(task_id)

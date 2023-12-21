@@ -24,6 +24,10 @@ class BrowserSessionManager(QObject):
         # Return the WebDriver instance for the given session ID
         return self.sessions[session_id]["driver"]
 
+    def mark_session_in_use(self, session_id, in_use=True):
+        if session_id in self.sessions:
+            self.sessions[session_id]['in_use'] = in_use
+
     def release_browser_session(self, session_id):
         # Check if the session ID exists before marking it as not in use
         if session_id in self.sessions:
