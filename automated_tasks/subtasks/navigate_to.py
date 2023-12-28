@@ -1,4 +1,5 @@
 def navigate_to(session_manager, session_id, url):
+    print(f"navigatin to {url}...")
     try:
         # Retrieve the WebDriver session
         driver = session_manager.get_browser_session(session_id)

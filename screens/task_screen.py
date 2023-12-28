@@ -8,6 +8,7 @@ import uuid
 import os
 
 class TaskRowWidget(QWidget):
+    
     def __init__(self, task_name, task_id, task_screen, parent=None):
         super().__init__(parent)
         self.task_id = task_id
@@ -37,6 +38,17 @@ class TaskRowWidget(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(10)
         self.setLayout(layout)
+        self.pauseButton.clicked.connect(self.toggle_pause)
+
+    def toggle_pause(self):
+        orchestrator = self.task_screen.task_manager.get_orchestrator(self.task_id)
+        if orchestrator and orchestrator._is_paused:
+            orchestrator.resume_task()
+            self.pauseButton.setText("Pause")
+        else:
+            orchestrator.pause_task()
+            self.pauseButton.setText("Resume")
+
 
 class TaskScreen(QWidget):
     taskChanged = pyqtSignal()

@@ -47,11 +47,17 @@ class TaskConfigDialog(QDialog):
 
     def load_config_dialog(self, task_name):
         try:
+            print(f"Loading config dialog for task: {task_name}")
             config_module = importlib.import_module(f"automated_tasks.tasks.{task_name}.config_dialog")
+            print(f"Module imported successfully: {config_module}")
+            
             config_class = getattr(config_module, f"{task_name}ConfigDialog")
+            print(f"Class retrieved successfully: {config_class}")
+            
             self.config_dialogs[task_name] = config_class()
-        except (ModuleNotFoundError, AttributeError):
-            print(f"Config dialog not found for {task_name}")
+            print(f"Config dialog instance created for {task_name}")
+        except Exception as e:
+            print(f"Error loading config dialog for {task_name}: {e}")
 
     def setup_buttons(self):
         self.submit_button = QPushButton("Submit")
