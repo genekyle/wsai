@@ -4,6 +4,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
 from automated_tasks.subtasks.human_type import human_type
+from automated_tasks.subtasks.check_for_password_page_indeed import check_for_password_page
 from automated_tasks.subtasks.random_sleep import random_sleep
 from automated_tasks.subtasks.check_for_hcaptcha_indeed import check_for_hcaptcha
 from automated_tasks.subtasks.is_checkbox_checked_indeed import is_checkbox_checked
@@ -75,15 +76,39 @@ def login_to_indeed(driver, username, password):
     if check_for_hcaptcha(driver):
         # Handle the captcha here (e.g., pause the task, notify the user, etc.)
         print("Handling hCaptcha...")
-        # Check if the checkbox is checked
-        if is_checkbox_checked(driver):
-            print("Checkbox is checked.")
-        else:
-            print("Checkbox was not checked within the timeout period.")
+        print('Sleeping for 30 seconds')
+        time.sleep(30)
         
         
     print("Checked for hCaptcha")
-    
+    login_password = password
+    print('Checking for password')
+    if check_for_password_page(driver):
+        print('Handling Password Page')
+        password_element = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//input[@type='password']")
+            )
+        )
+        print('Password input element found')
+    human_type(password_element, password)
+    random_sleep(2,5)
+    #Submit Password
+    print('Submitting Password')
+
+    #Try block 3
+    try:
+        print("Looking For Password Continue button to move to next step in logging in...")
+        password_continue_button = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "//button[@type='submit']"))
+        )
+        print('Password Continue Button found')
+        password_continue_button.click()
+    except TimeoutException:
+        print(f"Timed out waiting for page to load or element to be present: Password Continue Button Element")
+        return False
+
+
     """
         For Handling extra windows
 
