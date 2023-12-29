@@ -108,6 +108,16 @@ def login_to_indeed(driver, username, password):
         print(f"Timed out waiting for page to load or element to be present: Password Continue Button Element")
         return False
 
+    # After Submitting Password Check for hCaptcha
+    print("Checking For hCaptcha")
+    if check_for_hcaptcha(driver):
+        # Handle the captcha here (e.g., pause the task, notify the user, etc.)
+        print("Handling hCaptcha...")
+        print('Sleeping for 30 seconds')
+        time.sleep(30)
+        
+    print("Checked for hCaptcha")
+
 
     """
         For Handling extra windows
