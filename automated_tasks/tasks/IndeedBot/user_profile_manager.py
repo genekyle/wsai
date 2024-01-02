@@ -2,7 +2,10 @@ import json
 import os
 
 def get_profiles_file_path():
-    return os.path.join("IndeedBot", "UserProfiles", "profiles.json")
+    # Assuming this script is located in root(wsai)/automated_tasks/tasks/IndeedBot/
+    # Adjust the path accordingly if the script's location is different
+    base_dir = os.path.dirname(os.path.realpath(__file__))
+    return os.path.join(base_dir, "UserProfiles", "profiles.json")
 
 def load_user_profiles():
     profiles_file_path = get_profiles_file_path()

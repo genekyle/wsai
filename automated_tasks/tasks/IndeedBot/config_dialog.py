@@ -86,7 +86,7 @@ class IndeedBotConfigDialog(QDialog):
             if new_profile_dialog.exec() == QDialog.DialogCode.Accepted:
                 new_profile = {
                     "username": new_profile_dialog.username_input.text(),
-                    #"password": new_profile_dialog.password_input.text()
+                    "password": new_profile_dialog.password_input.text()
                 }
                 self.user_profiles.append(new_profile)
                 self.save_profiles_to_json()
@@ -142,14 +142,15 @@ class NewProfileConfigDialog(QDialog):
         self.setWindowTitle("New Profile Configuration")
         layout = QVBoxLayout(self)
 
-        layout.addWidget(QLabel("Testing"))
-        self.test_input = QLineEdit()
-        layout.addWidget(self.test_input)
-
         # Username Input
         layout.addWidget(QLabel("Username:"))
         self.username_input = QLineEdit()  # Define as an instance attribute
         layout.addWidget(self.username_input)
+
+        # Username Input
+        layout.addWidget(QLabel("Password:"))
+        self.password_input = QLineEdit()  # Define as an instance attribute
+        layout.addWidget(self.password_input)
 
         submit_button = QPushButton("Submit")
         submit_button.clicked.connect(self.accept)
@@ -158,7 +159,7 @@ class NewProfileConfigDialog(QDialog):
     def accept(self):
         # You can handle the data here or in another method
         username = self.username_input.text()
-        test_data = self.test_input.text()
+        password = self.password_input.text()
         print("Username:", username)
-        print("Test Data:", test_data)
+        print("Password:", password)
         super().accept()  # Ensure this is called to close the dialog properly

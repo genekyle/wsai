@@ -29,11 +29,11 @@ def login_to_indeed(driver, username, password):
     login_url = "https://secure.indeed.com"
     driver.get(login_url)
 
+    print(username, ":", password)
     random_sleep(1,2)
 
     # Possibly implement Dynamic URL Checking
 
-    # Check If Navigated To Login Page (Try Block 1)
     try:
         print("Checking To See If Navigated to Login Page...")
         email_input = WebDriverWait(driver, 10).until(
@@ -43,8 +43,15 @@ def login_to_indeed(driver, username, password):
         )        
 
     except TimeoutException:
-        print(f"Timed out waiting for page to load or element to be present: Email Element")
+        print("Timed out waiting for page to load or element to be present: Email Element")
         return False
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        return False
+    
+    print("Navigated to login page")
+
+    random_sleep(2,3)
     # Email To Login
     login_email = username
 

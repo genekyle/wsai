@@ -52,15 +52,15 @@ class IndeedBotOrchestrator(QObject):
             return  # Terminate task execution if no profile is found
 
         # Use the credentials from the selected profile
+        print("Assigning Credentials")
         username = selected_profile["username"]
         password = selected_profile["password"]
+        print(username, ":", password)
+        print("Credentials Assigned")
         
         try:
             self.taskStarted.emit(self.task_id)
             self.update_state("Initializing Browser")
-            # Retrieve username and password from config
-            username = self.config.get('username')
-            password = self.config.get('password')
 
             if self.session_id and self.session_id in self.session_manager.sessions:
                 self.driver = self.session_manager.get_browser_session(self.session_id)
