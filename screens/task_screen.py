@@ -3,7 +3,8 @@ from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QPushButton, QTableWidget,
 from PyQt6.QtCore import pyqtSignal, QDateTime
 from task_management.task_manager import TaskManager
 from shared.shared_data import tasks_data, TASK_DISPLAY_NAMES
-from dialogs.task_config_dialog import TaskConfigDialog  # Import the TaskConfigDialog
+from dialogs.task_config_dialog import TaskConfigDialog
+from automated_tasks.tasks.IndeedBot.config_dialog import IndeedBotConfigDialog
 import uuid
 import os
 
@@ -86,8 +87,21 @@ class TaskScreen(QWidget):
 
         if result == QDialog.DialogCode.Accepted:
             task_config = dialog.get_task_config()
-            if task_config and 'task_name' in task_config:
+            if task_config and 'open_next_dialog' in task_config:
+                self.open_specific_task_config_dialog(task_config['task_name'], task_config)
+            elif task_config:
                 self.add_task_to_table(task_config["task_name"], task_config)
+    
+    def open_specific_task_config_dialog(self, task_name, previous_config):
+        if task_name == "IndeedBot":
+            indeed_bot_dialog = IndeedBotConfigDialog()
+            indeed_bot_dialog.set_initial_config(previous_config)  # Set initial values if needed
+            result = indeed_bot_dialog.exec()
+
+            if result == QDialog.DialogCode.Accepted:
+                indeed_bot_config = indeed_bot_dialog.get_config()
+                combined_config = {**previous_config, **indeed_bot_config}  # Merge configurations
+                self.add_task_to_table(task_name, combined_config)
 
     def add_task_to_table(self, task_name, task_config):
         task_id = str(uuid.uuid4())

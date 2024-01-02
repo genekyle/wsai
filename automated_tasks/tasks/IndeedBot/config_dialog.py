@@ -1,20 +1,21 @@
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton, QHBoxLayout, QComboBox
-from .user_profile_manager import load_user_profiles, save_user_profile
-from .user_profile_creation_dialog import UserProfileCreationDialog
+import os
+import json
 
 class IndeedBotConfigDialog(QDialog):
-    def __init__(self):
+    def __init__(self, session_id=None):
         super().__init__()
         self.setWindowTitle("IndeedBot Configuration")
         self.layout = QVBoxLayout(self)
-        self.user_profiles = load_user_profiles()  # Load existing user profiles
+        self.session_id = session_id  # Store the session ID
+
+
+        self.user_profiles = self.load_user_profiles()
 
         # User Profile Selection
         self.layout.addWidget(QLabel("Select User Profile:"))
         self.user_profile_selector = QComboBox()
-        for profile in self.user_profiles:
-            self.user_profile_selector.addItem(profile["username"])  # Assuming profiles have a username field
-        self.user_profile_selector.addItem("New User Profile")
+        self.populate_user_profiles_dropdown()
         self.layout.addWidget(self.user_profile_selector)
 
         # Job Search Input
@@ -35,50 +36,129 @@ class IndeedBotConfigDialog(QDialog):
         self.layout.addWidget(self.radius_selector)
 
         # Buttons layout
+        self.setup_buttons()
+
+        # Connect signals
+        self.submit_button.clicked.connect(self.on_submit_clicked)
+
+    def setup_buttons(self):
         self.buttons_layout = QHBoxLayout()
         self.submit_button = QPushButton("Submit")
-        self.submit_button.clicked.connect(self.accept)
         self.cancel_button = QPushButton("Cancel")
         self.cancel_button.clicked.connect(self.reject)
         self.buttons_layout.addWidget(self.submit_button)
         self.buttons_layout.addWidget(self.cancel_button)
         self.layout.addLayout(self.buttons_layout)
 
-        # Connect the profile selector change event
-        self.user_profile_selector.currentIndexChanged.connect(self.on_profile_selection_changed)
+    def populate_user_profiles_dropdown(self):
+        self.user_profile_selector.clear()
+        for profile in self.user_profiles:
+            self.user_profile_selector.addItem(profile["username"])
+        self.user_profile_selector.addItem("New User Profile")
 
-    def on_profile_selection_changed(self, index):
+    def load_user_profiles(self):
+        file_path = os.path.join("automated_tasks", "tasks", "IndeedBot", "UserProfiles", "profiles.json")
+        if os.path.exists(file_path):
+            with open(file_path, "r") as file:
+                return json.load(file)
+        return []
+
+    def save_new_profile(self, username, password):
+        if username and password:
+            new_profile = {"username": username, "password": password}
+            self.user_profiles.append(new_profile)
+            self.save_profiles_to_json()
+            self.populate_user_profiles_dropdown()
+            self.user_profile_selector.setCurrentText(username)
+
+    def save_profiles_to_json(self):
+        directory = os.path.join("automated_tasks", "tasks", "IndeedBot", "UserProfiles")
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        file_path = os.path.join(directory, "profiles.json")
+        with open(file_path, "w") as file:
+            json.dump(self.user_profiles, file, indent=4)
+
+    def on_submit_clicked(self):
         selected_profile = self.user_profile_selector.currentText()
         if selected_profile == "New User Profile":
-            self.create_new_profile()
-
-    def create_new_profile(self):
-        creation_dialog = UserProfileCreationDialog()
-        result = creation_dialog.exec()
-        if result == QDialog.DialogCode.Accepted:
-            new_profile = creation_dialog.get_profile_data()
-            save_user_profile(new_profile)
-            self.user_profile_selector.addItem(new_profile["username"])
-            self.user_profile_selector.setCurrentText(new_profile["username"])
-
+            new_profile_dialog = NewProfileConfigDialog(self)
+            if new_profile_dialog.exec() == QDialog.DialogCode.Accepted:
+                new_profile = {
+                    "username": new_profile_dialog.username_input.text(),
+                    #"password": new_profile_dialog.password_input.text()
+                }
+                self.user_profiles.append(new_profile)
+                self.save_profiles_to_json()
+                self.user_profile_selector.addItem(new_profile["username"])
+                self.user_profile_selector.setCurrentText(new_profile["username"])
+                # Now that a new profile is created and selected, call get_config
+                self.task_config = self.get_config()
+                self.accept()
+            else:
+                # Handle the case where new profile creation is cancelled
+                return
+        else:
+            # If an existing profile is selected, just get the config and close
+            self.task_config = self.get_config()
+            self.accept()
+        
+    def open_new_profile_dialog(self):
+        new_profile_dialog = NewProfileConfigDialog(self)
+        new_profile_result = new_profile_dialog.exec()
+        if new_profile_result == QDialog.DialogCode.Accepted:
+            # Handle the test dialog submission here
+            print("New Profile Dialog submitted.")
+        self.accept()  # This will close the IndeedBotConfigDialog
 
     def get_config(self):
         selected_profile = self.user_profile_selector.currentText()
+        job_search = self.job_search_input.text()
+        location = self.location_input.text()
+        radius = self.radius_selector.currentText()
+
         if selected_profile != "New User Profile":
             for profile in self.user_profiles:
                 if profile["username"] == selected_profile:
                     return {
                         "task_name": "IndeedBot",
                         "user_profile": profile,
-                        "job_search": self.job_search_input.text(),
-                        "location": self.location_input.text(),
-                        "radius": self.radius_selector.currentText()
+                        "job_search": job_search,
+                        "location": location,
+                        "radius": radius
                     }
-        # If "New User Profile" is selected or no matching profile found
+
         return {
             "task_name": "IndeedBot",
-            "user_profile": None,  # No profile selected
-            "job_search": self.job_search_input.text(),
-            "location": self.location_input.text(),
-            "radius": self.radius_selector.currentText()
+            "user_profile": None,
+            "job_search": job_search,
+            "location": location,
+            "radius": radius
         }
+
+class NewProfileConfigDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("New Profile Configuration")
+        layout = QVBoxLayout(self)
+
+        layout.addWidget(QLabel("Testing"))
+        self.test_input = QLineEdit()
+        layout.addWidget(self.test_input)
+
+        # Username Input
+        layout.addWidget(QLabel("Username:"))
+        self.username_input = QLineEdit()  # Define as an instance attribute
+        layout.addWidget(self.username_input)
+
+        submit_button = QPushButton("Submit")
+        submit_button.clicked.connect(self.accept)
+        layout.addWidget(submit_button)
+
+    def accept(self):
+        # You can handle the data here or in another method
+        username = self.username_input.text()
+        test_data = self.test_input.text()
+        print("Username:", username)
+        print("Test Data:", test_data)
+        super().accept()  # Ensure this is called to close the dialog properly

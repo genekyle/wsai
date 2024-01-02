@@ -12,6 +12,7 @@ from automated_tasks.subtasks.random_sleep import random_sleep
 from automated_tasks.subtasks.navigate_to import navigate_to
 from automated_tasks.subtasks.redirect_to_homepage_indeed import redirect_to_homepage_indeed
 
+from automated_tasks.tasks.IndeedBot.user_profile_manager import load_user_profiles
 import time
 
 class IndeedBotOrchestrator(QObject):
@@ -37,6 +38,23 @@ class IndeedBotOrchestrator(QObject):
         self.state_manager = IndeedBotStateManager(self.driver)
 
     def execute(self):
+        # Retrieve the selected user profile name
+        selected_profile_name = self.config["user_profile"]["username"]  # Assuming user_profile contains a dictionary with username
+        print(f"Selected Profile Name: {selected_profile_name}")  # Debug print
+
+        user_profiles = load_user_profiles()
+        print(f"Loaded Profiles: {user_profiles}")  # Debug print
+
+        selected_profile = next((profile for profile in user_profiles if profile["username"] == selected_profile_name), None)
+
+        if selected_profile is None:
+            print(f"No profile found for {selected_profile_name}")
+            return  # Terminate task execution if no profile is found
+
+        # Use the credentials from the selected profile
+        username = selected_profile["username"]
+        password = selected_profile["password"]
+        
         try:
             self.taskStarted.emit(self.task_id)
             self.update_state("Initializing Browser")
@@ -74,7 +92,7 @@ class IndeedBotOrchestrator(QObject):
                 else:
                     print("Unsuccessful Login Attempt Trying one more time...")
 
-            
+
 
             while not self._should_stop:
                 # Check if paused
