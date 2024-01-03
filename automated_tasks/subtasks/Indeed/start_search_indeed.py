@@ -12,7 +12,7 @@ from automated_tasks.subtasks.random_sleep import random_sleep
 
 def start_search_indeed(driver, job_search, location, radius):
     """
-    After logged in we start the scrape/search using the inputs
+    After logged in Initiate The Search For Indeed
 
     Args:
         driver: The Selenium WebDriver instance.
@@ -89,6 +89,44 @@ def start_search_indeed(driver, job_search, location, radius):
     
     submit_button.click()
 
-    
+    #Start of last portion, change radius to initiate a specific search, data will be used in analysis
+    try:
+        print("Checking To See If Indeed Job Search Radius Dropdown Element Is Loaded In")
+        radius_filter = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable(
+                (By.XPATH, '//button[@id="filter-radius"]')
+            )
+        )
 
+    except TimeoutException:
+        print("Timed out waiting for page to load or element to be present: Indeed Job Search Radius Dropdown Element")
+        return False
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        return False
+    print("Search Radius Dropdown found.")
+    
+    radius_filter.click()
+    # Adding a short random delay after clicking
+    random_sleep(0.7,1)
+
+    #Start of last portion, change radius to initiate a specific search, data will be used in analysis
+    try:
+        print("Checking To See If Indeed Job Search Radius List Item Element Is Loaded In")
+        radius_element = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located(
+                (By.XPATH, f"//ul[@id='filter-radius-menu' and contains(@class, 'is-dropdownOpen')]//a[contains(text(), '{radius}')]")
+            )
+        )
+
+    except TimeoutException:
+        print("Timed out waiting for page to load or element to be present: Indeed Job Search Radius List Item Element")
+        return False
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        return False
+    print("Specific Radius Button Found in Drop Down")
+
+    radius_element.click()
+    random_sleep(1,2)
     
