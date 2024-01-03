@@ -7,6 +7,7 @@ from automated_tasks.subtasks.human_type import human_type
 from automated_tasks.subtasks.Indeed.check_for_password_page_indeed import check_for_password_page
 from automated_tasks.subtasks.random_sleep import random_sleep
 from automated_tasks.subtasks.Indeed.check_for_hcaptcha_indeed import check_for_hcaptcha
+from automated_tasks.subtasks.Indeed.check_for_two_step_indeed import check_for_2step
 from automated_tasks.subtasks.Indeed.is_checkbox_checked_indeed import is_checkbox_checked
 
 import time
@@ -124,8 +125,26 @@ def login_to_indeed(driver, username, password):
         time.sleep(30)
         
     print("Checked for hCaptcha")
+    
+    # After Checking for hCaptcha check for 2-Step Verification
+    print("Checking for Two-Step Verification...")
+    try:
+        if check_for_2step(driver):
+            # Handle the captcha here (e.g., pause the task, notify the user, etc.)
+            
+            print("Two-Step Verification Page found")
+            print("sleeping for 120 seconds or until landing on main indeed page...")
+            WebDriverWait(driver, 120).until(
+                EC.element_to_be_clickable((By.XPATH, "//a[contains(@aria-label, 'Messages')]"))
+            )
+            random_sleep(2,3)
+            print("Landed On Job Pages")
+    except TimeoutException:
+        print("Messages element not found, meaning not logged in yet")
+        # Not sure if returning false is necessary
+        return False
 
-
+        
     """
         For Handling extra windows
 

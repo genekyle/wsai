@@ -7,6 +7,7 @@ from .state_manager import IndeedBotStateManager
 from automated_tasks.browser_session_manager import BrowserSessionManager
 
 from automated_tasks.subtasks.Indeed.check_login_indeed import check_login_indeed
+from automated_tasks.subtasks.Indeed.check_search_success_indeed import check_search_success
 from automated_tasks.subtasks.Indeed.login_to_indeed import login_to_indeed
 from automated_tasks.subtasks.random_sleep import random_sleep
 from automated_tasks.subtasks.navigate_to import navigate_to
@@ -100,8 +101,14 @@ class IndeedBotOrchestrator(QObject):
                 else:
                     print("Unsuccessful Login Attempt Trying one more time...")
                 
+                print("Starting The Job Search Query on Indeed...")
+                self.update_state("Attempting To Start Search Using Inputs...")
                 start_search_indeed(self.driver, job_search, location, radius)
 
+                print("Checking to see if our inputs are matching to the query on Indeed...")
+                self.update_state("Checking to see if search is successful...")
+                check_search_success(self.driver, job_search, location, radius)
+                print("Search Successful")
 
             while not self._should_stop:
                 # Check if paused
