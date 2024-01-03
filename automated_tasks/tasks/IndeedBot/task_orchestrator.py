@@ -11,6 +11,7 @@ from automated_tasks.subtasks.login_to_indeed import login_to_indeed
 from automated_tasks.subtasks.random_sleep import random_sleep
 from automated_tasks.subtasks.navigate_to import navigate_to
 from automated_tasks.subtasks.redirect_to_homepage_indeed import redirect_to_homepage_indeed
+from automated_tasks.subtasks.start_search_indeed import start_search_indeed
 
 from automated_tasks.tasks.IndeedBot.user_profile_manager import load_user_profiles
 import time
@@ -57,6 +58,13 @@ class IndeedBotOrchestrator(QObject):
         password = selected_profile["password"]
         print(username, ":", password)
         print("Credentials Assigned")
+
+        # Retrieve job search, location, and radius from config
+        job_search = self.config.get("job_search", "")
+        location = self.config.get("location", "")
+        radius = self.config.get("radius", "")
+        print("search inputs assigned")
+        print(job_search, ":", location, ":", radius)
         
         try:
             self.taskStarted.emit(self.task_id)
@@ -91,7 +99,8 @@ class IndeedBotOrchestrator(QObject):
                     
                 else:
                     print("Unsuccessful Login Attempt Trying one more time...")
-
+                
+                start_search_indeed(self.driver, job_search, location, radius)
 
 
             while not self._should_stop:

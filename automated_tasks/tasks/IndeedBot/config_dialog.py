@@ -31,7 +31,7 @@ class IndeedBotConfigDialog(QDialog):
         # Radius Selection
         self.layout.addWidget(QLabel("Radius (miles):"))
         self.radius_selector = QComboBox()
-        for radius in ["10 miles", "20 miles", "30 miles", "40 miles", "50 miles"]:
+        for radius in ["5 miles", "10 miles", "15 miles", "25 miles", "35 miles", "50 miles", "100 miles"]:
             self.radius_selector.addItem(radius)
         self.layout.addWidget(self.radius_selector)
 
