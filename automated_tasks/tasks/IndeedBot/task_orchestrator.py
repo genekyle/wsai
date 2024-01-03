@@ -6,12 +6,12 @@ from .state_manager import IndeedBotStateManager
 
 from automated_tasks.browser_session_manager import BrowserSessionManager
 
-from automated_tasks.subtasks.check_login_indeed import check_login_indeed
-from automated_tasks.subtasks.login_to_indeed import login_to_indeed
+from automated_tasks.subtasks.Indeed.check_login_indeed import check_login_indeed
+from automated_tasks.subtasks.Indeed.login_to_indeed import login_to_indeed
 from automated_tasks.subtasks.random_sleep import random_sleep
 from automated_tasks.subtasks.navigate_to import navigate_to
-from automated_tasks.subtasks.redirect_to_homepage_indeed import redirect_to_homepage_indeed
-from automated_tasks.subtasks.start_search_indeed import start_search_indeed
+from automated_tasks.subtasks.Indeed.redirect_to_homepage_indeed import redirect_to_homepage_indeed
+from automated_tasks.subtasks.Indeed.start_search_indeed import start_search_indeed
 
 from automated_tasks.tasks.IndeedBot.user_profile_manager import load_user_profiles
 import time

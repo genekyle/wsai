@@ -4,10 +4,10 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
 from automated_tasks.subtasks.human_type import human_type
-from automated_tasks.subtasks.check_for_password_page_indeed import check_for_password_page
+from automated_tasks.subtasks.Indeed.check_for_password_page_indeed import check_for_password_page
 from automated_tasks.subtasks.random_sleep import random_sleep
-from automated_tasks.subtasks.check_for_hcaptcha_indeed import check_for_hcaptcha
-from automated_tasks.subtasks.is_checkbox_checked_indeed import is_checkbox_checked
+from automated_tasks.subtasks.Indeed.check_for_hcaptcha_indeed import check_for_hcaptcha
+from automated_tasks.subtasks.Indeed.is_checkbox_checked_indeed import is_checkbox_checked
 
 import time
 
