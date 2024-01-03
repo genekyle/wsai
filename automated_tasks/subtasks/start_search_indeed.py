@@ -32,7 +32,7 @@ def start_search_indeed(driver, job_search, location, radius):
         return False
     
     print("Indeed Job Search Bar Loaded In")
-    random_sleep(1,2)
+    random_sleep(1,2)  
     job_search_input.click()
     random_sleep(2,5)
 
@@ -54,6 +54,9 @@ def start_search_indeed(driver, job_search, location, radius):
         print(f"An unexpected error occurred: {e}")
         return False
     print("Job Location Input Element Found")
+
+    print("Clearing Location Input...")
+
     random_sleep(1,2)
     job_location_input.click()
     random_sleep(2,4)
