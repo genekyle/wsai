@@ -6,12 +6,19 @@ from ui.icon_button import IconButton
 from screens.task_screen import TaskScreen
 from screens.home_screen import HomeScreen
 from task_management.task_manager import TaskManager
+from db.DatabaseManager import Session  # Import Session from your DatabaseManager
+from db.DatabaseManager import UserProfile
+from sqlalchemy.exc import SQLAlchemyError
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         self.setMinimumSize(QSize(1600, 900))
+
+        # Initialize DB using DatabaseManager.py
+        self.db_session = Session()
 
         palette = QPalette()
         palette.setColor(QPalette.ColorRole.Window, QColor(15, 17, 26))
@@ -66,8 +73,7 @@ class MainWindow(QMainWindow):
 
         self.task_manager.tasksDataChanged.connect(self.home_screen.update_preview_table)
         print("Connected tasksDataChanged signal to HomeScreen's update_preview_table method.")
-
-
+        
     def display_screen(self, index):
         if index == 0:
             self.home_screen.update_preview_table()
@@ -75,5 +81,9 @@ class MainWindow(QMainWindow):
     
     def closeEvent(self, event: QEvent):
         print("Closing MainWindow. Stopping all tasks.")
+        # Close the database session
+        self.db_session.close()
+         # Call the parent class's closeEvent method
+        super().closeEvent(event)
         self.task_manager.stop_all_tasks()
         event.accept()
