@@ -49,7 +49,7 @@ class MainWindow(QMainWindow):
 
         self.stacked_widget = QStackedWidget()
         self.home_screen = HomeScreen()
-        self.tasks_screen = TaskScreen(task_manager=self.task_manager)
+        self.tasks_screen = TaskScreen(task_manager=self.task_manager, db_session=self.db_session)
         
         self.stacked_widget.addWidget(self.home_screen)
         self.stacked_widget.addWidget(self.tasks_screen)

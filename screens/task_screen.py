@@ -65,7 +65,7 @@ class TaskRowWidget(QWidget):
 class TaskScreen(QWidget):
     taskChanged = pyqtSignal()
 
-    def __init__(self, task_manager: TaskManager, parent=None):
+    def __init__(self, task_manager: TaskManager, db_session=self.db_session, parent=None):
         super().__init__(parent)
         self.task_manager = task_manager
         self.tasks_data = {}

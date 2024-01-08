@@ -3,8 +3,9 @@ import os
 import json
 
 class IndeedBotConfigDialog(QDialog):
-    def __init__(self, session_id=None):
+    def __init__(self, db_session, session_id=None):
         super().__init__()
+        self.db_session = db_session
         self.setWindowTitle("IndeedBot Configuration")
         self.layout = QVBoxLayout(self)
         self.session_id = session_id  # Store the session ID
@@ -52,8 +53,9 @@ class IndeedBotConfigDialog(QDialog):
 
     def populate_user_profiles_dropdown(self):
         self.user_profile_selector.clear()
-        for profile in self.user_profiles:
-            self.user_profile_selector.addItem(profile["username"])
+        user_profiles = self.db_session.query(UserProfile).all()
+        for profile in user_profiles:
+            self.user_profile_selector.addItem(profile.username)
         self.user_profile_selector.addItem("New User Profile")
 
     def load_user_profiles(self):
@@ -64,12 +66,11 @@ class IndeedBotConfigDialog(QDialog):
         return []
 
     def save_new_profile(self, username, password):
-        if username and password:
-            new_profile = {"username": username, "password": password}
-            self.user_profiles.append(new_profile)
-            self.save_profiles_to_json()
-            self.populate_user_profiles_dropdown()
-            self.user_profile_selector.setCurrentText(username)
+        new_profile = UserProfile(username=username, password=password)
+        self.db_session.add(new_profile)
+        self.db_session.commit()
+        self.populate_user_profiles_dropdown()
+        self.user_profile_selector.setCurrentText(username)
 
     def save_profiles_to_json(self):
         directory = os.path.join("automated_tasks", "tasks", "IndeedBot", "UserProfiles")
@@ -84,24 +85,20 @@ class IndeedBotConfigDialog(QDialog):
         if selected_profile == "New User Profile":
             new_profile_dialog = NewProfileConfigDialog(self)
             if new_profile_dialog.exec() == QDialog.DialogCode.Accepted:
-                new_profile = {
-                    "username": new_profile_dialog.username_input.text(),
-                    "password": new_profile_dialog.password_input.text()
-                }
-                self.user_profiles.append(new_profile)
-                self.save_profiles_to_json()
-                self.user_profile_selector.addItem(new_profile["username"])
-                self.user_profile_selector.setCurrentText(new_profile["username"])
-                # Now that a new profile is created and selected, call get_config
-                self.task_config = self.get_config()
-                self.accept()
+                new_username = new_profile_dialog.username_input.text()
+                new_password = new_profile_dialog.password_input.text()
+                # Save new profile to the database
+                new_profile = UserProfile(username=new_username, password=new_password)
+                self.db_session.add(new_profile)
+                self.db_session.commit()
+                # Refresh the dropdown and select the new profile
+                self.populate_user_profiles_dropdown()
+                self.user_profile_selector.setCurrentText(new_username)
             else:
-                # Handle the case where new profile creation is cancelled
-                return
-        else:
-            # If an existing profile is selected, just get the config and close
-            self.task_config = self.get_config()
-            self.accept()
+                return  # Handle the case where new profile creation is cancelled
+        # Fetch the selected profile's configuration
+        self.task_config = self.get_config()
+        self.accept()
         
     def open_new_profile_dialog(self):
         new_profile_dialog = NewProfileConfigDialog(self)
@@ -112,21 +109,21 @@ class IndeedBotConfigDialog(QDialog):
         self.accept()  # This will close the IndeedBotConfigDialog
 
     def get_config(self):
-        selected_profile = self.user_profile_selector.currentText()
+        selected_profile_name = self.user_profile_selector.currentText()
         job_search = self.job_search_input.text()
         location = self.location_input.text()
         radius = self.radius_selector.currentText()
 
-        if selected_profile != "New User Profile":
-            for profile in self.user_profiles:
-                if profile["username"] == selected_profile:
-                    return {
-                        "task_name": "IndeedBot",
-                        "user_profile": profile,
-                        "job_search": job_search,
-                        "location": location,
-                        "radius": radius
-                    }
+        if selected_profile_name != "New User Profile":
+            selected_profile = self.db_session.query(UserProfile).filter_by(username=selected_profile_name).first()
+            if selected_profile:
+                return {
+                    "task_name": "IndeedBot",
+                    "user_profile": selected_profile,
+                    "job_search": job_search,
+                    "location": location,
+                    "radius": radius
+                }
 
         return {
             "task_name": "IndeedBot",
@@ -135,6 +132,7 @@ class IndeedBotConfigDialog(QDialog):
             "location": location,
             "radius": radius
         }
+
 
 class NewProfileConfigDialog(QDialog):
     def __init__(self, parent=None):
