@@ -5,9 +5,10 @@ import importlib
 import os
 
 class TaskConfigDialog(QDialog):
-    def __init__(self, parent=None, session_manager=None):
+    def __init__(self, parent=None, session_manager=None, db_session=None):
         super().__init__(parent)
         self.session_manager = session_manager
+        self.db_session = db_session # Store the passed db_session
         self.setWindowTitle("Configure Task")
         self.layout = QVBoxLayout(self)
         self.selected_task = None  # Initialize the attribute
@@ -81,10 +82,11 @@ class TaskConfigDialog(QDialog):
             module_name = self.task_name_mapping.get(task_name, task_name)
             config_module = importlib.import_module(f"automated_tasks.tasks.{module_name}.config_dialog")
             config_class = getattr(config_module, f"{module_name}ConfigDialog")
-            config_dialog = config_class()
+            config_dialog = config_class(db_session=self.db_session)  # Pass the db_session
             result = config_dialog.exec()
+
             if result == QDialog.DialogCode.Accepted:
-                self.task_config = config_dialog.task_config  # Assuming task_config is an attribute of IndeedBotConfigDialog
+                self.task_config = config_dialog.get_config()  # Assuming task_config is an attribute of IndeedBotConfigDialog
                 self.task_config["session_id"] = self.session_selector.currentData()
                 self.accept()  # Close the dialog after accepting
         except Exception as e:

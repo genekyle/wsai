@@ -65,9 +65,11 @@ class TaskRowWidget(QWidget):
 class TaskScreen(QWidget):
     taskChanged = pyqtSignal()
 
-    def __init__(self, task_manager: TaskManager, db_session=self.db_session, parent=None):
+    def __init__(self, task_manager: TaskManager, db_session=None, parent=None):
         super().__init__(parent)
         self.task_manager = task_manager
+        self.db_session = db_session # Assign the passed db_session to the instance attribute
+
         self.tasks_data = {}
         self.task_count = {}
 
@@ -94,7 +96,7 @@ class TaskScreen(QWidget):
 
 
     def open_task_config_dialog(self):
-        dialog = TaskConfigDialog(parent=self, session_manager=self.task_manager.session_manager)
+        dialog = TaskConfigDialog(parent=self, session_manager=self.task_manager.session_manager, db_session=self.db_session)
         result = dialog.exec()
 
         if result == QDialog.DialogCode.Accepted:

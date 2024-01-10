@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QTableWidget, \
                            QTableWidgetItem, QSizePolicy, QHBoxLayout, QSpacerItem
 from shared.shared_data import tasks_data, TASK_DISPLAY_NAMES
+from db.DatabaseManager import UserProfile
 import json
 
 class HomeScreen(QWidget):
@@ -10,7 +11,7 @@ class HomeScreen(QWidget):
 
         home_label = QLabel("Content of Home Screen", self)
         layout.addWidget(home_label)
-
+    
         self.preview_table = QTableWidget()
         self.preview_table.setColumnCount(2)  # Set to 2 columns
         self.preview_table.setHorizontalHeaderLabels(["Task", "Status"])
@@ -35,5 +36,11 @@ class HomeScreen(QWidget):
             self.preview_table.insertRow(i)
             self.preview_table.setItem(i, 0, QTableWidgetItem(task_name_display))
             self.preview_table.setItem(i, 1, QTableWidgetItem(task_info["status"]))
-            config_str = json.dumps(task_info.get("config", {}), indent=2)
+
+            # Prepare configuration for serialization
+            config = task_info.get("config", {})
+            if 'user_profile' in config and isinstance(config['user_profile'], UserProfile):
+                config['user_profile'] = vars(config['user_profile'])  # Convert UserProfile to dict
+
+            config_str = json.dumps(config, indent=2, default=str)  # Use default=str to handle non-serializable types
             self.preview_table.setItem(i, 2, QTableWidgetItem(config_str))

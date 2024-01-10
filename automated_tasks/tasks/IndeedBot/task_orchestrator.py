@@ -14,6 +14,8 @@ from automated_tasks.subtasks.navigate_to import navigate_to
 from automated_tasks.subtasks.Indeed.redirect_to_homepage_indeed import redirect_to_homepage_indeed
 from automated_tasks.subtasks.Indeed.start_search_indeed import start_search_indeed
 
+from db.DatabaseManager import UserProfile  # Import the UserProfile model
+
 from automated_tasks.tasks.IndeedBot.user_profile_manager import load_user_profiles
 import time
 
@@ -22,11 +24,12 @@ class IndeedBotOrchestrator(QObject):
     taskStopped = pyqtSignal(str)
     stateChanged = pyqtSignal(str, str)  # New signal for state changes
 
-    def __init__(self, config, session_manager: BrowserSessionManager, session_id):
+    def __init__(self, config, session_manager: BrowserSessionManager, db_session, session_id):
         super().__init__()
         self.config = config
         self.task_id = config.get('task_id')
         self.session_manager = session_manager
+        self.db_session = db_session  # Add this line to store db_session
         self.session_id = session_id
         self._should_stop = False
         self._is_paused = False 
@@ -41,13 +44,26 @@ class IndeedBotOrchestrator(QObject):
 
     def execute(self):
         # Retrieve the selected user profile name
-        selected_profile_name = self.config["user_profile"]["username"]  # Assuming user_profile contains a dictionary with username
+        selected_profile_name = self.config["user_profile"]["username"]
         print(f"Selected Profile Name: {selected_profile_name}")  # Debug print
 
-        user_profiles = load_user_profiles()
-        print(f"Loaded Profiles: {user_profiles}")  # Debug print
+        selected_profile = self.db_session.query(UserProfile).filter_by(username=selected_profile_name).first()
+        
+        print(f"{selected_profile}")
 
-        selected_profile = next((profile for profile in user_profiles if profile["username"] == selected_profile_name), None)
+        print("loading user profiles")
+        user_profiles = load_user_profiles()
+        print("user profiles loaded")
+        if selected_profile is None:
+            print(f"No profile found for {selected_profile_name}")
+            return  # Terminate task execution if no profile is found
+        
+        print("selecting profile")
+        try:
+            selected_profile = next((profile for profile in user_profiles if profile.username == selected_profile_name), None)
+        except:
+            print("broken")
+        print(f"{selected_profile}")
 
         if selected_profile is None:
             print(f"No profile found for {selected_profile_name}")
@@ -55,8 +71,8 @@ class IndeedBotOrchestrator(QObject):
 
         # Use the credentials from the selected profile
         print("Assigning Credentials")
-        username = selected_profile["username"]
-        password = selected_profile["password"]
+        username = selected_profile.username
+        password = selected_profile.password
         print(username, ":", password)
         print("Credentials Assigned")
 

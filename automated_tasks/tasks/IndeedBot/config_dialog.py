@@ -1,4 +1,5 @@
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton, QHBoxLayout, QComboBox
+from db.DatabaseManager import UserProfile
 import os
 import json
 

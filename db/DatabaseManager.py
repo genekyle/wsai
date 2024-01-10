@@ -18,7 +18,7 @@ class Search(Base):
     __tablename__ = 'Searches'
     id = Column(Integer, primary_key=True)
     user_profile_id = Column(Integer, ForeignKey('UserProfiles.id'))
-    job_title = Column(String)
+    search_entry = Column(String)
     location = Column(String)
     radius = Column(String)
     timestamp = Column(DateTime)
