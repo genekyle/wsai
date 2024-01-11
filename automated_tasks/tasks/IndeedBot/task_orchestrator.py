@@ -8,16 +8,18 @@ from automated_tasks.browser_session_manager import BrowserSessionManager
 
 from automated_tasks.subtasks.Indeed.check_login_indeed import check_login_indeed
 from automated_tasks.subtasks.Indeed.check_search_success_indeed import check_search_success
+from automated_tasks.subtasks.Indeed.check_search_result_amount import check_search_results_amount
 from automated_tasks.subtasks.Indeed.login_to_indeed import login_to_indeed
 from automated_tasks.subtasks.random_sleep import random_sleep
 from automated_tasks.subtasks.navigate_to import navigate_to
 from automated_tasks.subtasks.Indeed.redirect_to_homepage_indeed import redirect_to_homepage_indeed
 from automated_tasks.subtasks.Indeed.start_search_indeed import start_search_indeed
 
-from db.DatabaseManager import UserProfile  # Import the UserProfile model
+from db.DatabaseManager import UserProfile, Search  # Import the UserProfile model
 
 from automated_tasks.tasks.IndeedBot.user_profile_manager import load_user_profiles
 import time
+from datetime import datetime
 
 class IndeedBotOrchestrator(QObject):
     taskStarted = pyqtSignal(str)
@@ -123,15 +125,39 @@ class IndeedBotOrchestrator(QObject):
 
                 print("Checking to see if our inputs are matching to the query on Indeed...")
                 self.update_state("Checking to see if search is successful...")
-                check_search_success(self.driver, job_search, location, radius)
-                print("Search Successful")
+                if check_search_success(self.driver, job_search, location, radius):
+                    print("Search Successful")
+                    random_sleep(1,2)
+                    print("Checking To See How Many Potential Jobs are available to scrape with this search...")
+                    search_results_amount = check_search_results_amount(self.driver)
+                    print(f"{search_results_amount} potential jobs to scrape" )
+
+                    # Create a new Search instance
+                    new_search = Search(
+                        user_profile_id=selected_profile.id,
+                        search_entry=job_search,
+                        location=location,
+                        radius=radius,
+                        timestamp=datetime.now(),
+                        total_scraped=0,  # Assuming you'll update this later
+                        search_amount=search_results_amount
+                    )
+
+                    # Add the new Search to the session and commit
+                    try:
+                        self.db_session.add(new_search)
+                        self.db_session.commit()
+                        print("New search record successfully added to the database.")
+                    except Exception as e:
+                        print(f"Error while adding new search record: {e}")
+                        self.db_session.rollback()  # Roll back in case of error
+                else:
+                    print("Search Unsuccessful...")
 
             while not self._should_stop:
-                # Check if paused
+                print("Inside IndeedBot's Task_Orchestrator While Loop")
                 while self._is_paused:
                     time.sleep(1)  # Wait for a bit before checking again
-
-
 
                 time.sleep(2)
                 if self._should_stop:

@@ -22,6 +22,8 @@ class Search(Base):
     location = Column(String)
     radius = Column(String)
     timestamp = Column(DateTime)
+    total_scraped = Column(Integer)
+    search_amount = Column(Integer)
     user_profile = relationship("UserProfile", back_populates="searches")
     jobs = relationship("Job", back_populates="search")
 
