@@ -14,10 +14,15 @@ from automated_tasks.subtasks.random_sleep import random_sleep
 from automated_tasks.subtasks.navigate_to import navigate_to
 from automated_tasks.subtasks.Indeed.redirect_to_homepage_indeed import redirect_to_homepage_indeed
 from automated_tasks.subtasks.Indeed.start_search_indeed import start_search_indeed
+from automated_tasks.subtasks.Indeed.has_pagination import has_pagination
+from automated_tasks.subtasks.Indeed.check_current_pagination import check_current_pagination
+from automated_tasks.subtasks.Indeed.check_for_page_next import check_for_page_next
 
 from db.DatabaseManager import UserProfile, Search  # Import the UserProfile model
 
 from automated_tasks.tasks.IndeedBot.user_profile_manager import load_user_profiles
+
+
 import time
 from datetime import datetime
 
@@ -154,8 +159,31 @@ class IndeedBotOrchestrator(QObject):
                 else:
                     print("Search Unsuccessful...")
 
+                print("outisde now of check search success")
+
+            print("Checking if pagination is present for current search.")
+            
+            if has_pagination(self.driver):
+                print("Pagination is present. Multiple pages to scrape.")
+                current_page = check_current_pagination(self.driver)
+                if current_page is not None:
+                    print(f"Currently on page {current_page}")
+                    if check_for_page_next(self.driver):
+                        print("Next page button is present.")
+                        # Logic to click the next page button and continue scraping
+                    else:
+                        print("No next page button. Reached the last page.")
+                        print("no current logic for no next page button, consider starting a new search")
+                        # End of pagination loop
+                else:
+                    print("Could not determine the current page number")
+                    print("unsure how this case occured check logs")
+            else:
+                print("No pagination. Single page scrape.")
+                print("no current logic for single page scrapes")
+                # Implement your single-page scraping logic here
+
             while not self._should_stop:
-                print("Inside IndeedBot's Task_Orchestrator While Loop")
                 while self._is_paused:
                     time.sleep(1)  # Wait for a bit before checking again
 
@@ -167,6 +195,7 @@ class IndeedBotOrchestrator(QObject):
         finally:
             self.taskStopped.emit(self.task_id)
             self.update_state("Closing Browser")
+            self.db_session.close()  # Ensure the session is closed
             QThreadPool.globalInstance().start(lambda: self.close_browser_async())
 
     def close_browser_async(self):
