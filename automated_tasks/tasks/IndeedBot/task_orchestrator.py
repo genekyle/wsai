@@ -1,6 +1,8 @@
 from PyQt6.QtCore import QObject, QThreadPool, pyqtSignal
 
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 from .state_manager import IndeedBotStateManager
 
@@ -17,8 +19,9 @@ from automated_tasks.subtasks.Indeed.start_search_indeed import start_search_ind
 from automated_tasks.subtasks.Indeed.has_pagination import has_pagination
 from automated_tasks.subtasks.Indeed.check_current_pagination import check_current_pagination
 from automated_tasks.subtasks.Indeed.check_for_page_next import check_for_page_next
+from automated_tasks.subtasks.Indeed.get_all_listings_on_current_page import get_all_listings_on_current_page
 
-from db.DatabaseManager import UserProfile, Search  # Import the UserProfile model
+from db.DatabaseManager import UserProfile, Search, Job  # Import the UserProfile model
 
 from automated_tasks.tasks.IndeedBot.user_profile_manager import load_user_profiles
 
@@ -163,18 +166,42 @@ class IndeedBotOrchestrator(QObject):
 
             print("Checking if pagination is present for current search.")
             
+            batch = []
+            batch_size = 100
+            random_sleep(1,2)
             if has_pagination(self.driver):
                 print("Pagination is present. Multiple pages to scrape.")
                 current_page = check_current_pagination(self.driver)
+                
                 if current_page is not None:
+                    get_all_listings_on_current_page(self.driver)
+                    '''
                     print(f"Currently on page {current_page}")
-                    if check_for_page_next(self.driver):
-                        print("Next page button is present.")
-                        # Logic to click the next page button and continue scraping
-                    else:
-                        print("No next page button. Reached the last page.")
-                        print("no current logic for no next page button, consider starting a new search")
-                        # End of pagination loop
+                    fourth_job = WebDriverWait(self.driver, 10).until(
+                        EC.presence_of_element_located((By.XPATH, "//div[contains(@id, 'jobResults')]//ul/li[4]//div[contains(@class, 'cardOutline')]"))
+                    )
+                    fourth_job.click()
+
+                    while True:
+                        all_listings = get_all_listings_on_current_page(driver)  # This needs to be defined based on your page structure
+                        for job_listing in all_listings:
+                            job_data = scrape_job_listing(job_listing)  # Function to scrape data
+                            batch.append(job_data)
+
+                            # Check if batch size is reached
+                            if len(batch) >= batch_size:
+                                insert_batch_into_database(batch)
+                                batch = []  # Reset the batch
+                        if check_for_page_next(self.driver):
+                            print("checking for next page")
+                            go_to_next_page(self.driver)
+                        else:
+                            print("No next page button found, exiting loop")
+                            break
+                    if batch:
+                        insert_batch_into_database(batch)
+                    '''
+
                 else:
                     print("Could not determine the current page number")
                     print("unsure how this case occured check logs")
