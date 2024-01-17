@@ -17,8 +17,8 @@ def get_all_listings_on_current_page(driver):
             card_outline_div = item.find_element(By.XPATH, ".//div[contains(@class, 'cardOutline')]")
             card_outline_div.click()
 
-            # Add any additional logic here, e.g., data extraction
-            # ...
+            # start performing data extraction
+            # 
 
         except NoSuchElementException:
             print("cardOutline div not found in this list item.")
