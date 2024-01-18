@@ -4,39 +4,42 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
 def get_all_listings_on_current_page(driver):
-    # Create a loop that clicks on the listing first so that we can access all data needed
-    valid_list_items = WebDriverWait(driver, 10).until(
-        EC.presence_of_all_elements_located((By.XPATH, "//div[contains(@id, 'jobResults')]//ul/li[.//div[contains(@class, 'cardOutline')]]"))
-    )
-    
-    print(len(valid_list_items))
-
-    for item in valid_list_items:
+    def extract_data_from_item(card_outline_div):
+        # Extract data from the current context (item)
         try:
-            # Find and click the 'cardOutline' div within the list item
-            card_outline_div = item.find_element(By.XPATH, ".//div[contains(@class, 'cardOutline')]")
-            card_outline_div.click()
-
-            # start performing data extraction
-            # 
-
+            job_title_span = card_outline_div.find_element(By.XPATH, ".//span[contains(@id, 'jobTitle')]")
+            job_title = job_title_span.text
+            # ... other data extraction logic, using relative XPaths ...
+            print(job_title)
+            return {
+                'job_title': job_title,
+                # ... other extracted data ...
+            }
         except NoSuchElementException:
-            print("cardOutline div not found in this list item.")
-    '''
-    all_listings = []
-    for element in job_listing_elements:
-        # Extract the necessary information from each element
-        # This is just an example, adjust the extraction logic as per your requirements
-        job_title = element.find_element(By.CSS_SELECTOR, 'h2.jobTitle').text
-        company_name = element.find_element(By.CSS_SELECTOR, 'span.company').text
-        # ... extract other details ...
+            print("Necessary element not found in this item.")
+            return {}
 
-        # Add the structured data to the list
-        all_listings.append({
-            'job_title': job_title,
-            'company_name': company_name,
-            # ... other extracted details ...
-        })
+    try:
+        valid_list_items = WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By.XPATH, "//div[contains(@id, 'jobResults')]//ul/li[.//div[contains(@class, 'cardOutline')]]"))
+        )
 
-    return all_listings
-    '''
+        all_listings_data = []
+        for item in valid_list_items:
+            try:
+                card_outline_div = item.find_element(By.XPATH, ".//div[contains(@class, 'cardOutline')]")
+                card_outline_div.click()
+
+                # Extract data for this item
+                item_data = extract_data_from_item(card_outline_div)
+                all_listings_data.append(item_data)
+                print(all_listings_data)
+
+            except NoSuchElementException:
+                print("cardOutline div not found in this list item.")
+        
+        return all_listings_data
+
+    except TimeoutException:
+        print("Timeout occurred while retrieving list items.")
+        return []
