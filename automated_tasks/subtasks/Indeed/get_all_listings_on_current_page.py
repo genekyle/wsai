@@ -132,7 +132,21 @@ def get_all_listings_on_current_page(driver):
 
             except Exception as e:
                 print(e)
+
+            try:
+                # Locate the div with the specified ID
+                print("Searching for Job Description Text")
+                job_description_div = driver.find_element(By.ID, "jobDescriptionText")
+
+                # Get all text from the div and its descendants
+                job_description_text = job_description_div.text
                 
+                # Replace newline characters with a space
+                job_description_text = job_description_text.replace("\n", " ")
+
+            except NoSuchElementException:
+                print("Job description div not found.")
+
 
             # ... other data extraction logic, using relative XPaths ...
             return {
@@ -143,9 +157,8 @@ def get_all_listings_on_current_page(driver):
                 "date_recorded" : date_recorded,
                 'skills': skills_list,
                 'pay': pay,
-                # "pay"	TEXT,
-                # "education"	TEXT,
-                # "job_description
+                'job_description': job_description_text                
+
             }
         except NoSuchElementException:
             print("Necessary element not found in this item.")
