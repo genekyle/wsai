@@ -95,8 +95,9 @@ def get_all_listings_on_current_page(driver):
                 print("Looping through each item in the skills list")
                 for item in list_items:
                     try:
-                        span_text = item.text
-                        skills_list.append(span_text)
+                        span_text = item.text.strip()
+                        if "(required)" not in span_text.lower():
+                            skills_list.append(span_text)
                     except NoSuchElementException:
                         print("Span not found in the skills list item")
                         continue
@@ -110,6 +111,29 @@ def get_all_listings_on_current_page(driver):
             except TimeoutException:
                 print("No skills found")
 
+            # Checking for Pay
+            try:
+                print("Checking for Pay")
+                pay_span = WebDriverWait(driver, 0.1).until(
+                    EC.element_to_be_clickable(
+                        (By.XPATH, "//h3[contains(text(), 'Pay')]/ancestor::div[1]/following-sibling::div//span[contains(text(), '$')]")
+                    )
+                )
+                print("Pay span found")
+                pay = pay_span.text
+
+            except NoSuchElementException:
+                print("No Pay Element found")
+                pay = None
+            
+            except TimeoutException:
+                print("Looking for Pay Element timedout...")
+                pay = None
+
+            except Exception as e:
+                print(e)
+                
+
             # ... other data extraction logic, using relative XPaths ...
             return {
                 'job_title': job_title,
@@ -118,7 +142,8 @@ def get_all_listings_on_current_page(driver):
                 'date_scraped': date_scraped,                
                 "date_recorded" : date_recorded,
                 'skills': skills_list,
-                # "skills"	TEXT,
+                'pay': pay,
+                # "pay"	TEXT,
                 # "education"	TEXT,
                 # "job_description
             }

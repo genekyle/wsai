@@ -37,6 +37,7 @@ class Job(Base):
     date_scraped = Column(String)
     date_recorded = Column(DateTime)
     skills = Column(String)
+    pay = Column(String)
     education = Column(String)
     job_description = Column(String)
     search = relationship("Search", back_populates="jobs")
