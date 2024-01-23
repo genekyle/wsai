@@ -175,6 +175,7 @@ class IndeedBotOrchestrator(QObject):
                 
                 if current_page is not None:
                     get_all_listings_on_current_page(self.driver)
+                    print("Captured all listings on this page")
                     '''
                     print(f"Currently on page {current_page}")
                     fourth_job = WebDriverWait(self.driver, 10).until(

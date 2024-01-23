@@ -4,6 +4,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
+from automated_tasks.subtasks.random_sleep import random_sleep
+
 import datetime
 
 def get_all_listings_on_current_page(driver):
@@ -61,6 +63,8 @@ def get_all_listings_on_current_page(driver):
             except NoSuchElementException:
                 # If the element is not found, the text is not present
                 print("The span on the right panel doesn't match")
+            except Exception as e:
+                print(e)
 
             # Extracting Skills
             print("Starting To Extract Skills")
@@ -174,11 +178,11 @@ def get_all_listings_on_current_page(driver):
             try:
                 card_outline_div = item.find_element(By.XPATH, ".//div[contains(@class, 'cardOutline')]")
                 card_outline_div.click()
+                random_sleep(0.5,0.75)
 
                 # Extract data for this item
                 item_data = extract_data_from_item(card_outline_div)
                 all_listings_data.append(item_data)
-                print(all_listings_data)
 
             except NoSuchElementException:
                 print("cardOutline div not found in this list item.")
