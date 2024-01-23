@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.exc import SQLAlchemyError
 import os
 
 # Define the base class for ORM
@@ -35,10 +36,11 @@ class Job(Base):
     company_name = Column(String)
     location = Column(String)
     date_scraped = Column(String)
-    date_recorded = Column(DateTime)
+    date_recorded = Column(String)
     skills = Column(String)
     pay = Column(String)
     job_description = Column(String)
+    job_link = Column(String)
     search = relationship("Search", back_populates="jobs")
 
 # Set the path of the SQLite database
@@ -55,3 +57,29 @@ def init_db():
     print('initializing Indeed DB')
     Base.metadata.create_all(engine)
     print('Indeed Database Initialized')
+
+def insert_batch_into_database(batch):
+    """
+    Inserts a batch of job listings into the database.
+
+    Args:
+        batch (list of dict): A list of dictionaries, each representing a job listing.
+    """
+    session = Session()  # Create a new session instance
+
+    try:
+        # Convert each dictionary in the batch to the Job class mapping and add to the session
+        session.bulk_insert_mappings(Job, batch)
+        
+        # Commit the transaction
+        session.commit()
+        print(f"Inserted a batch of {len(batch)} records into the database.")
+    except SQLAlchemyError as e:
+        # Handle any database errors
+        print(f"Error during batch insert: {e}")
+        session.rollback()  # Rollback the transaction in case of error
+    except Exception as e:
+        print(e)
+    
+    finally:
+        session.close()  # Close the session

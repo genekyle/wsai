@@ -8,7 +8,7 @@ from automated_tasks.subtasks.random_sleep import random_sleep
 
 import datetime
 
-def get_all_listings_on_current_page(driver):
+def get_all_listings_on_current_page(driver, current_search_id):
     def extract_data_from_item(card_outline_div):
         # Extract data from the current context (item)
         # Current Date
@@ -21,13 +21,21 @@ def get_all_listings_on_current_page(driver):
             job_title = job_title_span.text
             print("Job Title: " + job_title)
 
+            try:
+                # Extracting Job Link
+                job_link_anchor = card_outline_div.find_element(By.XPATH, ".//a[contains(@role,'button')]")
+                job_link = job_link_anchor.get_attribute('href')
+                print(job_link)
+            except Exception as e:
+                print(e)
+
             # Extracting Company Name
             company_name_span = card_outline_div.find_element(By.XPATH, ".//span[contains(@data-testid, 'company-name')]")
             company_name = company_name_span.text
             print("Company Name: " + company_name)
 
             # Extracting Location
-            location_span = card_outline_div.find_element(By.XPATH, ".//span[contains(@data-testid, 'company-name')]")
+            location_span = card_outline_div.find_element(By.XPATH, ".//div[contains(@data-testid, 'text-location')]")
             location = location_span.text
             print("Location: " + location)
 
@@ -54,14 +62,23 @@ def get_all_listings_on_current_page(driver):
             # Need to check if the Right Pane(Where Job Description) has loaded in by checking if both the 
             print("Checking If the Job Post Title matches with the title that is opened in the right hand pane")
             try:
-                right_pane_job_title = WebDriverWait(driver, 20).until(
+                # Locate the parent span element
+                right_pane_job_title_element = WebDriverWait(driver, 20).until(
                     EC.presence_of_element_located(
-                        (By.XPATH, f"//div[contains(@class, 'jobsearch-RightPane')]//h2[contains(@class, 'jobsearch-JobInfoHeader-title')]/span[contains(text(), '{job_title}')]")
+                        (By.XPATH, '//div[contains(@class, "jobsearch-RightPane")]//h2[contains(@class, "jobsearch-JobInfoHeader-title")]/span')
                     )
                 )
-                print("The Text '" + right_pane_job_title.text + "' matches with: " + job_title )
+
+                # Fetch the entire text from the parent span element
+                right_pane_job_title = right_pane_job_title_element.text.lower()
+                
+                # Check if job_title is contained within the right pane job title
+                if job_title.lower() in right_pane_job_title:
+                    print(f"Job title found in right pane: {right_pane_job_title}")
+                else:
+                    print("Job title not found in right pane")
+
             except NoSuchElementException:
-                # If the element is not found, the text is not present
                 print("The span on the right panel doesn't match")
             except Exception as e:
                 print(e)
@@ -84,6 +101,9 @@ def get_all_listings_on_current_page(driver):
             except TimeoutException:
                 print("Timed out for looking for for show more button")
             
+            except Exception as e:
+                print(e)
+            
             # Looping thorugh each item in the skills list
             skills_list = []    
             
@@ -91,7 +111,7 @@ def get_all_listings_on_current_page(driver):
                 print("Starting to loop through each skill")
                 list_items = WebDriverWait(driver, 0.5).until(
                     EC.presence_of_all_elements_located(
-                        (By.XPATH, "//ul[contains(@class, 'match-insights')]/li//span[contains(@class, 'match-insights')]")
+                        (By.XPATH, "//h3[contains(text(), 'Skills')]/following-sibling::ul/li")
                     )
                 )
                 print("Skills list found")
@@ -99,21 +119,29 @@ def get_all_listings_on_current_page(driver):
                 print("Looping through each item in the skills list")
                 for item in list_items:
                     try:
-                        span_text = item.text.strip()
-                        if "(required)" not in span_text.lower():
-                            skills_list.append(span_text)
+                        # Find the first div inside the list item that contains text
+                        divs = item.find_elements(By.XPATH, ".//div[string-length(text()) > 0]")
+                        for div in divs:
+                            div_text = div.text.strip()
+                            if "(required)" not in div_text.lower():
+                                skills_list.append(div_text)    
                     except NoSuchElementException:
                         print("Span not found in the skills list item")
                         continue
                     except Exception as e:
                         print(f"An error occured: {e}")
                         continue
+                print(skills_list)
                     
             except NoSuchElementException:
                 print("No list item found")
             
             except TimeoutException:
                 print("No skills found")
+                skills_list = None
+
+            except Exception as e:
+                print(e)
 
             # Checking for Pay
             try:
@@ -150,10 +178,13 @@ def get_all_listings_on_current_page(driver):
 
             except NoSuchElementException:
                 print("Job description div not found.")
+            except Exception as e:
+                print(e)
 
 
             # ... other data extraction logic, using relative XPaths ...
             return {
+                'search_id': current_search_id,
                 'job_title': job_title,
                 'company_name': company_name,
                 'location': location,
@@ -161,13 +192,16 @@ def get_all_listings_on_current_page(driver):
                 "date_recorded" : date_recorded,
                 'skills': skills_list,
                 'pay': pay,
-                'job_description': job_description_text                
+                'job_description': job_description_text,
+                'job_link': job_link                
 
             }
         except NoSuchElementException:
             print("Necessary element not found in this item.")
             return {}
-
+        except Exception as e:
+            print(e)
+        
     try:
         valid_list_items = WebDriverWait(driver, 10).until(
             EC.presence_of_all_elements_located((By.XPATH, "//div[contains(@id, 'jobResults')]//ul/li[.//div[contains(@class, 'cardOutline')]]"))
@@ -178,7 +212,7 @@ def get_all_listings_on_current_page(driver):
             try:
                 card_outline_div = item.find_element(By.XPATH, ".//div[contains(@class, 'cardOutline')]")
                 card_outline_div.click()
-                random_sleep(0.5,0.75)
+                random_sleep(1.75,2.5)
 
                 # Extract data for this item
                 item_data = extract_data_from_item(card_outline_div)
