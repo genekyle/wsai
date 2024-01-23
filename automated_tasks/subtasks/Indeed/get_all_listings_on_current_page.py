@@ -54,8 +54,8 @@ def get_all_listings_on_current_page(driver):
             # Need to check if the Right Pane(Where Job Description) has loaded in by checking if both the 
             print("Checking If the Job Post Title matches with the title that is opened in the right hand pane")
             try:
-                right_pane_job_title = WebDriverWait(driver, 10).until(
-                    EC.element_to_be_clickable(
+                right_pane_job_title = WebDriverWait(driver, 20).until(
+                    EC.presence_of_element_located(
                         (By.XPATH, f"//div[contains(@class, 'jobsearch-RightPane')]//h2[contains(@class, 'jobsearch-JobInfoHeader-title')]/span[contains(text(), '{job_title}')]")
                     )
                 )

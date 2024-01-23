@@ -18,7 +18,14 @@ class BrowserSessionManager(QObject):
         return session_id, driver
 
     def _initialize_browser(self):
-        return webdriver.Chrome()
+         # Create an instance of ChromeOptions
+        options = webdriver.ChromeOptions()
+
+        # Add incognito mode
+        options.add_argument("--incognito")
+
+        # Initialize the Chrome driver with these options
+        return webdriver.Chrome(options=options)
 
     def get_browser_session(self, session_id):
         # Return the WebDriver instance for the given session ID
