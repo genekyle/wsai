@@ -21,7 +21,7 @@ from automated_tasks.subtasks.Indeed.check_current_pagination import check_curre
 from automated_tasks.subtasks.Indeed.check_for_page_next import check_for_page_next
 from automated_tasks.subtasks.Indeed.get_all_listings_on_current_page import get_all_listings_on_current_page
 
-from db.DatabaseManager import UserProfile, Search, Job  # Import the UserProfile model
+from db.DatabaseManager import UserProfile, Search, Job, insert_batch_into_database  # Import the UserProfile model
 
 from automated_tasks.tasks.IndeedBot.user_profile_manager import load_user_profiles
 
@@ -151,11 +151,14 @@ class IndeedBotOrchestrator(QObject):
                         search_amount=search_results_amount
                     )
 
+
                     # Add the new Search to the session and commit
                     try:
                         self.db_session.add(new_search)
                         self.db_session.commit()
                         print("New search record successfully added to the database.")
+                        current_search_id = new_search.id
+                        print(current_search_id)
                     except Exception as e:
                         print(f"Error while adding new search record: {e}")
                         self.db_session.rollback()  # Roll back in case of error
@@ -167,41 +170,39 @@ class IndeedBotOrchestrator(QObject):
             print("Checking if pagination is present for current search.")
             
             batch = []
-            batch_size = 100
+            batch_size = 20
             random_sleep(1,2)
             if has_pagination(self.driver):
                 print("Pagination is present. Multiple pages to scrape.")
                 current_page = check_current_pagination(self.driver)
                 
                 if current_page is not None:
-                    get_all_listings_on_current_page(self.driver)
-                    print("Captured all listings on this page")
-                    '''
-                    print(f"Currently on page {current_page}")
-                    fourth_job = WebDriverWait(self.driver, 10).until(
-                        EC.presence_of_element_located((By.XPATH, "//div[contains(@id, 'jobResults')]//ul/li[4]//div[contains(@class, 'cardOutline')]"))
-                    )
-                    fourth_job.click()
-
                     while True:
-                        all_listings = get_all_listings_on_current_page(driver)  # This needs to be defined based on your page structure
-                        for job_listing in all_listings:
-                            job_data = scrape_job_listing(job_listing)  # Function to scrape data
-                            batch.append(job_data)
+                        listings = get_all_listings_on_current_page(self.driver, current_search_id)
+                        print("Captured all listings on this page")
+                        batch.extend(listings)
 
-                            # Check if batch size is reached
-                            if len(batch) >= batch_size:
-                                insert_batch_into_database(batch)
-                                batch = []  # Reset the batch
-                        if check_for_page_next(self.driver):
-                            print("checking for next page")
-                            go_to_next_page(self.driver)
+                        if len(batch) >= batch_size:
+                            insert_batch_into_database(batch)  # Insert the batch into the database
+                            batch = []
+                    
+                        print("Checking For Next Page Button")
+                        has_next_page, next_page_anchor = check_for_page_next(self.driver)
+                        if has_next_page:
+                            print("Next Page Button Found Clicking to continue")
+                            random_sleep(1.5,2)
+                            next_page_anchor.click()
+                            print("Checking To see if landed on next page")
+                            WebDriverWait(self.driver, 20).until(
+                                EC.presence_of_element_located((By.XPATH, "//div[@id='jobsearch-Main']"))
+                            )
+                            print("Next Page Loaded")
+                            random_sleep(2.5,4)
                         else:
-                            print("No next page button found, exiting loop")
+                            print("No More Pages Left")
                             break
-                    if batch:
-                        insert_batch_into_database(batch)
-                    '''
+                
+                    print("made it out of the pagination loop")
 
                 else:
                     print("Could not determine the current page number")
@@ -210,7 +211,12 @@ class IndeedBotOrchestrator(QObject):
                 print("No pagination. Single page scrape.")
                 print("no current logic for single page scrapes")
                 # Implement your single-page scraping logic here
+            print("Inserting rest of batch into db")
 
+            if batch:
+                insert_batch_into_database(batch)
+
+            print("Scraping Complete")
             while not self._should_stop:
                 while self._is_paused:
                     time.sleep(1)  # Wait for a bit before checking again

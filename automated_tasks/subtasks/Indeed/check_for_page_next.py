@@ -14,7 +14,7 @@ def check_for_page_next(driver):
         next_page_anchor = navigation.find_element(By.XPATH, ".//a[contains(@data-testid, 'pagination-page-next')]")
 
         # If found, return True (indicating the presence of a next page button)
-        return True
+        return True, next_page_anchor
 
     except TimeoutException:
         print("Navigation element with aria-label 'pagination' not found.")
