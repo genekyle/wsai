@@ -132,6 +132,8 @@ def get_all_listings_on_current_page(driver, current_search_id):
                         print(f"An error occured: {e}")
                         continue
                 print(skills_list)
+                skills_string = ", ".join(skills_list)
+                print(skills_string)
                     
             except NoSuchElementException:
                 print("No list item found")
@@ -190,7 +192,7 @@ def get_all_listings_on_current_page(driver, current_search_id):
                 'location': location,
                 'date_scraped': date_scraped,                
                 "date_recorded" : date_recorded,
-                'skills': skills_list,
+                'skills': skills_string,
                 'pay': pay,
                 'job_description': job_description_text,
                 'job_link': job_link                

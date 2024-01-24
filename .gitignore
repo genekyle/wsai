@@ -2047,3 +2047,6 @@ automated_tasks/subtasks/Indeed/__pycache__/check_for_page_next.cpython-312.pyc
 automated_tasks/subtasks/Indeed/__pycache__/get_all_listings_on_current_page.cpython-312.pyc
 automated_tasks/subtasks/Indeed/__pycache__/has_pagination.cpython-312.pyc
 automated_tasks/tasks/__pycache__/__init__.cpython-312.pyc
+automated_tasks/subtasks/Indeed/__pycache__/check_for_page_next.cpython-312.pyc
+automated_tasks/subtasks/Indeed/__pycache__/get_all_listings_on_current_page.cpython-312.pyc
+db/__pycache__/DatabaseManager.cpython-312.pyc
