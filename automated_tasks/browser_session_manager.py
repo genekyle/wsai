@@ -1,6 +1,8 @@
 import uuid
 from selenium import webdriver
 from PyQt6.QtCore import QObject
+from selenium.webdriver.common.proxy import Proxy, ProxyType
+
 
 class BrowserSessionManager(QObject):
     def __init__(self):
@@ -20,9 +22,8 @@ class BrowserSessionManager(QObject):
     def _initialize_browser(self):
          # Create an instance of ChromeOptions
         options = webdriver.ChromeOptions()
-
-        # Add incognito mode
-        options.add_argument("--incognito")
+     
+        options.add_extension(r"C:\Users\genom\code\wsai\proxy\proxy_auth_plugin.zip")
 
         # Initialize the Chrome driver with these options
         return webdriver.Chrome(options=options)

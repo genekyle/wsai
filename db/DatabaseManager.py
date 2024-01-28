@@ -58,28 +58,28 @@ def init_db():
     Base.metadata.create_all(engine)
     print('Indeed Database Initialized')
 
-def insert_batch_into_database(batch):
+def insert_batch_into_database(batch, db_session):
     """
     Inserts a batch of job listings into the database.
 
     Args:
         batch (list of dict): A list of dictionaries, each representing a job listing.
     """
-    session = Session()  # Create a new session instance
-
+    print("Attemtpting to insert Batch")
+    print(batch)
     try:
         # Convert each dictionary in the batch to the Job class mapping and add to the session
-        session.bulk_insert_mappings(Job, batch)
+        db_session.bulk_insert_mappings(Job, batch)
         
         # Commit the transaction
-        session.commit()
+        db_session.commit()
         print(f"Inserted a batch of {len(batch)} records into the database.")
     except SQLAlchemyError as e:
         # Handle any database errors
         print(f"Error during batch insert: {e}")
-        session.rollback()  # Rollback the transaction in case of error
+        db_session.rollback()  # Rollback the transaction in case of error
     except Exception as e:
         print(e)
     
     finally:
-        session.close()  # Close the session
+        db_session.close()  # Close the session

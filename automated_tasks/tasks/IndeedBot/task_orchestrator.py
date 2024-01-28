@@ -180,10 +180,16 @@ class IndeedBotOrchestrator(QObject):
                     while True:
                         listings = get_all_listings_on_current_page(self.driver, current_search_id)
                         print("Captured all listings on this page")
+                        print(listings)
                         batch.extend(listings)
+                        print(batch)
+                        print(len(batch))
 
+                        print("Checking if batch size is overfilled")
                         if len(batch) >= batch_size:
-                            insert_batch_into_database(batch)  # Insert the batch into the database
+                            print("attemtping to insert batch")
+                            insert_batch_into_database(batch, self.db_session)  # Insert the batch into the database
+                            print("Batch inserted")
                             batch = []
                     
                         print("Checking For Next Page Button")

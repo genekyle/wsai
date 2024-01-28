@@ -57,7 +57,6 @@ def get_all_listings_on_current_page(driver, current_search_id):
                     
                 except NoSuchElementException:
                     print("no elements found with either span logic")
-                    date_scraped = None
 
             # Need to check if the Right Pane(Where Job Description) has loaded in by checking if both the 
             print("Checking If the Job Post Title matches with the title that is opened in the right hand pane")
@@ -97,10 +96,10 @@ def get_all_listings_on_current_page(driver, current_search_id):
                 right_paneshow_more_skills_button.click()
             except NoSuchElementException:
                 print("Show More Button not found when trying to extract skills")
-            
+
             except TimeoutException:
                 print("Timed out for looking for for show more button")
-            
+
             except Exception as e:
                 print(e)
             
@@ -108,7 +107,7 @@ def get_all_listings_on_current_page(driver, current_search_id):
             skills_list = []    
             
             try:
-                print("Starting to loop through each skill")
+                print("Checking if skills list exists")
                 list_items = WebDriverWait(driver, 0.5).until(
                     EC.presence_of_all_elements_located(
                         (By.XPATH, "//h3[contains(text(), 'Skills')]/following-sibling::ul/li")
@@ -137,15 +136,49 @@ def get_all_listings_on_current_page(driver, current_search_id):
                     
             except NoSuchElementException:
                 print("No list item found")
-            
+                skills_string = ''
             except TimeoutException:
                 print("No skills found")
-                skills_list = None
+                skills_string = ''
 
             except Exception as e:
                 print(e)
 
             # Checking for Pay
+            try:
+                print("Checking For Pay h3 element")
+                pay_h3_element = WebDriverWait(driver, 0.2).until(
+                    EC.visibility_of_element_located(
+                        (By.XPATH, "//div[contains(@class, 'jobsearch-RightPane')]//h3[contains(text(), 'Pay')]")
+                    )
+                )
+                print("Pay h3 element found.")
+                try:
+                    print("Looking for the pay text div")
+                    pay_text_div = WebDriverWait(driver, 0.2).until(
+                        EC.visibility_of_element_located(
+                            (By.XPATH, "//div[contains(@class, 'match-insights')]//h3[contains(text(), 'Pay')]/ancestor::div[contains(@class, 'match-insights')]/following-sibling::div[contains(@class, 'match-insights')]//div[contains(text(), '$')]")
+                        )
+                    )
+                    print(pay_text_div.text)
+                    pay = pay_text_div.text
+                except TimeoutException:
+                    print("Timedout looking for pay text div")
+                    pay = ''
+                except NoSuchElementException:
+                    print("No Such Element Exception when trying to look for pay text div in the right hand job panel")
+                    pay = ''
+                except Exception as e:
+                    print(e)
+            except TimeoutException:
+                print("No Pay Element h3 found")
+                pay = ''
+            except NoSuchElementException:
+                print("No Such Element Exception when trying to look for pay h3 element in the right hand job panel")
+                pay = ''
+            except Exception as e:
+                print(e)
+            '''
             try:
                 print("Checking for Pay")
                 pay_span = WebDriverWait(driver, 0.1).until(
@@ -158,15 +191,15 @@ def get_all_listings_on_current_page(driver, current_search_id):
 
             except NoSuchElementException:
                 print("No Pay Element found")
-                pay = None
+                pay = ''
             
             except TimeoutException:
                 print("Looking for Pay Element timedout...")
-                pay = None
+
 
             except Exception as e:
                 print(e)
-
+            '''
             try:
                 # Locate the div with the specified ID
                 print("Searching for Job Description Text")
@@ -177,13 +210,28 @@ def get_all_listings_on_current_page(driver, current_search_id):
                 
                 # Replace newline characters with a space
                 job_description_text = job_description_text.replace("\n", " ")
+                print("Job Description Found")
 
             except NoSuchElementException:
                 print("Job description div not found.")
             except Exception as e:
                 print(e)
+            
+            print(
+                '---- RECORD INSTANTIATE ----',
+                f'search_id: {current_search_id}\n'
+                f'job_title: {job_title}\n'
+                f'company_name: {company_name}\n'
+                f'location: {location}\n'
+                f'date_scraped: {date_scraped}\n'
+                f'date_recorded: {date_recorded}\n'
+                f'skills: {skills_string}\n'
+                f'pay: {pay}\n'
+                f'job_description: {job_description_text}\n'
+                f'job_link: {job_link}\n'
+               '---- RECORD END ----'
 
-
+            )
             # ... other data extraction logic, using relative XPaths ...
             return {
                 'search_id': current_search_id,
@@ -196,11 +244,21 @@ def get_all_listings_on_current_page(driver, current_search_id):
                 'pay': pay,
                 'job_description': job_description_text,
                 'job_link': job_link                
-
             }
         except NoSuchElementException:
             print("Necessary element not found in this item.")
-            return {}
+            return {
+                'search_id': current_search_id,
+                'job_title': job_title,
+                'company_name': company_name,
+                'location': location,
+                'date_scraped': date_scraped,                
+                "date_recorded" : date_recorded,
+                'skills': skills_string,
+                'job_description': job_description_text,
+                'job_link': job_link                
+
+            }
         except Exception as e:
             print(e)
         
@@ -218,13 +276,14 @@ def get_all_listings_on_current_page(driver, current_search_id):
 
                 # Extract data for this item
                 item_data = extract_data_from_item(card_outline_div)
+                print(item_data)
                 all_listings_data.append(item_data)
+                print(all_listings_data)
 
             except NoSuchElementException:
                 print("cardOutline div not found in this list item.")
         
         return all_listings_data
 
-    except TimeoutException:
-        print("Timeout occurred while retrieving list items.")
-        return []
+    except Exception as e:
+        print(e)
