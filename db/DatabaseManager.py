@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import create_engine, Column, Integer, String, Boolean, ForeignKey, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.exc import SQLAlchemyError
@@ -17,7 +17,7 @@ class UserProfile(Base):
 
 class Search(Base):
     __tablename__ = 'Searches'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)      
     user_profile_id = Column(Integer, ForeignKey('UserProfiles.id'))
     search_entry = Column(String)
     location = Column(String)
@@ -41,6 +41,7 @@ class Job(Base):
     pay = Column(String)
     job_description = Column(String)
     job_link = Column(String)
+    indeed_apply = Column(Boolean)
     search = relationship("Search", back_populates="jobs")
 
 # Set the path of the SQLite database
