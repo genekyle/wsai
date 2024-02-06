@@ -42,13 +42,13 @@ def get_all_listings_on_current_page(driver, current_search_id):
             # Extracting Date Scraped
             try:
                 print("Trying for Jobs State first for date")
-                date_scraped_span = card_outline_div.find_element(By.XPATH, ".//span[contains(@class, 'myJobsState')]")
+                date_scraped_span = card_outline_div.find_element(By.XPATH, ".//span[contains(@data-testid, 'myJobsState')]")
                 date_scraped = date_scraped_span.text
                 print(date_scraped)
             except NoSuchElementException:
                 try:
                     print("jobs state span not found for date_scraped, trying date span")
-                    date_scraped_span = card_outline_div.find_element(By.XPATH, ".//span[contains(@class, 'date')]")
+                    date_scraped_span = card_outline_div.find_element(By.XPATH, ".//span[contains(@data-testid, 'Date')]")
                     date_scraped_full_text = date_scraped_span.text
 
                     # Split the text at the newline and keep the second part
@@ -217,6 +217,36 @@ def get_all_listings_on_current_page(driver, current_search_id):
             except Exception as e:
                 print(e)
             
+            try:
+                # Locate the div with the specified ID
+                print("Checking If Indeed Embedded Apply or 3rd-Party Apply link")
+                indeed_embedded_apply_button = WebDriverWait(driver, 0.2).until(
+                    EC.visibility_of_element_located(
+                        (By.XPATH, ".//span[contains(@class, 'IndeedApplyButton')]")
+                    )
+                )
+                print("Embedded Indeed Application Button Link Found")
+                indeed_apply = True
+            except TimeoutException:
+                print("Timedout looking for Indeed Apply Button")
+                print("Trying to look for 3rd-Party Application Link")
+                try:
+                    print("Checking If 3rd-Party Apply link")
+                    indeed_3rdparty_apply_button = WebDriverWait(driver, 0.2).until(
+                        EC.visibility_of_element_located(
+                            (By.XPATH, ".//button[contains(text(), 'Apply')]")
+                        )
+                    )
+                    print("3rd Party Apply Link Found")
+                    indeed_apply = False
+                except TimeoutException:
+                    print("Timedout looking for 3rd Party Link & Indeed Apply Link")
+                    indeed_apply = False
+                except Exception as e:
+                    print(e)
+            except Exception as e:
+                print(e)
+
             print(
                 '---- RECORD INSTANTIATE ----',
                 f'search_id: {current_search_id}\n'
@@ -229,6 +259,7 @@ def get_all_listings_on_current_page(driver, current_search_id):
                 f'pay: {pay}\n'
                 f'job_description: {job_description_text}\n'
                 f'job_link: {job_link}\n'
+                f'indeed_apply: {indeed_apply}\n'
                '---- RECORD END ----'
 
             )
@@ -243,7 +274,8 @@ def get_all_listings_on_current_page(driver, current_search_id):
                 'skills': skills_string,
                 'pay': pay,
                 'job_description': job_description_text,
-                'job_link': job_link                
+                'job_link': job_link,        
+                'indeed_apply': indeed_apply                
             }
         except NoSuchElementException:
             print("Necessary element not found in this item.")

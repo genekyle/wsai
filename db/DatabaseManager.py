@@ -83,4 +83,4 @@ def insert_batch_into_database(batch, db_session):
         print(e)
     
     finally:
-        db_session.close()  # Close the session
+        db_session.close()
