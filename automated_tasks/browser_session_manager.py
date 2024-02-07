@@ -1,5 +1,6 @@
 import uuid
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from PyQt6.QtCore import QObject
 from selenium.webdriver.common.proxy import Proxy, ProxyType
 
@@ -21,9 +22,13 @@ class BrowserSessionManager(QObject):
 
     def _initialize_browser(self):
          # Create an instance of ChromeOptions
-        options = webdriver.ChromeOptions()
-     
-        options.add_extension(r"C:\Users\genom\code\wsai\proxy\proxy_auth_plugin.zip")
+        options = Options()
+        
+        extension_path = r'C:\Users\genom\code\wsai\proxy\newprox'
+        options.add_argument(f'--load-extension={extension_path}')
+        
+        proxy = "156.242.65.171:7777"
+        options.add_argument(f'--proxy-server={proxy}')
 
         # Initialize the Chrome driver with these options
         return webdriver.Chrome(options=options)

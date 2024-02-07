@@ -170,7 +170,7 @@ class IndeedBotOrchestrator(QObject):
             print("Checking if pagination is present for current search.")
             
             batch = []
-            batch_size = 20
+            batch_size = 15
             random_sleep(1,2)
             if has_pagination(self.driver):
                 print("Pagination is present. Multiple pages to scrape.")
@@ -180,9 +180,7 @@ class IndeedBotOrchestrator(QObject):
                     while True:
                         listings = get_all_listings_on_current_page(self.driver, current_search_id)
                         print("Captured all listings on this page")
-                        print(listings)
                         batch.extend(listings)
-                        print(batch)
                         print(len(batch))
 
                         print("Checking if batch size is overfilled")

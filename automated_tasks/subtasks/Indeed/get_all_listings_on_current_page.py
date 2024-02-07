@@ -247,6 +247,7 @@ def get_all_listings_on_current_page(driver, current_search_id):
             except Exception as e:
                 print(e)
 
+            random_sleep(2, 4)
             print(
                 '---- RECORD INSTANTIATE ----',
                 f'search_id: {current_search_id}\n'
@@ -257,7 +258,7 @@ def get_all_listings_on_current_page(driver, current_search_id):
                 f'date_recorded: {date_recorded}\n'
                 f'skills: {skills_string}\n'
                 f'pay: {pay}\n'
-                f'job_description: {job_description_text}\n'
+                f'job_description: {job_description_text[:50]}\n'
                 f'job_link: {job_link}\n'
                 f'indeed_apply: {indeed_apply}\n'
                '---- RECORD END ----'
