@@ -1,8 +1,10 @@
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton, QHBoxLayout
 
 class CheckEmailsConfigDialog(QDialog):
-    def __init__(self):
+    def __init__(self, db_session, session_id=None):
         super().__init__()
+        self.db_session = db_session
+        self.session_id = session_id  # Store the session ID
         self.setWindowTitle("Check Emails Configuration")
         self.layout = QVBoxLayout(self)
 
