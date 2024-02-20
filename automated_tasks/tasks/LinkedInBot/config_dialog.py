@@ -1,9 +1,10 @@
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton, QHBoxLayout
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QHBoxLayout, QComboBox
+from db.DatabaseManager import get_session, LinkedInUserProfile
 
 class LinkedInBotConfigDialog(QDialog):
     def __init__(self, db_session, session_id=None):
         super().__init__()
-        self.db_session = db_session
+        self.db_session = get_session("LinkedIn")()  # Notice we call the returned session class to create an instance
         self.session_id = session_id  # Store the session ID
         self.setWindowTitle("LinkedInBot")
         self.layout = QVBoxLayout(self)
@@ -28,13 +29,21 @@ class LinkedInBotConfigDialog(QDialog):
         # Setup layout for new search
         self.clear_layout(self.layout)
         
-        # Assuming you want to reuse the email URL input for new search
-        self.layout.addWidget(QLabel("Email Service URL:"))
-        self.url_input = QLineEdit()
-        self.layout.addWidget(self.url_input)
+        # Dropdown for selecting or creating a user profile
+        self.layout.addWidget(QLabel("Select User Profile:"))
+        self.user_profile_dropdown = QComboBox()
+        self.populate_user_profiles()
+        self.layout.addWidget(self.user_profile_dropdown)
 
         # Setup submit and cancel buttons for new search
         self.add_submit_cancel_buttons()
+
+    def populate_user_profiles(self):
+        # Query the database for existing LinkedIn user profiles and add them to the dropdown
+        user_profiles = self.db_session.query(LinkedInUserProfile).all()
+        for profile in user_profiles:
+            self.user_profile_dropdown.addItem(profile.username, profile.id)
+        self.user_profile_dropdown.addItem("New User Profile", None)  # For creating a new profile
 
     def setup_previous_search(self):
         # Setup layout for previous search
@@ -69,9 +78,14 @@ class LinkedInBotConfigDialog(QDialog):
                 layout.itemAt(i).layout().deleteLater()
 
     def get_config(self):
-        # Assuming you want to fetch configurations like this
+        # Fetch configurations like this
+        selected_profile_id = self.user_profile_dropdown.currentData()
+        if selected_profile_id is None:
+            # Handle new user profile creation
+            pass  # Placeholder for actual logic
+
         return {
             "task_name": "LinkedInBot",
-            "url": self.url_input.text(),
+            "user_profile_id": selected_profile_id,
             "task_type": "LinkedIn"
         }
