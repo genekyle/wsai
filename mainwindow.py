@@ -6,8 +6,7 @@ from ui.icon_button import IconButton
 from screens.task_screen import TaskScreen
 from screens.home_screen import HomeScreen
 from task_management.task_manager import TaskManager
-from db.DatabaseManager import Session  # Import Session from your DatabaseManager
-from db.DatabaseManager import UserProfile
+from db.DatabaseManager import IndeedUserProfile
 from sqlalchemy.exc import SQLAlchemyError
 
 
@@ -18,8 +17,6 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(QSize(1600, 900))
 
         # Initialize DB using DatabaseManager.py
-        self.db_session = Session()
-
         palette = QPalette()
         palette.setColor(QPalette.ColorRole.Window, QColor(15, 17, 26))
         self.setPalette(palette)
@@ -49,7 +46,7 @@ class MainWindow(QMainWindow):
 
         self.stacked_widget = QStackedWidget()
         self.home_screen = HomeScreen()
-        self.tasks_screen = TaskScreen(task_manager=self.task_manager, db_session=self.db_session)
+        self.tasks_screen = TaskScreen(task_manager=self.task_manager)
         
         self.stacked_widget.addWidget(self.home_screen)
         self.stacked_widget.addWidget(self.tasks_screen)
@@ -81,9 +78,7 @@ class MainWindow(QMainWindow):
     
     def closeEvent(self, event: QEvent):
         print("Closing MainWindow. Stopping all tasks.")
-        # Close the database session
-        self.db_session.close()
-         # Call the parent class's closeEvent method
+        # Call the parent class's closeEvent method
         super().closeEvent(event)
         self.task_manager.stop_all_tasks()
         event.accept()

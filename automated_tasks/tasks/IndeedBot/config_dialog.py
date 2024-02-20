@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton, QHBoxLayout, QComboBox
-from db.DatabaseManager import UserProfile
+from db.DatabaseManager import IndeedUserProfile
 import os
 import json
 
@@ -54,7 +54,7 @@ class IndeedBotConfigDialog(QDialog):
 
     def populate_user_profiles_dropdown(self):
         self.user_profile_selector.clear()
-        user_profiles = self.db_session.query(UserProfile).all()
+        user_profiles = self.db_session.query(IndeedUserProfile).all()
         for profile in user_profiles:
             self.user_profile_selector.addItem(profile.username)
         self.user_profile_selector.addItem("New User Profile")
@@ -67,7 +67,7 @@ class IndeedBotConfigDialog(QDialog):
         return []
 
     def save_new_profile(self, username, password):
-        new_profile = UserProfile(username=username, password=password)
+        new_profile = IndeedUserProfile(username=username, password=password)
         self.db_session.add(new_profile)
         self.db_session.commit()
         self.populate_user_profiles_dropdown()
@@ -89,7 +89,7 @@ class IndeedBotConfigDialog(QDialog):
                 new_username = new_profile_dialog.username_input.text()
                 new_password = new_profile_dialog.password_input.text()
                 # Save new profile to the database
-                new_profile = UserProfile(username=new_username, password=new_password)
+                new_profile = IndeedUserProfile(username=new_username, password=new_password)
                 self.db_session.add(new_profile)
                 self.db_session.commit()
                 # Refresh the dropdown and select the new profile
@@ -116,7 +116,7 @@ class IndeedBotConfigDialog(QDialog):
         radius = self.radius_selector.currentText()
 
         if selected_profile_name != "New User Profile":
-            selected_profile = self.db_session.query(UserProfile).filter_by(username=selected_profile_name).first()
+            selected_profile = self.db_session.query(IndeedUserProfile).filter_by(username=selected_profile_name).first()
             if selected_profile:
                 return {
                     "task_name": "IndeedBot",

@@ -1,4 +1,4 @@
-class CheckEmailsStateManager:
+class LinkedInBotStateManager:
     def __init__(self):
         self.current_state = "Not Started"
 

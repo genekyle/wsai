@@ -3,7 +3,6 @@ import importlib
 from task_management.task_worker import TaskWorker
 from shared.shared_data import tasks_data
 from automated_tasks.browser_session_manager import BrowserSessionManager
-from db.DatabaseManager import Session  # Import Session
 
 class TaskManager(QObject):
     taskStarted = pyqtSignal(str)
@@ -16,7 +15,6 @@ class TaskManager(QObject):
         self.workers = {}
         self.orchestrators = {}
         self.session_manager = BrowserSessionManager()
-        self.db_session = Session()
 
     def start_task(self, task_id, task_name, task_config):
         module_name = f"automated_tasks.tasks.{task_name}.task_orchestrator"
@@ -40,7 +38,7 @@ class TaskManager(QObject):
         else:
             self.session_manager.mark_session_in_use(session_id, in_use=True)
 
-        task_orchestrator = task_orchestrator_class(task_config, self.session_manager, self.db_session, session_id)
+        task_orchestrator = task_orchestrator_class(task_config, self.session_manager, session_id)
         self.orchestrators[task_id] = task_orchestrator
 
         worker = TaskWorker(task_orchestrator, task_config)

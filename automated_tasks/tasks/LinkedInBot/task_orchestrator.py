@@ -1,25 +1,42 @@
 from PyQt6.QtCore import QObject, QThreadPool, pyqtSignal, QMutex, QWaitCondition
-from .state_manager import CheckEmailsStateManager
+from .state_manager import LinkedInBotStateManager
 from automated_tasks.subtasks.navigate_to import navigate_to
 from automated_tasks.browser_session_manager import BrowserSessionManager
+from db.DatabaseManager import get_session, init_db  # Import the modified database manager functions
 import time
 
-class CheckEmailsOrchestrator(QObject):
+class LinkedInBotOrchestrator(QObject):
     taskStarted = pyqtSignal(str)
     taskStopped = pyqtSignal(str)
     stateChanged = pyqtSignal(str, str)  # New signal for state changes
 
-    def __init__(self, config, session_manager: BrowserSessionManager, db_session, session_id):
+    def __init__(self, config, session_manager: BrowserSessionManager, session_id):
         super().__init__()
         self.config = config
         self.task_id = config.get('task_id')
-        self.state_manager = CheckEmailsStateManager()
+        self.task_type = config.get('task_type')  # Assuming task_type is either 'Indeed' or 'LinkedIn'
+        self.state_manager = LinkedInBotStateManager()
         self.session_manager = session_manager
         self.session_id = session_id
         self._should_stop = False
         self._is_paused = False
         self.pause_condition = QWaitCondition()
         self.mutex = QMutex()
+        self.db_session = None  # Placeholder for the database session
+
+        # Initialize the appropriate database
+        print("Initializing Database")
+        self.initialize_database()
+
+    def initialize_database(self):
+        # Dynamically initialize the database based on the task type
+        try:
+            init_db(self.task_type)
+            Session = get_session(self.task_type)  # get_session now returns a class, not an instance
+            self.db_session = Session()  # Correctly instantiate the session here
+            print(f"{self.task_type} database initialized and session created.")
+        except Exception as e:
+            print(f"Error initializing {self.task_type} database: {e}")
 
     def execute(self):
         self.session_manager.mark_session_in_use(self.session_id, in_use=True)
@@ -40,10 +57,7 @@ class CheckEmailsOrchestrator(QObject):
 
                 self.update_state("Navigating to Email Service")
                 navigate_to(self.session_manager, self.session_id, self.config['url'])
-                print("sleeping pretending to be complex equation")
-                time.sleep(2)
-                print("sleeping...")
-                time.sleep(1)
+                time.sleep(50)  # Simulate some operations
                 if self._should_stop:
                     break   
 
@@ -53,6 +67,8 @@ class CheckEmailsOrchestrator(QObject):
             self.taskStopped.emit(self.task_id)
             self.update_state("Closing Browser")
             QThreadPool.globalInstance().start(lambda: self.close_browser_async())
+            if self.db_session:
+                self.db_session.close()  # Properly close the database session
 
     def close_browser_async(self):
         self.session_manager.close_browser_session(self.session_id)

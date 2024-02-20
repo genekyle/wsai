@@ -72,5 +72,6 @@ class LinkedInBotConfigDialog(QDialog):
         # Assuming you want to fetch configurations like this
         return {
             "task_name": "LinkedInBot",
-            "url": self.url_input.text()
+            "url": self.url_input.text(),
+            "task_type": "LinkedIn"
         }

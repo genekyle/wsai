@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QTableWidget, \
                            QTableWidgetItem, QSizePolicy, QHBoxLayout, QSpacerItem
 from shared.shared_data import tasks_data, TASK_DISPLAY_NAMES
-from db.DatabaseManager import UserProfile
+from db.DatabaseManager import IndeedUserProfile
 import json
 
 class HomeScreen(QWidget):
@@ -39,7 +39,7 @@ class HomeScreen(QWidget):
 
             # Prepare configuration for serialization
             config = task_info.get("config", {})
-            if 'user_profile' in config and isinstance(config['user_profile'], UserProfile):
+            if 'user_profile' in config and isinstance(config['user_profile'], IndeedUserProfile):
                 config['user_profile'] = vars(config['user_profile'])  # Convert UserProfile to dict
 
             config_str = json.dumps(config, indent=2, default=str)  # Use default=str to handle non-serializable types

@@ -4,34 +4,35 @@ from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.exc import SQLAlchemyError
 import os
 
-# Define the base class for ORM
-Base = declarative_base()
+# Define separate base classes for Indeed and LinkedIn
+IndeedBase = declarative_base()
+LinkedInBase = declarative_base()
 
-# Define ORM classes for your tables
-class UserProfile(Base):
-    __tablename__ = 'UserProfiles'
+# Define ORM classes for your Indeed tables
+class IndeedUserProfile(IndeedBase):
+    __tablename__ = 'indeed_user_profiles'
     id = Column(Integer, primary_key=True)
     username = Column(String, unique=True)
     password = Column(String)
-    searches = relationship("Search", back_populates="user_profile")
+    searches = relationship("IndeedSearch", back_populates="user_profile")
 
-class Search(Base):
-    __tablename__ = 'Searches'
+class IndeedSearch(IndeedBase):
+    __tablename__ = 'indeed_searches'
     id = Column(Integer, primary_key=True)      
-    user_profile_id = Column(Integer, ForeignKey('UserProfiles.id'))
+    user_profile_id = Column(Integer, ForeignKey('indeed_user_profiles.id'))
     search_entry = Column(String)
     location = Column(String)
     radius = Column(String)
     timestamp = Column(DateTime)
     total_scraped = Column(Integer)
     search_amount = Column(Integer)
-    user_profile = relationship("UserProfile", back_populates="searches")
-    jobs = relationship("Job", back_populates="search")
+    user_profile = relationship("IndeedUserProfile", back_populates="searches")
+    jobs = relationship("IndeedJob", back_populates="search")
 
-class Job(Base):
-    __tablename__ = 'Jobs'
+class IndeedJob(IndeedBase):
+    __tablename__ = 'indeed_jobs'
     id = Column(Integer, primary_key=True)
-    search_id = Column(Integer, ForeignKey('Searches.id'))
+    search_id = Column(Integer, ForeignKey('indeed_searches.id'))
     job_title = Column(String)
     company_name = Column(String)
     location = Column(String)
@@ -42,45 +43,48 @@ class Job(Base):
     job_description = Column(String)
     job_link = Column(String)
     indeed_apply = Column(Boolean)
-    search = relationship("Search", back_populates="jobs")
+    search = relationship("IndeedSearch", back_populates="jobs")
 
-# Set the path of the SQLite database
-DATABASE_PATH = os.path.join("db", "indeed_db.db")
+# Define ORM classes for your LinkedIn tables (as an example, adjust fields as necessary)
+class LinkedInUserProfile(LinkedInBase):
+    __tablename__ = 'linkedin_user_profiles'
+    id = Column(Integer, primary_key=True)
+    username = Column(String, unique=True)
+    password = Column(String)
+    # Add LinkedIn-specific relationships and columns as needed
 
-# Create the SQLAlchemy engine to connect to the SQLite database
-engine = create_engine(f'sqlite:///{DATABASE_PATH}')
+class LinkedInJob(LinkedInBase):
+    __tablename__ = 'linkedin_jobs'
+    id = Column(Integer, primary_key=True)
+    # Define LinkedIn job table columns and relationships
 
-# Create a sessionmaker, bound to the engine
-Session = sessionmaker(bind=engine)
+# Dynamically select the database based on a task identifier
+def get_engine(task_name):
+    if task_name == "Indeed":
+        database_path = os.path.join("db", "indeed_db.db")
+    elif task_name == "LinkedIn":
+        database_path = os.path.join("db", "linkedin_db.db")
+    else:
+        raise ValueError("Unsupported task name")
 
-# Method to initialize the database
-def init_db():
-    print('initializing Indeed DB')
-    Base.metadata.create_all(engine)
-    print('Indeed Database Initialized')
+    return create_engine(f'sqlite:///{database_path}')
 
-def insert_batch_into_database(batch, db_session):
-    """
-    Inserts a batch of job listings into the database.
+# Create a sessionmaker, dynamically bound to the engine
+def get_session(task_name):
+    engine = get_engine(task_name)
+    Session = sessionmaker(bind=engine)
+    return Session  # Return the session class, not an instance
 
-    Args:
-        batch (list of dict): A list of dictionaries, each representing a job listing.
-    """
-    print("Attemtpting to insert Batch")
-    print(batch)
-    try:
-        # Convert each dictionary in the batch to the Job class mapping and add to the session
-        db_session.bulk_insert_mappings(Job, batch)
-        
-        # Commit the transaction
-        db_session.commit()
-        print(f"Inserted a batch of {len(batch)} records into the database.")
-    except SQLAlchemyError as e:
-        # Handle any database errors
-        print(f"Error during batch insert: {e}")
-        db_session.rollback()  # Rollback the transaction in case of error
-    except Exception as e:
-        print(e)
-    
-    finally:
-        db_session.close()
+# Method to initialize the database, dynamically based on task
+def init_db(task_name):
+    engine = get_engine(task_name)
+    if task_name == "Indeed":
+        print('Initializing Indeed DB')
+        IndeedBase.metadata.create_all(engine)  # Only create Indeed tables
+    elif task_name == "LinkedIn":
+        print('Initializing LinkedIn DB')
+        LinkedInBase.metadata.create_all(engine)  # Only create LinkedIn tables
+    else:
+        raise ValueError("Unsupported task name")
+    print(f'{task_name} Database Initialized')
+
