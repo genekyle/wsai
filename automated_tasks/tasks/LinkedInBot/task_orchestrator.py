@@ -2,7 +2,7 @@ from PyQt6.QtCore import QObject, QThreadPool, pyqtSignal, QMutex, QWaitConditio
 from .state_manager import LinkedInBotStateManager
 from automated_tasks.subtasks.navigate_to import navigate_to
 from automated_tasks.browser_session_manager import BrowserSessionManager
-from db.DatabaseManager import get_session, init_db  # Import the modified database manager functions
+from db.DatabaseManager import get_session, init_db, LinkedInUserProfile  # Assuming LinkedInUserProfile is the ORM class
 import time
 
 class LinkedInBotOrchestrator(QObject):
@@ -14,7 +14,8 @@ class LinkedInBotOrchestrator(QObject):
         super().__init__()
         self.config = config
         self.task_id = config.get('task_id')
-        self.task_type = config.get('task_type')  # Assuming task_type is either 'Indeed' or 'LinkedIn'
+        self.task_type = config.get('task_type', 'LinkedIn')  # Default to 'LinkedIn' if not specified
+        self.user_profile_id = config.get('user_profile_id')  # Get the user profile ID from the config
         self.state_manager = LinkedInBotStateManager()
         self.session_manager = session_manager
         self.session_id = session_id
@@ -27,6 +28,7 @@ class LinkedInBotOrchestrator(QObject):
         # Initialize the appropriate database
         print("Initializing Database")
         self.initialize_database()
+        self.confirm_user_profile()  # Confirm the selected user profile
 
     def initialize_database(self):
         # Dynamically initialize the database based on the task type
@@ -37,6 +39,17 @@ class LinkedInBotOrchestrator(QObject):
             print(f"{self.task_type} database initialized and session created.")
         except Exception as e:
             print(f"Error initializing {self.task_type} database: {e}")
+    
+    def confirm_user_profile(self):
+        # Confirm the selected user profile
+        if self.user_profile_id:
+            user_profile = self.db_session.query(LinkedInUserProfile).filter_by(id=self.user_profile_id).first()
+            if user_profile:
+                print(f"Profile chosen: {user_profile.username}")
+            else:
+                print("No profile found with the given ID.")
+        else:
+            print("No user profile ID provided.")
 
     def execute(self):
         self.session_manager.mark_session_in_use(self.session_id, in_use=True)
@@ -49,18 +62,10 @@ class LinkedInBotOrchestrator(QObject):
             else:
                 self.session_id, self.driver = self.session_manager.create_browser_session(is_warm_up=False)
 
-            while not self._should_stop:
-                self.mutex.lock()
-                while self._is_paused:
-                    self.pause_condition.wait(self.mutex)
-                self.mutex.unlock()
-
-                self.update_state("Navigating to Email Service")
-                navigate_to(self.session_manager, self.session_id, self.config['url'])
-                time.sleep(50)  # Simulate some operations
-                if self._should_stop:
-                    break   
-
+            # Navigate directly to the LinkedIn login page
+            self.update_state("Navigating to LinkedIn Login")
+            navigate_to(self.session_manager, self.session_id, "https://www.linkedin.com/login")
+            time.sleep(50)  # Simulate some operations
             self.update_state("Completed")
         finally:
             self.session_manager.mark_session_in_use(self.session_id, in_use=False)
@@ -68,7 +73,7 @@ class LinkedInBotOrchestrator(QObject):
             self.update_state("Closing Browser")
             QThreadPool.globalInstance().start(lambda: self.close_browser_async())
             if self.db_session:
-                self.db_session.close()  # Properly close the database session
+                self.db_session.close()
 
     def close_browser_async(self):
         self.session_manager.close_browser_session(self.session_id)
