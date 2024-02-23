@@ -30,7 +30,6 @@ class LinkedInBotOrchestrator(QObject):
         # Initialize the appropriate database
         print("Initializing Database")
         self.initialize_database()
-        self.confirm_user_profile()  # Confirm the selected user profile
 
     def initialize_database(self):
         # Dynamically initialize the database based on the task type
@@ -48,6 +47,7 @@ class LinkedInBotOrchestrator(QObject):
             user_profile = self.db_session.query(LinkedInUserProfile).filter_by(id=self.user_profile_id).first()
             if user_profile:
                 print(f"Profile chosen: {user_profile.username}")
+                return user_profile
             else:
                 print("No profile found with the given ID.")
         else:
@@ -55,6 +55,8 @@ class LinkedInBotOrchestrator(QObject):
 
     def execute(self):
         self.session_manager.mark_session_in_use(self.session_id, in_use=True)
+        user_profile = self.confirm_user_profile()  # Confirm the selected user profile
+
         try:
             self.taskStarted.emit(self.task_id)
             self.update_state("Initializing Browser")
@@ -66,8 +68,8 @@ class LinkedInBotOrchestrator(QObject):
 
             # Navigate directly to the LinkedIn login page
             self.update_state("Navigating to LinkedIn Login")
-            navigate_to(self.session_manager, self.session_id, "https://whatismybrowser.com/detect/what-is-my-ip-address")
-            time.sleep(50)  # Simulate some operations
+            login_system = LinkedInLoginSystem(self.session_manager, self.session_id)
+            login_system.login(user_profile.username, user_profile.password)
             self.update_state("Completed")
         finally:
             self.session_manager.mark_session_in_use(self.session_id, in_use=False)

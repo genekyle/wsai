@@ -9,7 +9,6 @@ class LinkedInLoginSystem:
         print("Navigating to LinkedIn Login")
         self.driver.get("https://www.linkedin.com/login")
         print("user: ", username, " ", "pass: ", password)
-        time.sleep(50)
 
         '''
         # Enter login credentials and submit the form
