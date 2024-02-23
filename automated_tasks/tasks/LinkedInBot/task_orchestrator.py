@@ -4,6 +4,8 @@ from automated_tasks.subtasks.navigate_to import navigate_to
 from automated_tasks.browser_session_manager import BrowserSessionManager
 from db.DatabaseManager import get_session, init_db, LinkedInUserProfile  # Assuming LinkedInUserProfile is the ORM class
 import time
+from .login_system import LinkedInLoginSystem
+
 
 class LinkedInBotOrchestrator(QObject):
     taskStarted = pyqtSignal(str)
@@ -64,7 +66,7 @@ class LinkedInBotOrchestrator(QObject):
 
             # Navigate directly to the LinkedIn login page
             self.update_state("Navigating to LinkedIn Login")
-            navigate_to(self.session_manager, self.session_id, "https://www.linkedin.com/login")
+            navigate_to(self.session_manager, self.session_id, "https://whatismybrowser.com/detect/what-is-my-ip-address")
             time.sleep(50)  # Simulate some operations
             self.update_state("Completed")
         finally:
