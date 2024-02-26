@@ -51,14 +51,15 @@ class LinkedInLoginSystem:
 
         random_sleep(4,5)
         self.check_for_security()
+        
 
 
         if not self.verify_login():
             print("Failed to login to LinkedIn")
             return False
         # Add any necessary logic to handle login verification
-        print("Logged into LinkedIn")
-    
+        print("Successfully logged into LinkedIn")    
+        
     def verify_login(self):
         try:
             # Wait for a the feed to be present
@@ -79,7 +80,7 @@ class LinkedInLoginSystem:
         try:
             # Wait for the hCaptcha element to be present
             security_check = WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located((By.XPATH, '''//h1[contains(text(), "Let's do a quick security check")]'''))
+                EC.presence_of_element_located((By.XPATH, '''//h1[contains(text(), "Let's do a quick security check")] | //h1[contains(text(), "Let's do a quick verification")]'''))
             )
             # Now wait for the security check to no longer be present (i.e., it's been completed)
             start_time = time.time()
@@ -87,17 +88,19 @@ class LinkedInLoginSystem:
             while True:
                 elapsed_time = time.time() - start_time
                 if elapsed_time > timeout:
-                    print("Timeout waiting for security check to be completed.")
+                    print("Timeout waiting for security check or verification to be completed.")
                     break
 
                 try:
-                    # Attempt to find the security check element again
-                    self.driver.find_element(By.XPATH, '''//h1[contains(text(), "Let's do a quick security check")]''')
-                    print("Security check still present. Waiting...")
+                    # Check for both types of security checks
+                    security_check = WebDriverWait(self.driver, 5).until(
+                        EC.presence_of_element_located((By.XPATH, '''//h1[contains(text(), "Let's do a quick security check")] | //h1[contains(text(), "Let's do a quick verification")]'''))
+                    )
+                    print("Security check or verification still present. Waiting...")
                     time.sleep(5)  # Wait for a short period before checking again
                 except NoSuchElementException:
-                    # If the element is no longer found, the security check is completed
-                    print("Security check completed or not found, continuing...")
+                    # If neither element is found, the security checks are completed
+                    print("Security checks completed or not found, continuing...")
                     break
         except TimeoutException:
             # Handle the case where the initial security check doesn't appear within the timeout
