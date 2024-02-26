@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QHBoxLayout, QComboBox
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QHBoxLayout, QComboBox, QLineEdit
 from db.DatabaseManager import get_session, LinkedInUserProfile
 
 class LinkedInBotConfigDialog(QDialog):
@@ -34,6 +34,11 @@ class LinkedInBotConfigDialog(QDialog):
         self.user_profile_dropdown = QComboBox()
         self.populate_user_profiles()
         self.layout.addWidget(self.user_profile_dropdown)
+
+        # Add input field for search input
+        self.layout.addWidget(QLabel("Search Input:"))
+        self.search_input = QLineEdit()
+        self.layout.addWidget(self.search_input)
 
         # Setup submit and cancel buttons for new search
         self.add_submit_cancel_buttons()
@@ -80,6 +85,9 @@ class LinkedInBotConfigDialog(QDialog):
     def get_config(self):
         # Fetch configurations like this
         selected_profile_id = self.user_profile_dropdown.currentData()
+        # Fetching the text from the search input field
+        search_input = self.search_input.text()
+
         if selected_profile_id is None:
             # Handle new user profile creation
             pass  # Placeholder for actual logic
@@ -87,5 +95,6 @@ class LinkedInBotConfigDialog(QDialog):
         return {
             "task_name": "LinkedInBot",
             "user_profile_id": selected_profile_id,
-            "task_type": "LinkedIn"
+            "task_type": "LinkedIn",
+            "search_input": search_input
         }

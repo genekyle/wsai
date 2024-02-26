@@ -18,6 +18,7 @@ class LinkedInBotOrchestrator(QObject):
         self.task_id = config.get('task_id')
         self.task_type = config.get('task_type', 'LinkedIn')  # Default to 'LinkedIn' if not specified
         self.user_profile_id = config.get('user_profile_id')  # Get the user profile ID from the config
+        self.search_input = config.get('search_input')  # Get the search input from the config
         self.state_manager = LinkedInBotStateManager()
         self.session_manager = session_manager
         self.session_id = session_id
@@ -71,6 +72,7 @@ class LinkedInBotOrchestrator(QObject):
             login_system = LinkedInLoginSystem(self.session_manager, self.session_id)
             login_system.login(user_profile.username, user_profile.password)
             self.update_state("Completed")
+            
         finally:
             self.session_manager.mark_session_in_use(self.session_id, in_use=False)
             self.taskStopped.emit(self.task_id)

@@ -2,6 +2,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
+import time
 
 from automated_tasks.subtasks.human_type import human_type
 from automated_tasks.subtasks.random_sleep import random_sleep
@@ -48,7 +49,9 @@ class LinkedInLoginSystem:
         )
         login_button.click()
 
-        random_sleep(2,3)
+        random_sleep(4,5)
+        self.check_for_security()
+
 
         if not self.verify_login():
             print("Failed to login to LinkedIn")
@@ -71,7 +74,52 @@ class LinkedInLoginSystem:
         except Exception as e:
             print(f"An error occurred: {e}")
             return False
-    
+        
+    def check_for_security(self):
+        try:
+            # Wait for the hCaptcha element to be present
+            security_check = WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, '''//h1[contains(text(), "Let's do a quick security check")]'''))
+            )
+            # Now wait for the security check to no longer be present (i.e., it's been completed)
+            start_time = time.time()
+            timeout = 300  # Set a timeout for this wait (e.g., 300 seconds)
+            while True:
+                elapsed_time = time.time() - start_time
+                if elapsed_time > timeout:
+                    print("Timeout waiting for security check to be completed.")
+                    break
+
+                try:
+                    # Attempt to find the security check element again
+                    self.driver.find_element(By.XPATH, '''//h1[contains(text(), "Let's do a quick security check")]''')
+                    print("Security check still present. Waiting...")
+                    time.sleep(5)  # Wait for a short period before checking again
+                except NoSuchElementException:
+                    # If the element is no longer found, the security check is completed
+                    print("Security check completed or not found, continuing...")
+                    break
+        except TimeoutException:
+            # Handle the case where the initial security check doesn't appear within the timeout
+            print("No security check detected within the initial wait period.")
+        
+    def wait_for_user_to_complete_security_check(self, timeout=300):
+        start_time = time.time()
+        while True:
+            elapsed_time = time.time() - start_time
+            if elapsed_time > timeout:
+                print("Timeout waiting for security check to be completed.")
+                break
+            try:
+                # Attempt to find the security check element
+                security_check = self.driver.find_element(By.XPATH, "//h1[contains(text(), 'Security Check')]")
+                if security_check:
+                    print("Security check detected. Please complete it.")
+                    time.sleep(5)  # Wait a bit before checking again to give user time to complete it
+            except NoSuchElementException:
+                print("Security check completed or not found, continuing...")
+                break
+
     def verify_login_navigation(self):
         try:
             # Wait for the login form to be present
