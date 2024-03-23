@@ -51,14 +51,14 @@ class LinkedInLoginSystem:
 
         random_sleep(4,5)
         self.check_for_security()
-        
-
 
         if not self.verify_login():
             print("Failed to login to LinkedIn")
             return False
         # Add any necessary logic to handle login verification
-        print("Successfully logged into LinkedIn")    
+        print("Successfully logged into LinkedIn")
+
+        return True    
         
     def verify_login(self):
         try:

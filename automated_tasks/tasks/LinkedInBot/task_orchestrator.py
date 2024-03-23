@@ -5,6 +5,7 @@ from automated_tasks.browser_session_manager import BrowserSessionManager
 from db.DatabaseManager import get_session, init_db, LinkedInUserProfile  # Assuming LinkedInUserProfile is the ORM class
 import time
 from .login_system import LinkedInLoginSystem
+from .jobs import Jobs
 
 
 class LinkedInBotOrchestrator(QObject):
@@ -70,9 +71,14 @@ class LinkedInBotOrchestrator(QObject):
             # Navigate directly to the LinkedIn login page
             self.update_state("Navigating to LinkedIn Login")
             login_system = LinkedInLoginSystem(self.session_manager, self.session_id)
-            login_system.login(user_profile.username, user_profile.password)
-            self.update_state("Completed")
-            
+            if login_system.login(user_profile.username, user_profile.password):
+                self.update_state("Login Completed")
+                jobs = Jobs(self.driver, user_profile)
+                jobs.initiate_search(self.search_input)  # Using search input
+                self.update_state("Search Initiated")
+            else:
+                self.update_state("Login Failed")
+
         finally:
             self.session_manager.mark_session_in_use(self.session_id, in_use=False)
             self.taskStopped.emit(self.task_id)
