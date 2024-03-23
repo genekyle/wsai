@@ -20,6 +20,7 @@ class Jobs:
                 EC.element_to_be_clickable((By.XPATH, '//a[contains(@href, "/jobs/")]'))
             )
             print("Jobs Page Link Found")
+            random_sleep(1,3)
             job_link.click()
             print("Clicked on the job link successfully.")
         except TimeoutException:
