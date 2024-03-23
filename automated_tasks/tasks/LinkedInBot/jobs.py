@@ -1,4 +1,4 @@
-from automated_tasks.subtasks import random_sleep
+from automated_tasks.subtasks.random_sleep import random_sleep
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -6,16 +6,15 @@ from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
 class Jobs:
     def __init__(self, driver, user_profile):
-            self.driver = driver
-            self.user_profile = user_profile
-            # Additional initialization as necessary, e.g., NLP model for resume matching
+        self.driver = driver
+        self.user_profile = user_profile
+        # Additional initialization as necessary, e.g., NLP model for resume matching
         
     def initiate_search(self, search_query):
         print(f"Initiating search for: {search_query}")
         random_sleep(1,10)
-        self.driver.get("https://www.linkedin.com/jobs")
         try:
-            # Wait for the link to be clickable
+            print("Looking for Jobs Link")
             job_link = WebDriverWait(self.driver, 10).until(
                 EC.element_to_be_clickable((By.XPATH, '//a[contains(@href, "/jobs/")]'))
             )
