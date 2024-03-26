@@ -45,18 +45,53 @@ class IndeedJob(IndeedBase):
     indeed_apply = Column(Boolean)
     search = relationship("IndeedSearch", back_populates="jobs")
 
-# Define ORM classes for your LinkedIn tables (as an example, adjust fields as necessary)
+# ORM classes for LinkedIn tables
 class LinkedInUserProfile(LinkedInBase):
     __tablename__ = 'linkedin_user_profiles'
     id = Column(Integer, primary_key=True)
     username = Column(String, unique=True)
     password = Column(String)
-    # Add LinkedIn-specific relationships and columns as needed
+    # relationships
+    job_searches = relationship("LinkedInJobSearch", back_populates="user_profile")
 
 class LinkedInJob(LinkedInBase):
     __tablename__ = 'linkedin_jobs'
     id = Column(Integer, primary_key=True)
-    # Define LinkedIn job table columns and relationships
+    user_profile_id = Column(Integer, ForeignKey('linkedin_user_profiles.id'))
+    search_id = Column(Integer, ForeignKey('linkedin_job_searches.id'))
+    date_extracted = Column(String)
+    date_posted = Column(String)
+    job_title = Column(String)
+    posted_by = Column(String)
+    job_post_link = Column(String)
+    job_location = Column(String)
+    posted_salary = Column(String)
+    posted_benefits = Column(String)
+    benefit_highlights = Column(String)
+    company_highlights = Column(String)
+    skills_highlights = Column(String)
+    job_post_description = Column(String)
+
+class LinkedInLocation(LinkedInBase):
+    __tablename__ = 'linkedin_locations'
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True)
+
+    # Relationships
+    job_searches = relationship("LinkedInJobSearch", back_populates="location")
+
+class LinkedInJobSearch(LinkedInBase):
+    __tablename__ = 'linkedin_job_searches'
+    id = Column(Integer, primary_key=True)
+    user_profile_id = Column(Integer, ForeignKey('linkedin_user_profiles.id'))
+    search_date = Column(String)
+    search_input = Column(String)
+    search_results_amount = Column(Integer)
+    location_id = Column(Integer, ForeignKey('linkedin_locations.id'))
+    
+    # Relationships
+    user_profile = relationship("LinkedInUserProfile", back_populates="job_searches")
+    location = relationship("LinkedInLocation", back_populates="job_searches")
 
 # Dynamically select the database based on a task identifier
 def get_engine(task_name):

@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QHBoxLayout, QComboBox, QLineEdit
-from db.DatabaseManager import get_session, LinkedInUserProfile
+from db.DatabaseManager import get_session, LinkedInUserProfile, LinkedInLocation
 
 class LinkedInBotConfigDialog(QDialog):
     def __init__(self, db_session, session_id=None):
@@ -35,6 +35,12 @@ class LinkedInBotConfigDialog(QDialog):
         self.populate_user_profiles()
         self.layout.addWidget(self.user_profile_dropdown)
 
+        # Dropdown for selecting Area (Location)
+        self.layout.addWidget(QLabel("Select Area:"))
+        self.area_dropdown = QComboBox()
+        self.populate_locations()  # Populate the dropdown with locations
+        self.layout.addWidget(self.area_dropdown)
+
         # Add input field for search input
         self.layout.addWidget(QLabel("Search Input:"))
         self.search_input = QLineEdit()
@@ -42,6 +48,12 @@ class LinkedInBotConfigDialog(QDialog):
 
         # Setup submit and cancel buttons for new search
         self.add_submit_cancel_buttons()
+
+    def populate_locations(self):
+        # Query the database for existing locations and add them to the dropdown
+        locations = self.db_session.query(LinkedInLocation).all()
+        for location in locations:
+            self.area_dropdown.addItem(location.name, location.id)
 
     def populate_user_profiles(self):
         # Query the database for existing LinkedIn user profiles and add them to the dropdown
@@ -87,6 +99,7 @@ class LinkedInBotConfigDialog(QDialog):
         selected_profile_id = self.user_profile_dropdown.currentData()
         # Fetching the text from the search input field
         search_input = self.search_input.text()
+        selected_location_id = self.area_dropdown.currentData()  # Get the selected location ID
 
         if selected_profile_id is None:
             # Handle new user profile creation
@@ -96,5 +109,6 @@ class LinkedInBotConfigDialog(QDialog):
             "task_name": "LinkedInBot",
             "user_profile_id": selected_profile_id,
             "task_type": "LinkedIn",
-            "search_input": search_input
+            "search_input": search_input,
+            "location_id": selected_location_id
         }

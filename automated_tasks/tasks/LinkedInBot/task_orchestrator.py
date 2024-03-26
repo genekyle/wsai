@@ -20,6 +20,7 @@ class LinkedInBotOrchestrator(QObject):
         self.task_type = config.get('task_type', 'LinkedIn')  # Default to 'LinkedIn' if not specified
         self.user_profile_id = config.get('user_profile_id')  # Get the user profile ID from the config
         self.search_input = config.get('search_input')  # Get the search input from the config
+        self.selected_location_id = config.get('location_id')  # Use 'location_id' to match the key used in get_config
         self.state_manager = LinkedInBotStateManager()
         self.session_manager = session_manager
         self.session_id = session_id
@@ -70,12 +71,15 @@ class LinkedInBotOrchestrator(QObject):
 
             # Navigate directly to the LinkedIn login page
             self.update_state("Navigating to LinkedIn Login")
+            print(f"Selected Location ID: {self.selected_location_id}")
             login_system = LinkedInLoginSystem(self.session_manager, self.session_id)
             if login_system.login(user_profile.username, user_profile.password):
                 self.update_state("Login Completed")
-                jobs = Jobs(self.driver, user_profile)
-                jobs.initiate_search(self.search_input)  # Using search input
+                jobs = Jobs(driver=self.driver, user_profile=user_profile, selected_location_id=self.selected_location_id, db_session=self.db_session)
+                jobs.initiate_search(self.search_input)
                 self.update_state("Search Initiated")
+                jobs.process_results_page()
+
             else:
                 self.update_state("Login Failed")
 
