@@ -157,10 +157,11 @@ class Jobs:
             num_li_current_page = len(results_li)
         except Exception as e:
             print(f"Error searching for results list: {e}")
+
         print(f"Number of list items in the current page: {num_li_current_page}")
         # Next is to process each result or all the list items in the ordered list
         for i in range(1, num_li_current_page + 1):
-            print("Looking for list item in the unorddered list")
+            print("Looking for list item in the unordered list")
             list_item_xpath = f"//ul[contains(@class, 'scaffold-layout__list-container')]/li[{i}]"
             list_item_element =  WebDriverWait(self.driver, 10).until(
                 EC.element_to_be_clickable((By.XPATH, list_item_xpath))
@@ -171,10 +172,56 @@ class Jobs:
             self.driver.execute_script("arguments[0].scrollIntoView();", list_item_element)
             random_sleep(1.5,2.2)
             list_item_element.click()
+            print(f"List Item {i} scrolled into view... Extracting Values")
 
-            # After scrolled into view and clicked on, extract the values
-            job_t
+            # Get Current Date for date_extracte field
 
+            try:
+                # After scrolled into view and clicked on, extract the values
+                job_post_anchor_xpath = ".//a[contains(@class, 'job-card-list__title')]"
+                job_post_anchor_element = WebDriverWait(list_item_element, 10).until(
+                    EC.element_to_be_clickable((By.XPATH, job_post_anchor_xpath))
+                )
+
+                # Job Title Extraction
+                job_post_title = job_post_anchor_element.get_attribute('aria-label')
+                print(f'Job Title: {job_post_title}')
+                random_sleep(3.5, 4.4)
+
+                # Job Link Extraction
+                job_link = job_post_anchor_element.get_attribute('href')
+                print(f'Job Link: {job_link}')
+                
+                # Job Posted By
+                job_posted_by_span_xpath = ".//span[contains(@class,'primary-description')]"
+                job_posted_by = WebDriverWait(list_item_element, 10).until(
+                    EC.element_to_be_clickable((By.XPATH, job_posted_by_span_xpath))
+                ).text
+                print(f'Job Posted By: {job_posted_by}')
+
+                # Job Location
+                job_location_li_xpath = ".//div[contains(@class, 'artdeco-entity-lockup__caption')]//li[contains(@class,'job-card-container__metadata-item')]"
+                job_loctation = WebDriverWait(list_item_element, 10).until(
+                    EC.element_to_be_clickable((By.XPATH, job_location_li_xpath))
+                ).text
+                print(f'Job Location: {job_loctation}')
+
+                # Posted Benefits (Doesn't Exist For All)
+                try:
+                    posted_benefits_li_xpath = ".//div[contains(@class,'t-sans t-12')]//li[contains(@class,'job-card-container__metadata-item')]"
+                    posted_benefits = WebDriverWait(list_item_element, 10).until(
+                        EC.element_to_be_clickable((By.XPATH, posted_benefits_li_xpath))
+                    ).text
+                    print(f'Posted Benefits: {posted_benefits}')
+                except TimeoutException:
+                    print("Timed out waiting for the job search bar to be clickable.")
+                except NoSuchElementException:
+                    print("The job search bar was not found.")
+                except Exception as e:
+                    print(f"Error extracting data from list item {i}: {e}")
+            except Exception as e:
+                print(f"Error extracting data from list item {i}: {e}")
+            
     def apply_to_job(self, job_element):
         """Apply to a single job, deciding which resume to use based on job description matching."""
         # Extract job details

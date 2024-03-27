@@ -65,7 +65,6 @@ class LinkedInJob(LinkedInBase):
     posted_by = Column(String)
     job_post_link = Column(String)
     job_location = Column(String)
-    posted_salary = Column(String)
     posted_benefits = Column(String)
     benefit_highlights = Column(String)
     company_highlights = Column(String)
