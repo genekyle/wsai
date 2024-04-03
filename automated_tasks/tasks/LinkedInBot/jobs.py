@@ -3,7 +3,7 @@ from automated_tasks.subtasks.human_type import human_type
 
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from db.DatabaseManager import LinkedInLocation, LinkedInJobSearch
@@ -12,7 +12,7 @@ from datetime import datetime
 import re
 
 class JobPost:
-    def __init__(self, date_posted, date_extracted, job_title, posted_by, job_post_link, job_apply_type, job_location, posted_benefits, job_highlights, company_highlights, skills_highlights, job_post_description):
+    def __init__(self, date_posted, date_extracted, job_title, posted_by, job_post_link, job_apply_type, job_location, posted_benefits, job_highlights, company_highlights, skills_highlights, job_post_description, applied):
         self.date_posted = date_posted
         self.date_extracted = date_extracted
         self.job_title = job_title
@@ -25,6 +25,7 @@ class JobPost:
         self.company_highlights = company_highlights
         self.skills_highlights = skills_highlights
         self.job_post_description = job_post_description
+        self.applied = applied
 
     def __repr__(self):
         return (f"JobPost(date_posted={self.date_posted}, job_title={self.job_title}, "
@@ -342,16 +343,17 @@ class Jobs:
                     if "easy apply" in aria_label.lower():
                         print("This is an Easy Apply button.")
                         apply_type = "Easy Apply"
+                        applied = self.apply_to_job(job_post_title, job_post_loctation, list_item_element)
                     else:
                         print("This is a Company Apply button.")
                         apply_type = "Company Apply"
+                        applied = False
                 except TimeoutException:
                     print("Timed out waiting for apply type button to be clickable.")
                 except NoSuchElementException:
                     print("The apply type button was not found.")
                 except Exception as e:
                     print(f"Error extracting apply type button from list item {i}: {e}")
-                
 
                 job_post = JobPost(
                     date_posted=job_date_posted,
@@ -365,24 +367,104 @@ class Jobs:
                     job_highlights=job_highlights_text,
                     company_highlights=company_highlights_jdp,
                     skills_highlights=skills_highlights_jdp,
-                    job_post_description=job_description
+                    job_post_description=job_description,
+                    applied=applied
                 )
                 print(f'Job Post {i}: {job_post}')
             except Exception as e:
                 print(f"Error extracting data from list item {i}: {e}")
             
-    def apply_to_job(self, job_element):
+    def apply_to_job(self, job_title, job_location, list_item_element):
         """Apply to a single job, deciding which resume to use based on job description matching."""
-        # Extract job details
-        # Decide on the best resume using NLP model
-        # Complete the application process
+        print(f'Trying to apply for {job_title} at {job_location}')
+        random_sleep(1,9)
+        easy_apply_button_xpath = "//button[contains(@class, 'jobs-apply-button')][contains(@aria-label, 'Easy Apply')]"
+        easy_apply_button = WebDriverWait(self.driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, easy_apply_button_xpath))
+        )
+        easy_apply_button.click()
+        print("Clicked On the Easy Apply Button")
+        random_sleep(1,2)
+        modal_xpath = "//h2[contains(@id, 'jobs-apply-header')]"
+        modal_element = WebDriverWait(self.driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, modal_xpath))
+        )
+        print("Easy Apply Modal Opened Confirmed")
+        print("Checking for current stage of applying")
+        h3_xpath = "//div[contains(@class, 'jobs-easy-apply-content')]//h3[contains(@class, 't-16 t-bold')]"
+        h3_header = modal_element.find_element(By. XPATH, h3_xpath)
+        while True:
+            current_header_text = h3_header.text.strip().lower()
 
+            print(f'current applier modal page: {current_header_text}')
+            random_sleep(5,10)
+
+            # Pages We would encounter in Apply Modal
+            if "contact info" in current_header_text:
+                print("In the Contact Info Page, Confirming Contacts")
+                email_address_select_option_xpath = "//label[span[@aria-hidden='true' and contains(text(), 'Email address')]]/following-sibling::select[contains(@id, 'text-entity-list')]/option[@value='genomags@gmail.com']"
+                email_address_select_option = WebDriverWait(self.driver, 10).until(
+                    EC.element_to_be_clickable((By.XPATH, email_address_select_option_xpath))
+                ).text
+                if "genomags@gmail.com" in email_address_select_option:
+                    print("Email is confirmed in apply modal")
+                else:
+                    print("Wrong Email Selected in Modal")
+                    break
+                phone_cc_select_xpath = "//label[span[@aria-hidden='true' and contains(text(), 'Phone country code')]]/following-sibling::select[contains(@id, 'text-entity-list')]"
+                phone_cc_select_element = WebDriverWait(self.driver, 10).until(
+                    EC.element_to_be_clickable((By.XPATH, phone_cc_select_xpath))
+                )
+                selected_phone_cc_obj = Select(phone_cc_select_element)
+                selected_phone_cc = selected_phone_cc_obj.first_selected_option.text
+                if "United States (+1)" in selected_phone_cc:
+                    print("Phone Country Code is confirmed")
+                else:
+                    print("ERROR: Phone Country Code selected is incorrect")
+                mobile_num_input_xpath = "//label[contains(text(), 'Mobile phone number')]/following-sibling::input[contains(@id, 'single-line-text-form')]"
+                mobile_num_input_element = WebDriverWait(self.driver, 10).until(
+                    EC.element_to_be_clickable((By.XPATH, mobile_num_input_xpath))
+                )
+
+                mobile_num_input_value = mobile_num_input_element.get_attribute("value")
+                print("Current value in the input field:", mobile_num_input_value)
+                # Usually the contact page ends at mobile phone number so it will end here may need to account for other possibilities
+                # May need to account  for "Next" or "Finish" button cases
+                try:
+                    # Starting to look for Next button first
+                    print("Looking for next button")
+                    next_button_xpath = "//button[contains(@aria-label, 'Continue to next step')]"
+                    next_button = WebDriverWait(self.driver, 10).until(
+                        EC.element_to_be_clickable((By.XPATH, next_button_xpath))
+                    )
+                    print("Next button found")
+                    next_button.click()
+                    print("Next Button Clicked")
+                except NoSuchElementException:
+                    print("ERROR: next button in apply modal not found")
+                    break
+
+            if not self.modal_is_open() or self.exit_condition_met():
+                break
+
+    def modal_is_open(self):
+        try:
+            modal_xpath = "//h2[contains(@id, 'jobs-apply-header')]"
+            modal_element = WebDriverWait(self.driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, modal_xpath))
+            )
+            print("Apply Modal found")
+            return True
+        except NoSuchElementException:
+            print("ERROR: apply modal not found")
+            return False
+    
+    def exit_condition_met(self):
+        print("Exit Condition ws met")
+        return True
+        
     def iterate_through_results(self):
         """Iterate through all search result pages, processing each page of results."""
         # Loop through all pages, or until a certain condition is met
         # Call process_results_page() for each page
 
-    def execute_search_and_apply(self, search_query):
-        """Execute the full process from search initiation to applying to jobs."""
-        self.initiate_search(search_query)
-        self.iterate_through_results()
