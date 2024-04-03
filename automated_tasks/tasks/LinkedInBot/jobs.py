@@ -11,6 +11,25 @@ from db.DatabaseManager import LinkedInLocation, LinkedInJobSearch
 from datetime import datetime
 import re
 
+class JobPost:
+    def __init__(self, date_posted, date_extracted, job_title, posted_by, job_post_link, job_apply_type, job_location, posted_benefits, job_highlights, company_highlights, skills_highlights, job_post_description):
+        self.date_posted = date_posted
+        self.date_extracted = date_extracted
+        self.job_title = job_title
+        self.posted_by = posted_by
+        self.job_post_link = job_post_link
+        self.job_apply_type = job_apply_type
+        self.job_location = job_location
+        self.posted_benefits = posted_benefits
+        self.job_highlights = job_highlights
+        self.company_highlights = company_highlights
+        self.skills_highlights = skills_highlights
+        self.job_post_description = job_post_description
+
+    def __repr__(self):
+        return (f"JobPost(date_posted={self.date_posted}, job_title={self.job_title}, "
+                f"posted_by={self.posted_by}, job_location={self.job_location}, job_post_description={self.job_post_description[0:100]})")
+
 class Jobs:
     def __init__(self, driver, user_profile, selected_location_id, db_session):
         self.driver = driver
@@ -190,35 +209,165 @@ class Jobs:
 
                 # Job Link Extraction
                 job_link = job_post_anchor_element.get_attribute('href')
-                print(f'Job Link: {job_link}')
-                
+
                 # Job Posted By
                 job_posted_by_span_xpath = ".//span[contains(@class,'primary-description')]"
                 job_posted_by = WebDriverWait(list_item_element, 10).until(
                     EC.element_to_be_clickable((By.XPATH, job_posted_by_span_xpath))
                 ).text
-                print(f'Job Posted By: {job_posted_by}')
 
                 # Job Location
                 job_location_li_xpath = ".//div[contains(@class, 'artdeco-entity-lockup__caption')]//li[contains(@class,'job-card-container__metadata-item')]"
-                job_loctation = WebDriverWait(list_item_element, 10).until(
+                job_post_loctation = WebDriverWait(list_item_element, 10).until(
                     EC.element_to_be_clickable((By.XPATH, job_location_li_xpath))
                 ).text
-                print(f'Job Location: {job_loctation}')
 
                 # Posted Benefits (Doesn't Exist For All)
                 try:
                     posted_benefits_li_xpath = ".//div[contains(@class,'t-sans t-12')]//li[contains(@class,'job-card-container__metadata-item')]"
-                    posted_benefits = WebDriverWait(list_item_element, 10).until(
+                    job_posted_benefits = WebDriverWait(list_item_element, 10).until(
                         EC.element_to_be_clickable((By.XPATH, posted_benefits_li_xpath))
                     ).text
-                    print(f'Posted Benefits: {posted_benefits}')
+                except TimeoutException:
+                    print("Timed out waiting for the Posted Benefits Div to be clickable.")
+                except NoSuchElementException:
+                    print("The Posted Benefits Div was not found.")
+                except Exception as e:
+                    print(f"Error extracting Posted Benefits Div from list item {i}: {e}")
+                
+                # See if Job Description loads in and check to see if the what we clicked on 
+                try:
+                    print("Checking To see if the job post we clicked on matches the full sized job description panel")
+                    # Job Description Panel(JDP)
+                    job_title_jdp_span_xpath = "//span[contains(@class, 'job-details-jobs-unified-top-card__job-title-link')]"
+                    job_title_jdp = WebDriverWait(list_item_element, 10).until(
+                        EC.element_to_be_clickable((By.XPATH, job_title_jdp_span_xpath))
+                    ).text
+                    if job_post_title in job_title_jdp:
+                        print("Job Title Clicked and JDP Job Title Matches")
+                    else:
+                        print("Job Title Clicked and JDP Job Title DOES NOT Match")
                 except TimeoutException:
                     print("Timed out waiting for the job search bar to be clickable.")
                 except NoSuchElementException:
                     print("The job search bar was not found.")
                 except Exception as e:
                     print(f"Error extracting data from list item {i}: {e}")
+                
+                # Job Highlights(Found in the JDP next to suitcase sprite)
+                try:        
+                    job_highlights_li_xpath = "//li[contains(@class, 'job-details-jobs-unified-top-card__job-insight')]//li-icon[@type='job']/ancestor::li[1]/span"
+                    job_highlihgts_li_element = WebDriverWait(list_item_element, 10).until(
+                        EC.element_to_be_clickable((By.XPATH, job_highlights_li_xpath))
+                    )
+
+                    aria_hidden_spans = job_highlihgts_li_element.find_elements(By.XPATH, './/span[@aria-hidden="true"]')
+                    if aria_hidden_spans:
+                        print("Found spans with 'aria-hidden=true'")
+                        span_elements = job_highlihgts_li_element.find_elements(By.XPATH, ".//span[not(@*) or (@aria-hidden='true')]")
+                    else:
+                        print("No spans with the attribute 'aria-hidden' found in current context")
+                        span_elements = job_highlihgts_li_element.find_elements(By.XPATH, ".//span[not(contains(@class,'visually-hidden'))]")
+
+                    span_texts = [span.text for span in span_elements]
+                    job_highlights_text = ' '.join(span_texts)
+                except TimeoutException:
+                    print("Timed out waiting for the job search bar to be clickable.")
+                except NoSuchElementException:
+                    print("The job search bar was not found.")
+                except Exception as e:
+                    print(f"Error extracting data from list item {i}: {e}")
+                
+                # Company Highlights(JDP)
+                try:
+                    company_highlights_span_xpath = "//li[contains(@class, 'job-details-jobs-unified-top-card__job-insight')]//li-icon[@type='company']/ancestor::li[1]/span"
+                    company_highlights_jdp = WebDriverWait(list_item_element, 10).until(
+                        EC.element_to_be_clickable((By.XPATH, company_highlights_span_xpath))
+                    ).text
+                except TimeoutException:
+                    print("Timed out waiting for the job search bar to be clickable.")
+                except NoSuchElementException:
+                    print("The job search bar was not found.")
+                except Exception as e:
+                    print(f"Error extracting data from list item {i}: {e}")
+                
+                # Skills Highlights(JDP)
+                try:
+                    skills_highlights_anchor_xpath = "//li[contains(@class, 'job-details-jobs-unified-top-card__job-insight')]//*[local-name()='svg' and @data-test-icon='checklist-medium']/ancestor::li[1]/button/a"
+                    skills_highlights_jdp = WebDriverWait(list_item_element, 10).until(
+                        EC.element_to_be_clickable((By.XPATH, skills_highlights_anchor_xpath))
+                    ).text
+                except TimeoutException:
+                    print("Timed out waiting for the job search bar to be clickable.")
+                except NoSuchElementException:
+                    print("The job search bar was not found.")
+                except Exception as e:
+                    print(f"Error extracting data from list item {i}: {e}")
+
+                # Job Description(JDP)
+                try:
+                    job_description_span_xpath = "//div[contains(@id,'job-details')]/span"
+                    job_description = WebDriverWait(list_item_element, 10).until(
+                        EC.element_to_be_clickable((By.XPATH, job_description_span_xpath))
+                    ).text
+                except TimeoutException:
+                    print("Timed out waiting for job description span to be clickable.")
+                except NoSuchElementException:
+                    print("The job description span was not found.")
+                except Exception as e:
+                    print(f"Error extracting job description span from list item {i}: {e}")
+
+                # Date Posted(JDP)
+                try:
+                    date_posted_span_xpath = "//span[contains(@class, 'tvm__text tvm__text--neutral')]/span[contains(., 'day') or contains(., 'week') or contains(., 'month')]"
+                    job_date_posted = WebDriverWait(list_item_element, 10).until(
+                        EC.element_to_be_clickable((By.XPATH, date_posted_span_xpath))
+                    ).text
+                except TimeoutException:
+                    print("Timed out waiting for Date Posted Span to be clickable.")
+                except NoSuchElementException:
+                    print("The Date Posted span was not found.")
+                except Exception as e:
+                    print(f"Error extracting Date Posted span from list item {i}: {e}")
+                
+                # Apply Type(JDP)
+                try:
+                    print("Looking For Apply Type")
+                    apply_type_button_xpath = "//button[contains(@class, 'jobs-apply-button')]"
+                    apply_type_button = WebDriverWait(list_item_element, 10).until(
+                        EC.element_to_be_clickable((By.XPATH, apply_type_button_xpath))
+                    )
+                    # Check the aria-label attribute to determine the apply type
+                    aria_label = apply_type_button.get_attribute("aria-label")
+                    if "easy apply" in aria_label.lower():
+                        print("This is an Easy Apply button.")
+                        apply_type = "Easy Apply"
+                    else:
+                        print("This is a Company Apply button.")
+                        apply_type = "Company Apply"
+                except TimeoutException:
+                    print("Timed out waiting for apply type button to be clickable.")
+                except NoSuchElementException:
+                    print("The apply type button was not found.")
+                except Exception as e:
+                    print(f"Error extracting apply type button from list item {i}: {e}")
+                
+
+                job_post = JobPost(
+                    date_posted=job_date_posted,
+                    date_extracted=datetime.now(),
+                    job_title=job_post_title,
+                    posted_by=job_posted_by,
+                    job_post_link=job_link,
+                    job_apply_type=apply_type,
+                    job_location=job_post_loctation,
+                    posted_benefits=job_posted_benefits,
+                    job_highlights=job_highlights_text,
+                    company_highlights=company_highlights_jdp,
+                    skills_highlights=skills_highlights_jdp,
+                    job_post_description=job_description
+                )
+                print(f'Job Post {i}: {job_post}')
             except Exception as e:
                 print(f"Error extracting data from list item {i}: {e}")
             
