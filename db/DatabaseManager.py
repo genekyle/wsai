@@ -94,6 +94,21 @@ class LinkedInJobSearch(LinkedInBase):
     user_profile = relationship("LinkedInUserProfile", back_populates="job_searches")
     location = relationship("LinkedInLocation", back_populates="job_searches")
 
+class Resumes(LinkedInBase):
+    __tablename__ = 'resumes'
+    id = Column(Integer, primary_key=True)
+    resume_title = Column(String)
+    resume_skills = Column(String)
+
+class ResumeVariations(LinkedInBase):
+    __tablename__ = 'resume_variations'
+    variation_id = Column(Integer, primary_key=True)
+    resume_id = Column(Integer)
+    resume_title = Column(String)
+    location = Column(String)
+    file_name = Column(String)
+
+
 # Dynamically select the database based on a task identifier
 def get_engine(task_name):
     if task_name == "Indeed":

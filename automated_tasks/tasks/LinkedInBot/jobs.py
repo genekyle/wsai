@@ -333,6 +333,7 @@ class Jobs:
                 
                 # Apply Type(JDP)
                 try:
+                    # Need to add 'applied' cases to apply type
                     print("Looking For Apply Type")
                     apply_type_button_xpath = "//button[contains(@class, 'jobs-apply-button')]"
                     apply_type_button = WebDriverWait(list_item_element, 10).until(
@@ -385,15 +386,17 @@ class Jobs:
         easy_apply_button.click()
         print("Clicked On the Easy Apply Button")
         random_sleep(1,2)
-        modal_xpath = "//h2[contains(@id, 'jobs-apply-header')]"
-        modal_element = WebDriverWait(self.driver, 10).until(
-            EC.element_to_be_clickable((By.XPATH, modal_xpath))
-        )
+        
         print("Easy Apply Modal Opened Confirmed")
-        print("Checking for current stage of applying")
-        h3_xpath = "//div[contains(@class, 'jobs-easy-apply-content')]//h3[contains(@class, 't-16 t-bold')]"
-        h3_header = modal_element.find_element(By. XPATH, h3_xpath)
-        while True:
+        
+        while self.modal_is_open():
+            modal_xpath = "//h2[contains(@id, 'jobs-apply-header')]"
+            modal_element = WebDriverWait(self.driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, modal_xpath))
+            )
+            print("Checking for current stage of applying")
+            h3_xpath = "//div[contains(@class, 'jobs-easy-apply-content')]//h3[contains(@class, 't-16 t-bold')]"
+            h3_header = modal_element.find_element(By. XPATH, h3_xpath)
             current_header_text = h3_header.text.strip().lower()
 
             print(f'current applier modal page: {current_header_text}')
@@ -429,23 +432,22 @@ class Jobs:
                 mobile_num_input_value = mobile_num_input_element.get_attribute("value")
                 print("Current value in the input field:", mobile_num_input_value)
                 # Usually the contact page ends at mobile phone number so it will end here may need to account for other possibilities
-                # May need to account  for "Next" or "Finish" button cases
-                try:
-                    # Starting to look for Next button first
-                    print("Looking for next button")
-                    next_button_xpath = "//button[contains(@aria-label, 'Continue to next step')]"
-                    next_button = WebDriverWait(self.driver, 10).until(
-                        EC.element_to_be_clickable((By.XPATH, next_button_xpath))
-                    )
-                    print("Next button found")
-                    next_button.click()
-                    print("Next Button Clicked")
-                except NoSuchElementException:
-                    print("ERROR: next button in apply modal not found")
-                    break
 
-            if not self.modal_is_open() or self.exit_condition_met():
+            elif "resume" in current_header_text:
+                print("In the Resumes Page, Selecting the correct resume")
+                print("Working with Current Job Post Title: ", job_title)
+                
+            if not self.next_or_review_button():
+                print("Neither next or review button found")
+            
+            # Checking for exit condition if next or review button not found
+            if self.exit_condition_met():
+                print("ready to submit application")
                 break
+            else:
+                print("Not ready to submit yet, continuing with modal processing.")
+
+        print("exited the modal processing loop")
 
     def modal_is_open(self):
         try:
@@ -458,10 +460,54 @@ class Jobs:
         except NoSuchElementException:
             print("ERROR: apply modal not found")
             return False
-    
+
+    def next_or_review_button(self):
+        # for "Next" or "review" button cases
+            try:
+                # Starting to look for Next button first
+                print("Looking for next button")
+                next_button_xpath = "//button[contains(@aria-label, 'Continue to next step')]"
+                next_button = WebDriverWait(self.driver, 10).until(
+                    EC.element_to_be_clickable((By.XPATH, next_button_xpath))
+                )
+                print("Next button found")
+                next_button.click()
+                print("Next Button Clicked")
+                return True
+            except NoSuchElementException:
+                print("next button in apply modal not found, looking for reveiw button")
+                try:
+                    print("Looking for review button")
+                    review_button_xpath = "//button[contains(@aria-label, 'Review your application')]"
+                    review_button = WebDriverWait(self.driver, 10).until(
+                        EC.element_to_be_clickable((By.XPATH, review_button))
+                    )
+                    print("review button found")
+                    review_button.click()
+                    print("Review button clicked")
+                    return True
+                except NoSuchElementException:
+                    print("Error: Next Button or Review button not found")
+                    print("Breaking the apply modal loop")
+                    return(False)
+
     def exit_condition_met(self):
-        print("Exit Condition ws met")
-        return True
+        # Logic to determine if the condition to exit is met, meaning look for submit application button button
+        try:
+            # Starting to look for Submit Application Button
+            print("Looking for Submit button")
+            submit_application_button_xpath = "//button[contains(@aria-label, 'Submit application')]"
+            submit_application_button = WebDriverWait(self.driver, 3).until(
+                EC.element_to_be_clickable((By.XPATH, submit_application_button_xpath))
+            )
+            print("Submit application button found")
+            # have yet to click the submit application button need to ensure all parts working first
+            print("Exit condition met")
+            return True
+        except Exception as e:
+            print(f"ERROR: submit application button in apply modal not found actual error: {e}")
+            print("Exit Condition not yet met met")
+            return False
         
     def iterate_through_results(self):
         """Iterate through all search result pages, processing each page of results."""
