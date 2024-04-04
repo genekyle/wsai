@@ -96,7 +96,7 @@ class LinkedInJobSearch(LinkedInBase):
 
 class Resumes(LinkedInBase):
     __tablename__ = 'resumes'
-    id = Column(Integer, primary_key=True)
+    resume_id = Column(Integer, primary_key=True)
     resume_title = Column(String)
     resume_skills = Column(String)
 

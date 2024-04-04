@@ -6,7 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
-from db.DatabaseManager import LinkedInLocation, LinkedInJobSearch
+from db.DatabaseManager import LinkedInLocation, LinkedInJobSearch, Resumes
 
 from datetime import datetime
 import re
@@ -435,7 +435,11 @@ class Jobs:
 
             elif "resume" in current_header_text:
                 print("In the Resumes Page, Selecting the correct resume")
+                random_sleep(1,2)
                 print("Working with Current Job Post Title: ", job_title)
+                resumes = self.db_session.query(Resumes).all()
+                print(resumes)
+                random_sleep(10,20)
                 
             if not self.next_or_review_button():
                 print("Neither next or review button found")
