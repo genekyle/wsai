@@ -8,6 +8,10 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from db.DatabaseManager import LinkedInLocation, LinkedInJobSearch, Resumes
 
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
+
 from datetime import datetime
 import re
 
@@ -320,7 +324,7 @@ class Jobs:
 
                 # Date Posted(JDP)
                 try:
-                    date_posted_span_xpath = "//span[contains(@class, 'tvm__text tvm__text--neutral')]/span[contains(., 'day') or contains(., 'week') or contains(., 'month')]"
+                    date_posted_span_xpath = "//span[contains(@class, 'tvm__text tvm__text--low-emphasis')]/span[contains(., 'day') or contains(., 'week') or contains(., 'month')]"
                     job_date_posted = WebDriverWait(list_item_element, 10).until(
                         EC.element_to_be_clickable((By.XPATH, date_posted_span_xpath))
                     ).text
@@ -333,10 +337,9 @@ class Jobs:
                 
                 # Apply Type(JDP)
                 try:
-                    # Need to add 'applied' cases to apply type
                     print("Looking For Apply Type")
                     apply_type_button_xpath = "//button[contains(@class, 'jobs-apply-button')]"
-                    apply_type_button = WebDriverWait(list_item_element, 10).until(
+                    apply_type_button = WebDriverWait(list_item_element, 2).until(
                         EC.element_to_be_clickable((By.XPATH, apply_type_button_xpath))
                     )
                     # Check the aria-label attribute to determine the apply type
@@ -353,8 +356,31 @@ class Jobs:
                     print("Timed out waiting for apply type button to be clickable.")
                 except NoSuchElementException:
                     print("The apply type button was not found.")
+                    try:
+                        print("Trying to look if applied already")
+                        applied_span_xpath = "//div[contains(@role, 'alert')]//span[contains(., 'Applied')]"
+                        applied_span = WebDriverWait(self.driver, 1).until(
+                            EC.element_to_be_clickable((By.XPATH, applied_span_xpath))
+                        )
+                        print(job_post_title, ': ', applied_span.text)
+                        apply_type = "Applied"
+                        applied = True
+                    except Exception as e:
+                        print(f"Error extracting applied span from list item {i}: {e}")
                 except Exception as e:
                     print(f"Error extracting apply type button from list item {i}: {e}")
+                    try:
+                        print("Trying to look if applied already")
+                        applied_span_xpath = "//div[contains(@role, 'alert')]//span[contains(., 'Applied')]"
+                        applied_span = WebDriverWait(self.driver, 1).until(
+                            EC.element_to_be_clickable((By.XPATH, applied_span_xpath))
+                        )
+                        print(job_post_title, ': ', applied_span.text)
+                        apply_type = "Applied"
+                        applied = True
+                    except Exception as e:
+                        print(f"Error extracting applied span from list item {i}: {e}")
+
 
                 job_post = JobPost(
                     date_posted=job_date_posted,
@@ -438,7 +464,10 @@ class Jobs:
                 random_sleep(1,2)
                 print("Working with Current Job Post Title: ", job_title)
                 resumes = self.db_session.query(Resumes).all()
-                print(resumes)
+                resume_titles = [resume.resume_title for resume in resumes]
+                print(resume_titles)
+                # Testing TF-IDF vectorizer & cosine similarity for matching
+                
                 random_sleep(10,20)
                 
             if not self.next_or_review_button():
