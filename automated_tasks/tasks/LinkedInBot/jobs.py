@@ -13,10 +13,11 @@ from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 
 from datetime import datetime
-import re
+import re, os
 
 class JobPost:
-    def __init__(self, date_posted, date_extracted, job_title, posted_by, job_post_link, job_apply_type, job_location, posted_benefits, job_highlights, company_highlights, skills_highlights, job_post_description, applied):
+    def __init__(self, date_posted, date_extracted, job_title, posted_by, job_post_link, job_apply_type, job_location, posted_benefits, 
+                 job_highlights, company_highlights, skills_highlights, job_post_description, applied, resume_used):
         self.date_posted = date_posted
         self.date_extracted = date_extracted
         self.job_title = job_title
@@ -30,6 +31,7 @@ class JobPost:
         self.skills_highlights = skills_highlights
         self.job_post_description = job_post_description
         self.applied = applied
+        self.resume_used = resume_used
 
     def __repr__(self):
         return (f"JobPost(date_posted={self.date_posted}, job_title={self.job_title}, "
@@ -332,10 +334,11 @@ class Jobs:
                     print(f"Error extracting Date Posted span from list item {i}: {e}")
                     print("trying to find alternate job date posted")
                     try:
-                        job_date_posted_span_xpath = "//span[contains(@class, '//span[contains(@class, 'tvm__text tvm__text--neutral')]/span[contains(., 'day') or contains(., 'week') or contains(., 'month')]')]/span[contains(., 'day') or contains(., 'week') or contains(., 'month')]"
+                        job_date_posted_span_xpath = "//span[contains(@class, 'tvm__text tvm__text--neutral')]/span[contains(., 'day') or contains(., 'week') or contains(., 'month')]"
                         job_date_posted = WebDriverWait(list_item_element, 1).until(
                             EC.element_to_be_clickable((By.XPATH, job_date_posted_span_xpath))
                         ).text
+                        print("Alternate job date posted found in 2nd Attempt")
                     except Exception as e:
                         print(f"Error #2 extracting Job Date Posted span from list item {i}: {e}")
                 # Apply Type(JDP)
@@ -436,14 +439,18 @@ class Jobs:
             )
             print("Checking for current stage of applying")
             h3_xpath = "//div[contains(@class, 'jobs-easy-apply-content')]//h3[contains(@class, 't-16 t-bold')]"
-            h3_header = modal_element.find_element(By. XPATH, h3_xpath)
+            h3_header = WebDriverWait(modal_element, 10).until(
+                EC.element_to_be_clickable((By. XPATH, h3_xpath))
+            )
             current_header_text = h3_header.text.strip().lower()
 
             print(f'current applier modal page: {current_header_text}')
             random_sleep(5,10)
 
             # Pages We would encounter in Apply Modal
+
             if "contact info" in current_header_text:
+                # Notes: We found that some jobs may be able to have upload resume within the contacts page
                 print("In the Contact Info Page, Confirming Contacts")
                 email_address_select_option_xpath = "//label[span[@aria-hidden='true' and contains(text(), 'Email address')]]/following-sibling::select[contains(@id, 'text-entity-list')]/option[@value='genomags@gmail.com']"
                 email_address_select_option = WebDriverWait(self.driver, 10).until(
@@ -502,11 +509,12 @@ class Jobs:
                 best_match_index = sorted_indexes[0]
                 best_match_resume = resumes[best_match_index]
                 print(f"Best Match Resume: '{best_match_resume.resume_title}' - Score: {cosine_sim[best_match_index]:.4f}")
-
+                
+                # Fuzzy Matching System
                 location_groups = {
-                    "California": ["California", "CA"],  # Add other cities or areas as needed
-                    "New York Metropolitan": ["New York", "NY", "New Jersey", "NJ", "Manhattan", "Brooklyn", "Queens"],
-                    "Greater Boston Area": ["Boston", "MA", "Massachusetts", "New Hampshire", "NH"]
+                    "California": ["California", "CA"],  # California In General not sure where to go
+                    "New York": ["New York", "NY", "New Jersey", "NJ", "Manhattan", "Brooklyn", "Queens"], # NYC Metropolitan Area mainly
+                    "New Hampshire": ["Boston", "MA", "Massachusetts", "New Hampshire", "NH"] # Greater Boston Area
                 }
 
                 # Determine the job location group directly in the function
@@ -523,13 +531,36 @@ class Jobs:
                     print(f"Job location '{job_location}' falls under the '{job_location_group}' group.")
                     # Query for the best matching resume variation based on the location group
                     best_variation = self.db_session.query(ResumeVariations) \
-                                                    .filter_by(resume_id=best_match_resume.id, location=job_location_group) \
+                                                    .filter_by(resume_id=best_match_resume.resume_id, location=job_location_group) \
                                                     .first()
 
                     if best_variation:
                         print(f"Selected Resume Variation for '{job_location_group}': {best_variation.file_name}")
                     else:
                         print(f"No resume variation found for '{job_location_group}'.")
+                    
+                    best_resume_file_name = best_variation.file_name
+                    print(best_resume_file_name)
+                
+                print("With Resume Matched, now uploading the correct resume")
+                
+                # In LinkedIn the label may be the trigger the action(uploading) when clicked on
+                try:
+                    print("Looking For Resume Inputted")
+                    upload_resume_input_xpath = "//input[contains(@name, 'file')]"
+                    upload_resume_input = WebDriverWait(self.driver, 10).until(
+                        EC.element_to_be_clickable((By.XPATH, upload_resume_input_xpath))
+                    )
+                    print("Resume Input Found, now trying to establish resume file name")
+                    resume_file_name = best_variation.file_name
+                    print(resume_file_name)
+                    resumes_folder_path = r"C:\Users\genom\Documents\apply\resumes"
+                    resume_file_path = os.path.join(resumes_folder_path, resume_file_name)
+                    print(resume_file_path)
+                except Exception as e:
+                    print(f"Error Trying To upload resume:{e} " )
+
+                upload_resume_input.send_keys(resume_file_path)
                 random_sleep(10,20)
                 
             if not self.next_or_review_button():

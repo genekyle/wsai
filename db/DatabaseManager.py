@@ -72,6 +72,7 @@ class LinkedInJob(LinkedInBase):
     skills_highlights = Column(String)
     job_post_description = Column(String)
     applied = Column(Boolean)
+    resume_used = Column(String)
 
 class LinkedInLocation(LinkedInBase):
     __tablename__ = 'linkedin_locations'
