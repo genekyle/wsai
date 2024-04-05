@@ -6,7 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
-from db.DatabaseManager import LinkedInLocation, LinkedInJobSearch, Resumes
+from db.DatabaseManager import LinkedInLocation, LinkedInJobSearch, Resumes, ResumeVariations
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -325,16 +325,19 @@ class Jobs:
                 # Date Posted(JDP)
                 try:
                     date_posted_span_xpath = "//span[contains(@class, 'tvm__text tvm__text--low-emphasis')]/span[contains(., 'day') or contains(., 'week') or contains(., 'month')]"
-                    job_date_posted = WebDriverWait(list_item_element, 10).until(
+                    job_date_posted = WebDriverWait(list_item_element, 2).until(
                         EC.element_to_be_clickable((By.XPATH, date_posted_span_xpath))
                     ).text
-                except TimeoutException:
-                    print("Timed out waiting for Date Posted Span to be clickable.")
-                except NoSuchElementException:
-                    print("The Date Posted span was not found.")
                 except Exception as e:
                     print(f"Error extracting Date Posted span from list item {i}: {e}")
-                
+                    print("trying to find alternate job date posted")
+                    try:
+                        job_date_posted_span_xpath = "//span[contains(@class, '//span[contains(@class, 'tvm__text tvm__text--neutral')]/span[contains(., 'day') or contains(., 'week') or contains(., 'month')]')]/span[contains(., 'day') or contains(., 'week') or contains(., 'month')]"
+                        job_date_posted = WebDriverWait(list_item_element, 1).until(
+                            EC.element_to_be_clickable((By.XPATH, job_date_posted_span_xpath))
+                        ).text
+                    except Exception as e:
+                        print(f"Error #2 extracting Job Date Posted span from list item {i}: {e}")
                 # Apply Type(JDP)
                 try:
                     print("Looking For Apply Type")
@@ -354,6 +357,17 @@ class Jobs:
                         applied = False
                 except TimeoutException:
                     print("Timed out waiting for apply type button to be clickable.")
+                    try:
+                        print("Trying to look if applied already")
+                        applied_span_xpath = "//div[contains(@role, 'alert')]//span[contains(., 'Applied')]"
+                        applied_span = WebDriverWait(self.driver, 1).until(
+                            EC.element_to_be_clickable((By.XPATH, applied_span_xpath))
+                        )
+                        print(job_post_title, ': ', applied_span.text)
+                        apply_type = "Applied"
+                        applied = True
+                    except Exception as e:
+                        print(f"Error extracting applied span from list item {i}: {e}")
                 except NoSuchElementException:
                     print("The apply type button was not found.")
                     try:
@@ -414,7 +428,7 @@ class Jobs:
         random_sleep(1,2)
         
         print("Easy Apply Modal Opened Confirmed")
-        
+        random_sleep(2,3)
         while self.modal_is_open():
             modal_xpath = "//h2[contains(@id, 'jobs-apply-header')]"
             modal_element = WebDriverWait(self.driver, 10).until(
@@ -462,12 +476,60 @@ class Jobs:
             elif "resume" in current_header_text:
                 print("In the Resumes Page, Selecting the correct resume")
                 random_sleep(1,2)
-                print("Working with Current Job Post Title: ", job_title)
+                print("Working with Current Job Post Title: ", job_title, 'At location: ', job_location)
                 resumes = self.db_session.query(Resumes).all()
                 resume_titles = [resume.resume_title for resume in resumes]
-                print(resume_titles)
-                # Testing TF-IDF vectorizer & cosine similarity for matching
-                
+
+                # Include the job title for comparison
+                all_titles = resume_titles + [job_title]
+
+                # Generate TF-IDF matrix
+                vectorizer = TfidfVectorizer(stop_words='english')
+                tfidf_matrix = vectorizer.fit_transform(all_titles)
+
+                # Calculate cosine similarity with the job title
+                cosine_sim = cosine_similarity(tfidf_matrix[-1], tfidf_matrix[:-1])[0]
+
+                # Rank the resumes based on similarity scores
+                sorted_indexes = np.argsort(cosine_sim)[::-1]  # Sort in descending order
+
+                # Print the top 10 matches
+                print("Top 10 Matching Resumes:")
+                for rank, index in enumerate(sorted_indexes[:10], start=1):
+                    print(f"{rank}. Resume Title: '{resumes[index].resume_title}' - Score: {cosine_sim[index]:.4f}")
+
+                # Select the highest-scoring resume
+                best_match_index = sorted_indexes[0]
+                best_match_resume = resumes[best_match_index]
+                print(f"Best Match Resume: '{best_match_resume.resume_title}' - Score: {cosine_sim[best_match_index]:.4f}")
+
+                location_groups = {
+                    "California": ["California", "CA"],  # Add other cities or areas as needed
+                    "New York Metropolitan": ["New York", "NY", "New Jersey", "NJ", "Manhattan", "Brooklyn", "Queens"],
+                    "Greater Boston Area": ["Boston", "MA", "Massachusetts", "New Hampshire", "NH"]
+                }
+
+                # Determine the job location group directly in the function
+                job_location_group = None
+                for group, locations in location_groups.items():
+                    if any(loc.lower() in job_location.lower() for loc in locations):
+                        job_location_group = group
+                        break
+
+                # Handle no matching location group
+                if job_location_group is None:
+                    print(f"No location group found for '{job_location}'. Using default resume variation or handling otherwise.")
+                else:
+                    print(f"Job location '{job_location}' falls under the '{job_location_group}' group.")
+                    # Query for the best matching resume variation based on the location group
+                    best_variation = self.db_session.query(ResumeVariations) \
+                                                    .filter_by(resume_id=best_match_resume.id, location=job_location_group) \
+                                                    .first()
+
+                    if best_variation:
+                        print(f"Selected Resume Variation for '{job_location_group}': {best_variation.file_name}")
+                    else:
+                        print(f"No resume variation found for '{job_location_group}'.")
                 random_sleep(10,20)
                 
             if not self.next_or_review_button():
