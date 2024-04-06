@@ -546,10 +546,11 @@ class Jobs:
                 
                 # In LinkedIn the label may be the trigger the action(uploading) when clicked on
                 try:
-                    print("Looking For Resume Inputted")
+                    print("Looking For Resume Input")
                     upload_resume_input_xpath = "//input[contains(@name, 'file')]"
+            
                     upload_resume_input = WebDriverWait(self.driver, 10).until(
-                        EC.element_to_be_clickable((By.XPATH, upload_resume_input_xpath))
+                        EC.presence_of_element_located((By.XPATH, upload_resume_input_xpath))
                     )
                     print("Resume Input Found, now trying to establish resume file name")
                     resume_file_name = best_variation.file_name
@@ -558,7 +559,7 @@ class Jobs:
                     resume_file_path = os.path.join(resumes_folder_path, resume_file_name)
                     print(resume_file_path)
                 except Exception as e:
-                    print(f"Error Trying To upload resume:{e} " )
+                    print(f"Error Trying To upload resume:{e}")
 
                 upload_resume_input.send_keys(resume_file_path)
                 random_sleep(10,20)
