@@ -1,0 +1,645 @@
+[33mcommit 083f77e0809f691514c2dfefa48ee18901dde7b4[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m)[m
+Author: Geno <genomags@gmail.com>
+Date:   Sat Apr 6 22:25:57 2024 -0400
+
+    removed trash
+
+[33mcommit 9a3d1b0a9e3c284af4bcd5f2a328e215df886530[m[33m ([m[1;31morigin/main[m[33m)[m
+Author: Geno <genomags@gmail.com>
+Date:   Fri Apr 5 23:00:48 2024 -0400
+
+    fixed the way it uploads resumes, for inputs use presence
+
+[33mcommit e4648bfdff1d0644998b8b66994af67969a5d05f[m
+Author: Geno <genomags@gmail.com>
+Date:   Fri Apr 5 18:03:26 2024 -0400
+
+    very buggy upload resume needs to be fixed
+
+[33mcommit 32416d403cf033ce74c117ecbb2be4dccbad4c98[m
+Author: Geno <genomags@gmail.com>
+Date:   Fri Apr 5 14:00:12 2024 -0400
+
+    assigning resume fixes
+
+[33mcommit 58c9b73aaf9b6375927f36ce76df3c529ac1514e[m
+Author: Geno <genomags@gmail.com>
+Date:   Thu Apr 4 17:48:49 2024 -0400
+
+    fixed job date posted scrape
+
+[33mcommit ec49ed754daca443d354f05c12638a40e43b5948[m
+Author: Geno <genomags@gmail.com>
+Date:   Thu Apr 4 12:19:41 2024 -0400
+
+    new packages
+
+[33mcommit 8bee056b63677db7a70f531a818a26c37b55bd7a[m
+Author: Geno <genomags@gmail.com>
+Date:   Thu Apr 4 11:53:15 2024 -0400
+
+    DB Changes for resumes
+
+[33mcommit 99fb317465ee1a6edd9d8a6fd30e01bc3c92fd81[m
+Author: Geno <genomags@gmail.com>
+Date:   Wed Apr 3 16:47:38 2024 -0400
+
+    fixing applier
+
+[33mcommit 85f8c076e7aea01285f92e084a5cb8e8b482afaa[m
+Author: Geno <genomags@gmail.com>
+Date:   Wed Apr 3 14:48:06 2024 -0400
+
+    adding nlp models
+
+[33mcommit fcc9937d364a0a078c62508b02c43ba000605f21[m
+Author: Geno <genomags@gmail.com>
+Date:   Wed Mar 27 12:32:33 2024 -0400
+
+    more additions to linkedin
+
+[33mcommit 993fcfd3f60a4bb56529132b4472dc1f9fb86d18[m[33m ([m[1;31morigin/LinkedInBranch[m[33m, [m[1;32mLinkedInBranch[m[33m)[m
+Author: Geno <genomags@gmail.com>
+Date:   Tue Mar 26 17:07:55 2024 -0400
+
+    added linkedin compatibility
+
+[33mcommit 59c7b219066e8a14b994f30f9d3a537a5a380a1d[m
+Author: Geno <genomags@gmail.com>
+Date:   Fri Mar 22 23:03:46 2024 -0400
+
+    fixed jobs
+
+[33mcommit 9c8eb4e2d4a1068846f2d7c78c1c74647d822057[m
+Author: Geno <genomags@gmail.com>
+Date:   Fri Mar 22 20:59:53 2024 -0400
+
+    finished
+
+[33mcommit f40be112cd5e9d727cfa493b84a2d1c81b39cf72[m
+Author: Geno <genomags@gmail.com>
+Date:   Fri Mar 22 20:56:59 2024 -0400
+
+    added more to linkedinbranch
+
+[33mcommit ddb79006beb30cb30894c9a66b20a62d13168f60[m
+Author: Geno <genomags@gmail.com>
+Date:   Sun Feb 25 20:07:35 2024 -0500
+
+    Refactor LinkedInLoginSystem class to handle security checks and verification
+
+[33mcommit 6eb1feac4bd9ea93d695fd1f9873f09b883701b1[m
+Author: Geno <genomags@gmail.com>
+Date:   Sun Feb 25 19:48:55 2024 -0500
+
+    Add search input field to LinkedInBot config dialog and implement security check handling in login system
+
+[33mcommit 2c21990c843e2eae79e28e897b9f3af1163d8408[m
+Author: Geno <genomags@gmail.com>
+Date:   Sun Feb 25 14:31:10 2024 -0500
+
+    Added login verification and navigation checks
+
+[33mcommit 2616ff783b23e7d1d3e20d244cf3d337d5dd35e4[m
+Author: Geno Magsipoc <geno@brickriver.com>
+Date:   Fri Feb 23 18:41:33 2024 -0500
+
+    task orchestrator new login system for linked_in
+
+[33mcommit 9098a115788f90811d755af839de2bd7431a3b69[m
+Author: Geno Magsipoc <geno@brickriver.com>
+Date:   Fri Feb 23 17:52:04 2024 -0500
+
+    visual studio
+
+[33mcommit 88bb737154cbebc90671e01321a86b5eea7e726b[m
+Author: Geno <genomags@gmail.com>
+Date:   Fri Feb 23 15:04:09 2024 -0500
+
+    new proxy
+
+[33mcommit 6717fa65b1c8f104f1078936aec43b8bab79fa9c[m
+Author: Geno <genomags@gmail.com>
+Date:   Tue Feb 20 16:37:42 2024 -0500
+
+    Add LinkedIn user profile support and navigate to LinkedIn login page
+
+[33mcommit 531164a6d687b75b1ffdfa7d4f3bbcc209678cb1[m
+Author: Geno <genomags@gmail.com>
+Date:   Tue Feb 20 16:12:36 2024 -0500
+
+    Update LinkedInBotConfigDialog to include a dropdown for selecting or creating user profiles
+
+[33mcommit 0a5cdd51b4b2d93c6e59ce0212320fd4134fd5a5[m
+Author: Geno <genomags@gmail.com>
+Date:   Tue Feb 20 15:36:13 2024 -0500
+
+    Update LinkedInBot state manager and config dialog, fix imports in mainwindow
+
+[33mcommit 5fbdbd12468b92a624875beb873790460d6d1d2c[m
+Author: Geno <genomags@gmail.com>
+Date:   Sat Feb 17 14:27:26 2024 -0500
+
+    big commit
+
+[33mcommit a2539b3b3c3ff1fbd131f57b06f63c85be6e522b[m
+Merge: ab1fe137 136c319a
+Author: Geno <genomags@gmail.com>
+Date:   Wed Feb 7 07:51:37 2024 -0500
+
+    Merge branch 'main' of https://github.com/genekyle/wsai
+
+[33mcommit ab1fe137ca544e71e0182f85d5b47d6e10a0db6c[m
+Author: Geno <genomags@gmail.com>
+Date:   Wed Feb 7 07:51:15 2024 -0500
+
+    new proxy
+
+[33mcommit 136c319acb8524442dbc98b0be45059fb7440d81[m
+Author: Geno <48112543+genekyle@users.noreply.github.com>
+Date:   Tue Feb 6 15:04:36 2024 -0500
+
+    Delete proxy.pem
+
+[33mcommit 4765f2b227ea3ca41f28cd2b3508779ffdd9a468[m
+Author: Geno <genomags@gmail.com>
+Date:   Tue Feb 6 07:58:16 2024 -0500
+
+    listings change, added indeed_apply field
+
+[33mcommit df33c720980cecd2f36a5cfe1e22510a5e1a8093[m
+Author: Geno Magsipoc <geno@brickriver.com>
+Date:   Mon Jan 29 13:10:27 2024 -0500
+
+    db fixes
+
+[33mcommit 62af49a30815d699c658da38db407c06298cc556[m
+Author: Geno <genomags@gmail.com>
+Date:   Sun Jan 28 14:18:10 2024 -0500
+
+    proxy works lol
+
+[33mcommit 9b57327e6e6873a9677fe1e87fed622d0f0d18ac[m
+Author: Geno <genomags@gmail.com>
+Date:   Wed Jan 24 03:20:11 2024 -0500
+
+    transfer
+
+[33mcommit c5eda8f9275477dca16ad2f9dcaf99351da9f21e[m
+Merge: 9729f701 aba5a5eb
+Author: Geno <genomags@gmail.com>
+Date:   Tue Jan 23 22:58:59 2024 -0500
+
+    Merge remote-tracking branch 'refs/remotes/origin/main'
+
+[33mcommit 9729f701db71a7e935e32f1072b471d520989b0e[m
+Author: Geno <genomags@gmail.com>
+Date:   Tue Jan 23 22:57:04 2024 -0500
+
+    changes
+
+[33mcommit aba5a5eb5877d189db4f51c31e9003832f0ef0bc[m
+Author: Geno Magsipoc <geno@brickriver.com>
+Date:   Tue Jan 23 22:41:06 2024 -0500
+
+    slight changes
+
+[33mcommit 44b75275c3a90dbf1ffa0d1e3ac31c57b62c4982[m
+Author: Geno Magsipoc <geno@brickriver.com>
+Date:   Tue Jan 23 16:55:53 2024 -0500
+
+    fixed db
+
+[33mcommit 1db3780f8f822a6384a4102581c6ed9b09c195f4[m
+Author: Geno <genomags@gmail.com>
+Date:   Tue Jan 23 07:41:52 2024 -0500
+
+    got blasted by cloudflare
+
+[33mcommit 8c0b7d0ce96cb89cb6388f05095668a4a6bcfcf9[m
+Author: Geno Magsipoc <geno@brickriver.com>
+Date:   Tue Jan 23 06:36:26 2024 -0500
+
+    git ignore changes
+
+[33mcommit 4c7e2144db3ccf5962ae9115b05394e61d7afd8f[m
+Author: Geno <genomags@gmail.com>
+Date:   Sun Jan 21 15:15:36 2024 -0500
+
+    grabbing job description now
+
+[33mcommit 4eefa68807b6f1e0dfdf0fce38c43808f380ac92[m
+Author: Geno <genomags@gmail.com>
+Date:   Sun Jan 21 03:10:31 2024 -0500
+
+    more changes to get all listings
+
+[33mcommit f9628adf68c76fcab55c29360ce26404ca50c681[m
+Author: Geno <genomags@gmail.com>
+Date:   Sun Jan 21 00:24:43 2024 -0500
+
+    fixed how listings are scraped
+
+[33mcommit 015233b6d7889c708d942a03b1235fceac02ff9f[m
+Author: Geno Magsipoc <geno@brickriver.com>
+Date:   Thu Jan 18 14:20:14 2024 -0500
+
+    assigning to db
+
+[33mcommit 743143192a8ecef8950ff02dca83210e23c45eb5[m
+Author: Geno <genomags@gmail.com>
+Date:   Wed Jan 17 07:52:07 2024 -0500
+
+    latest
+
+[33mcommit f1ae48df875070151d1dc851a79a86d7de652a7c[m
+Author: Geno <genomags@gmail.com>
+Date:   Tue Jan 16 19:44:14 2024 -0500
+
+    buggy
+
+[33mcommit 3abdc7d5bad3d616ab1747992551ccf9372d1a93[m
+Author: Geno <genomags@gmail.com>
+Date:   Mon Jan 15 13:04:59 2024 -0500
+
+    pyautogui initialized
+
+[33mcommit 0d3d72a4409456b1647e2282c445de22eefdc2c6[m
+Author: Geno <genomags@gmail.com>
+Date:   Thu Jan 11 16:21:16 2024 -0500
+
+    database changes, and initialization changes
+
+[33mcommit e59bec3db2fa9db933fd756eeaa39ee9786c36c4[m
+Author: Geno Magsipoc <geno@brickriver.com>
+Date:   Wed Jan 10 14:54:17 2024 -0500
+
+    fixed startup, will need to fix creating new profile
+
+[33mcommit 3e84d0ecd7b6527f6a667ccda653bb7843ae70c6[m
+Author: Geno <genomags@gmail.com>
+Date:   Mon Jan 8 08:15:40 2024 -0500
+
+    second push
+
+[33mcommit aa105a1f69b0cafde7d30f9bd8e4c376bc9f4cfc[m
+Author: Geno <genomags@gmail.com>
+Date:   Mon Jan 8 03:53:30 2024 -0500
+
+    added init
+
+[33mcommit 2f5f063639300cda3b61088f578673d1b3dcae06[m
+Author: Geno <genomags@gmail.com>
+Date:   Mon Jan 8 03:28:20 2024 -0500
+
+    starting to integrate the sqlite database buggy
+
+[33mcommit 1ea63db29c7290b0a768337855daade1a7b134db[m
+Author: Geno <genomags@gmail.com>
+Date:   Wed Jan 3 21:01:31 2024 -0500
+
+    remov
+
+[33mcommit 15ac4be32a98c3852ef9cfd79c0c997493adc2ca[m
+Author: Geno Magsipoc <geno@brickriver.com>
+Date:   Wed Jan 3 16:44:23 2024 -0500
+
+    test2
+
+[33mcommit 65f13edeb036c2670cc262191e3e9225f1f94e2f[m
+Author: Geno Magsipoc <geno@brickriver.com>
+Date:   Wed Jan 3 16:42:07 2024 -0500
+
+    test
+
+[33mcommit 54986940eb5acffd606c14d63f31a1786ca2e847[m
+Author: Geno Magsipoc <geno@brickriver.com>
+Date:   Wed Jan 3 16:41:07 2024 -0500
+
+    added user profiles to git ignore, need to remake profiles on fresh open unless saved already
+
+[33mcommit 4f8ee96f757d31524e815bea4d6b03bd6340fbbc[m
+Author: Geno Magsipoc <geno@brickriver.com>
+Date:   Wed Jan 3 16:39:48 2024 -0500
+
+    Multiple login checks created, initial search logic created
+
+[33mcommit 4ebe1e0bb69d8ab0bf06c4620d18cd3023ff60ec[m
+Author: Geno Magsipoc <geno@brickriver.com>
+Date:   Wed Jan 3 13:45:52 2024 -0500
+
+    added more subtasks to indeed
+
+[33mcommit 98ca97437c0bce2bfeb580410e76ba268b9480fd[m
+Author: Geno Magsipoc <geno@brickriver.com>
+Date:   Wed Jan 3 11:28:56 2024 -0500
+
+    refactoring
+
+[33mcommit d0e4d821775e2f6af90015639fff941311256812[m
+Author: Geno Magsipoc <geno@brickriver.com>
+Date:   Wed Jan 3 11:05:21 2024 -0500
+
+    added new general subtask
+
+[33mcommit 158823771d0a3b61d5dbd847b3b7ea3e2114bef7[m
+Author: Geno <genomags@gmail.com>
+Date:   Wed Jan 3 07:40:33 2024 -0500
+
+    added to gitignore, need to create clear input subtask
+
+[33mcommit 97112c72c8d38dff973c1e247788fd1ef09cfa5e[m
+Author: Geno Magsipoc <geno@brickriver.com>
+Date:   Wed Jan 3 07:18:15 2024 -0500
+
+    start search added
+
+[33mcommit ef7f32e2ef508bd4ff043a6c4b81ec32dede8d85[m
+Author: Geno Magsipoc <geno@brickriver.com>
+Date:   Tue Jan 2 14:41:16 2024 -0500
+
+    added profiles to gitignore
+
+[33mcommit 4dbcc793f8deadc3eb5fd1db7580f078d141e883[m
+Author: Geno Magsipoc <geno@brickriver.com>
+Date:   Tue Jan 2 14:40:42 2024 -0500
+
+    user profiles implemented
+
+[33mcommit 270e61e59c6e0a84c96f7e8a22f1b440a153c6b1[m
+Author: Geno Magsipoc <geno@brickriver.com>
+Date:   Tue Jan 2 09:42:49 2024 -0500
+
+    added new git ignores from laptop
+
+[33mcommit 6aa6f9ff53f7e21220460c948d5d2939f1e784ee[m
+Merge: f7d2c9b2 56b4b77b
+Author: Geno Magsipoc <geno@brickriver.com>
+Date:   Tue Jan 2 09:25:05 2024 -0500
+
+    merged to laptop
+
+[33mcommit 56b4b77bd33e0f05f3cab5917c46f46c93546f27[m
+Author: Geno <genomags@gmail.com>
+Date:   Tue Jan 2 07:44:31 2024 -0500
+
+    new profile saving implementation, not working
+
+[33mcommit 3d5f2dff37855e0d612e11c77031b016b3f1e9bc[m
+Author: Geno <genomags@gmail.com>
+Date:   Thu Dec 28 21:20:02 2023 -0500
+
+    broken, profile manager needs to work
+
+[33mcommit 46b69b3345997b3121b2075673e80020ebfb22b6[m
+Author: dr3333 <nnmdkh@gmail.com>
+Date:   Wed Dec 27 22:42:14 2023 -0600
+
+    Password login for indeed
+
+[33mcommit cd7317a26dd1974a11df4515d0a97e99084b92d0[m
+Author: Geno <genomags@gmail.com>
+Date:   Wed Dec 27 22:24:08 2023 -0500
+
+    workarounds
+
+[33mcommit eb323aa14cec796c372e31e2133acff8cd6e6856[m
+Author: Geno <genomags@gmail.com>
+Date:   Wed Dec 27 20:35:25 2023 -0500
+
+    added new task IndeedBot
+
+[33mcommit 3969a6e7311876f3fd3c3582de8dca6cefb5ee4b[m
+Author: Geno <genomags@gmail.com>
+Date:   Wed Dec 20 23:55:20 2023 -0500
+
+    new IndeedBot started
+
+[33mcommit f7d2c9b23b7c75c2c4f8fe1caf3765e87570dd62[m
+Author: Geno Magsipoc <geno@brickriver.com>
+Date:   Wed Dec 20 23:36:38 2023 -0500
+
+    need to add for working task manager
+
+[33mcommit bbbafabff14556ec2ddf1b0b089986096a649383[m
+Author: Geno <genomags@gmail.com>
+Date:   Wed Dec 20 23:18:17 2023 -0500
+
+    more files to git ignore
+
+[33mcommit e40fd59d7e56ebe2e3971c5efd5b26b97bc1a8fb[m
+Author: Geno Magsipoc <geno@brickriver.com>
+Date:   Wed Dec 20 15:28:49 2023 -0500
+
+    added debug prints
+
+[33mcommit 63d70a0aa479c309c154e9195846e4821a6bd065[m
+Author: Geno Magsipoc <geno@brickriver.com>
+Date:   Wed Dec 20 10:19:13 2023 -0500
+
+    bug gone, starts again, added more debugs might need full on debugger soon
+
+[33mcommit 7ddc298e0ab1f7cd6a54a894ade7ed84b29276f2[m
+Author: Geno <genomags@gmail.com>
+Date:   Tue Dec 19 07:45:52 2023 -0500
+
+    browser manager, SUPER buggy, tasks don't execute anymore
+
+[33mcommit cde6bfda5a781e0a765a1b844223b6438a825d3a[m
+Author: Geno <genomags@gmail.com>
+Date:   Mon Dec 18 01:39:47 2023 -0500
+
+    renamed tasks
+
+[33mcommit e58f3e8c779f3a48658fd43942b87e041f9582aa[m
+Author: Geno <genomags@gmail.com>
+Date:   Sun Dec 17 18:16:29 2023 -0500
+
+    fixed home screen preview table
+
+[33mcommit b63f34e3495f82d22a3829cec16860baf576ed4d[m
+Author: Geno <genomags@gmail.com>
+Date:   Sat Dec 16 00:21:07 2023 -0500
+
+    centralized display names, tasks now emit status properly
+
+[33mcommit 9d504824eb8588da750b42c980b128e94f888da3[m
+Author: Geno <genomags@gmail.com>
+Date:   Thu Dec 14 20:05:52 2023 -0500
+
+    now using shared_data as the house for display task names
+
+[33mcommit 4c7b0f0597c0c46bb33e5d5d950193254ccd674d[m
+Author: Geno <genomags@gmail.com>
+Date:   Thu Dec 14 16:24:59 2023 -0500
+
+    changed preview table on the tasks screen to display task names
+
+[33mcommit 9354265c2348d90a4ded823e6a4a05b8fdd3b08f[m
+Author: Geno <genomags@gmail.com>
+Date:   Thu Dec 14 09:15:58 2023 -0500
+
+    when opening the task specific dialogs, canceling now closes the task
+
+[33mcommit ea19c5677da2c354b5822c7a7dd2b6e8571a215b[m
+Author: Geno <genomags@gmail.com>
+Date:   Thu Dec 14 08:27:53 2023 -0500
+
+    __pycache__ was trying to be read as a task, need to be more robust
+
+[33mcommit b73819eb3fe90edaa7b003ed5877c8d32031877b[m
+Author: Geno <genomags@gmail.com>
+Date:   Thu Dec 14 05:17:33 2023 -0500
+
+    removed qt gui image warnings after png crushing
+
+[33mcommit d640e3ec1127a87415674432a8f76f60da31f706[m
+Author: Geno Magsipoc <geno@brickriver.com>
+Date:   Wed Dec 13 16:45:54 2023 -0500
+
+    buggy part 2
+
+[33mcommit 674cbe24dc435c2ec6ea88cbd67937a428886895[m
+Author: Geno Magsipoc <geno@brickriver.com>
+Date:   Mon Dec 11 23:35:54 2023 -0500
+
+    full task deletion rework
+
+[33mcommit 02f1ecd1b2a2000b2ad8a30547d55d97580bfd5e[m
+Author: Geno Magsipoc <geno@brickriver.com>
+Date:   Mon Dec 11 15:08:46 2023 -0500
+
+    buggy add task, creates, can't delete
+
+[33mcommit 6785098fc5189702e97aaab01c2673303964119f[m
+Author: Geno Magsipoc <geno@brickriver.com>
+Date:   Mon Dec 11 13:56:23 2023 -0500
+
+    added a bunch to gitignore
+
+[33mcommit a1bc55e53fa354dbb778f75cfe19a34db2da71d7[m
+Author: Geno Magsipoc <geno@brickriver.com>
+Date:   Mon Dec 11 12:21:32 2023 -0500
+
+    fixed stopping, buggy when multiple
+
+[33mcommit 447e7b156d3c35b76e1dded7a9cabe56fe81bf28[m
+Author: Geno <genomags@gmail.com>
+Date:   Sat Dec 9 22:20:41 2023 -0500
+
+    instantiated task_manager into main_window
+
+[33mcommit 365a72ef8f55973eb3209c8c2491d9cff592b3e0[m
+Author: Geno <genomags@gmail.com>
+Date:   Sat Dec 9 20:44:24 2023 -0500
+
+    initial comit for task_manager folder
+
+[33mcommit 5a99334075d62dfabaaf46b1502572d3adfc064a[m
+Author: Geno <genomags@gmail.com>
+Date:   Fri Dec 8 11:17:14 2023 -0500
+
+    better task deletion
+
+[33mcommit 4608b82e36b5ec72054c49eb1d7e52bc9f9ed9fe[m
+Author: Geno <genomags@gmail.com>
+Date:   Thu Dec 7 13:46:30 2023 -0500
+
+    buggy
+
+[33mcommit 67e5e4d8530de57c496819954c4dac818d09e67d[m
+Merge: 792e76fb bf4f9d3f
+Author: Geno <genomags@gmail.com>
+Date:   Thu Dec 7 01:05:31 2023 -0500
+
+    Merge branch 'main' of https://github.com/genekyle/wsai
+
+[33mcommit bf4f9d3f7dada4e989c29a72a44294ca6d26fff7[m
+Author: Geno Magsipoc <geno@brickriver.com>
+Date:   Wed Dec 6 17:00:04 2023 -0500
+
+    small changes with more bugs
+
+[33mcommit 3f15ca91a82ec3ef43dcd3a0fe22012f9e88210a[m
+Author: Geno Magsipoc <geno@brickriver.com>
+Date:   Wed Dec 6 16:03:43 2023 -0500
+
+    huge refactor, won't be the last time
+
+[33mcommit 792e76fb233703f215b82ce0608ce8f449ddb8c5[m
+Author: Geno <genomags@gmail.com>
+Date:   Thu Nov 30 16:05:13 2023 -0500
+
+    cleanup
+
+[33mcommit fecf997cd0bb3fb6768868396a76965e8a764833[m
+Author: Geno <genomags@gmail.com>
+Date:   Thu Nov 30 14:53:56 2023 -0500
+
+    fixed home screen task prev
+
+[33mcommit f7f384e67a2bf5bad91a959848295306f197078a[m
+Author: Geno <genomags@gmail.com>
+Date:   Thu Nov 30 00:04:40 2023 -0500
+
+    big update, selenium tasks now working
+
+[33mcommit 1de36ccd1c0b3cc41f5201ac6fc9339b91b8370f[m
+Author: Geno <genomags@gmail.com>
+Date:   Sun Nov 26 19:26:12 2023 -0500
+
+    everything works, just not how intended
+
+[33mcommit 6f1cd20629fdf24c079aa55db76a1df13dfacccd[m
+Author: Geno <genomags@gmail.com>
+Date:   Sun Nov 26 18:01:50 2023 -0500
+
+    big commit a lot known issues, need to cleanup
+
+[33mcommit 4c3c6808d078d3c20b58be84b9cacc7c4f54a8ff[m
+Author: Geno <genomags@gmail.com>
+Date:   Sat Nov 25 20:06:57 2023 -0500
+
+    new home widget that displays all tasks
+
+[33mcommit 91308ffd6e642c85201c8f46759c1b6903f692e9[m
+Author: Geno <genomags@gmail.com>
+Date:   Thu Nov 23 16:33:39 2023 -0500
+
+    small edits to how the screens interact
+
+[33mcommit 3505882ea9c6409dc1da9e3460069c54e8b2cfcc[m
+Author: Geno <genomags@gmail.com>
+Date:   Thu Nov 23 10:50:18 2023 -0500
+
+    tasks screen delete button action created
+
+[33mcommit 4777ae1381178e30b99fb6ee0c0dc0bfe800fff3[m
+Author: Geno <genomags@gmail.com>
+Date:   Thu Nov 23 09:57:51 2023 -0500
+
+    restructured, new screens, new dialogs
+
+[33mcommit a7a1f86f449965924a8cca7f8de4a03803fb5eb0[m
+Author: Geno <genomags@gmail.com>
+Date:   Thu Nov 23 09:10:48 2023 -0500
+
+    Coding on thanksgiving
+
+[33mcommit 67a31e116daa06b7b036cc76b749e2d311c7cf27[m
+Author: Geno <genomags@gmail.com>
+Date:   Fri Nov 17 19:24:18 2023 -0500
+
+    Reformatted the file structure
+
+[33mcommit d291e1ca27f05062c88f2e578cd14945834d8cb1[m
+Author: Geno <genomags@gmail.com>
+Date:   Wed Nov 15 03:43:50 2023 -0500
+
+    second commit
+
+[33mcommit a0424c1e11d29472e824dafb35ec27d494cf3b65[m
+Author: Geno <genomags@gmail.com>
+Date:   Sun Nov 12 13:14:13 2023 -0500
+
+    First Commit

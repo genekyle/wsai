@@ -44,6 +44,7 @@ class Jobs:
         self.selected_location_id = selected_location_id
         self.db_session = db_session
 
+    
     def get_location_name_by_id(self, location_id):
         print("Trying to query location name")
         try:
@@ -358,6 +359,7 @@ class Jobs:
                         print("This is a Company Apply button.")
                         apply_type = "Company Apply"
                         applied = False
+                        resume_used = "Company Apply"
                 except TimeoutException:
                     print("Timed out waiting for apply type button to be clickable.")
                     try:
@@ -369,6 +371,7 @@ class Jobs:
                         print(job_post_title, ': ', applied_span.text)
                         apply_type = "Applied"
                         applied = True
+                        resume_used = "Applied"
                     except Exception as e:
                         print(f"Error extracting applied span from list item {i}: {e}")
                 except NoSuchElementException:
@@ -412,7 +415,8 @@ class Jobs:
                     company_highlights=company_highlights_jdp,
                     skills_highlights=skills_highlights_jdp,
                     job_post_description=job_description,
-                    applied=applied
+                    applied=applied,
+                    resume_used=resume_used
                 )
                 print(f'Job Post {i}: {job_post}')
             except Exception as e:
@@ -490,8 +494,13 @@ class Jobs:
                 # Include the job title for comparison
                 all_titles = resume_titles + [job_title]
 
+                # Tokenizer for the Job Title Matching Model
+                def custom_tokenizer(text):
+                    tokens = re.findall(r'\b\w+\b|I{1,3}|IV|V|VI{0,3}', text)
+                    return tokens
+                
                 # Generate TF-IDF matrix
-                vectorizer = TfidfVectorizer(stop_words='english')
+                vectorizer = TfidfVectorizer(tokenizer=custom_tokenizer, stop_words='english')
                 tfidf_matrix = vectorizer.fit_transform(all_titles)
 
                 # Calculate cosine similarity with the job title
@@ -531,8 +540,8 @@ class Jobs:
                     print(f"Job location '{job_location}' falls under the '{job_location_group}' group.")
                     # Query for the best matching resume variation based on the location group
                     best_variation = self.db_session.query(ResumeVariations) \
-                                                    .filter_by(resume_id=best_match_resume.resume_id, location=job_location_group) \
-                                                    .first()
+                        .filter_by(resume_id=best_match_resume.resume_id, location=job_location_group) \
+                        .first()
 
                     if best_variation:
                         print(f"Selected Resume Variation for '{job_location_group}': {best_variation.file_name}")
@@ -575,7 +584,9 @@ class Jobs:
                 print("Not ready to submit yet, continuing with modal processing.")
 
         print("exited the modal processing loop")
-
+    
+    
+    
     def modal_is_open(self):
         try:
             modal_xpath = "//h2[contains(@id, 'jobs-apply-header')]"
@@ -632,7 +643,7 @@ class Jobs:
             print("Exit condition met")
             return True
         except Exception as e:
-            print(f"ERROR: submit application button in apply modal not found actual error: {e}")
+            print("Checked for exit condition")
             print("Exit Condition not yet met met")
             return False
         
