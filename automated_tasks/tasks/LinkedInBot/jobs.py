@@ -820,8 +820,6 @@ class Jobs:
 
         print("exited the modal processing loop")
     
-    
-    
     def modal_is_open(self):
         try:
             modal_xpath = "//h2[contains(@id, 'jobs-apply-header')]"

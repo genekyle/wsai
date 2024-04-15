@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, Boolean, ForeignKey, DateTime
+from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, ForeignKey, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.exc import SQLAlchemyError
@@ -109,6 +109,26 @@ class ResumeVariations(LinkedInBase):
     location = Column(String)
     file_name = Column(String)
 
+class ResumeMatches(LinkedInBase):
+    __tablename__ = 'resume_matches'
+    rm_id = Column(Integer, primary_key=True, autoincrement= True) # resume match id
+    resume_id = Column(Integer) # resume id
+    variation_id = Column(Integer)
+    job_id = Column(Integer)
+    resume_title = Column(String)
+    job_title = Column(String)
+    job_location = Column(String)
+    score = Column(Float)
+
+class QuestionAnswer(LinkedInBase):
+    __tablename__ = 'question_answer'
+    qa_id = Column(Integer, primary_key=True, autoincrement= True) # Question & Answer Table ID
+    job_id = Column(Integer)
+    question_type = Column(String)
+    question = Column(String)
+    options = Column(String)
+    answer = Column(String)
+    score = Column(Float)
 
 # Dynamically select the database based on a task identifier
 def get_engine(task_name):
