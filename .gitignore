@@ -1,4 +1,5 @@
 wsaienv/Lib/site-packages
+automated_tasks/tasks/LinkedInBot/__pycache__
 __pycache__/mainwindow.cpython-312.pyc
 automated_tasks/__pycache__/__init__.cpython-312.pyc
 automated_tasks/subtasks/__pycache__/__init__.cpython-312.pyc

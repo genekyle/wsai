@@ -8,12 +8,19 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from db.DatabaseManager import LinkedInLocation, LinkedInJobSearch, Resumes, ResumeVariations
 
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
+from automated_tasks.tasks.LinkedInBot.match_label_model import ModelHandler
+
+import torch
+from transformers import BertModel, BertTokenizer
+from scipy.spatial.distance import cosine
+
+from sentence_transformers import SentenceTransformer, util
 
 from datetime import datetime
-import re, os
+import re, os, json
+
+# Separate Model Hanlder for Labels, should modularize for the other QA systems as well
+model_handler = ModelHandler()
 
 class JobPost:
     def __init__(self, date_posted, date_extracted, job_title, posted_by, job_post_link, job_apply_type, job_location, posted_benefits, 
@@ -373,7 +380,7 @@ class Jobs:
                         applied = True
                         resume_used = "Applied"
                     except Exception as e:
-                        print(f"Error extracting applied span from list item {i}: {e}")
+                        print(f"Error in apply type from list item {i}: {e}")
                 except NoSuchElementException:
                     print("The apply type button was not found.")
                     try:
@@ -386,7 +393,7 @@ class Jobs:
                         apply_type = "Applied"
                         applied = True
                     except Exception as e:
-                        print(f"Error extracting applied span from list item {i}: {e}")
+                        print(f"Error in apply type fromfrom list item {i}: {e}")
                 except Exception as e:
                     print(f"Error extracting apply type button from list item {i}: {e}")
                     try:
@@ -421,7 +428,7 @@ class Jobs:
                 print(f'Job Post {i}: {job_post}')
             except Exception as e:
                 print(f"Error extracting data from list item {i}: {e}")
-            
+
     def apply_to_job(self, job_title, job_location, list_item_element):
         """Apply to a single job, deciding which resume to use based on job description matching."""
         print(f'Trying to apply for {job_title} at {job_location}')
@@ -451,10 +458,44 @@ class Jobs:
             print(f'current applier modal page: {current_header_text}')
             random_sleep(5,10)
 
-            # Pages We would encounter in Apply Modal
+            # Question and Answering System Using Json as data
+            # Load the categorized JSON data
+            with open('C:/Users/genom/code/wsai/automated_tasks/tasks/LinkedInBot/qa_data.json', 'r') as file:
+                categories = json.load(file)
+                data = [item for category in categories.values() for item in category]
+
+            model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
+
+            # Convert questions to embeddings
+            precomputed_embeddings = {item['question']: model.encode(item['question'], convert_to_tensor=True) for item in data}
+
+            def get_answer(question):
+                question_embedding = model.encode(question, convert_to_tensor=True)
+                # Find the question with the highest cosine similarity to the input question
+                highest_score = 0
+                best_match = None
+                for stored_question, embedding in precomputed_embeddings.items():
+                    similarity = util.pytorch_cos_sim(question_embedding, embedding)[0][0].item()
+                    if similarity > highest_score:
+                        highest_score = similarity
+                        best_match = stored_question
+                
+                if highest_score > 0.7:  # Example threshold
+                    matching_data = next((item for item in data if item['question'] == best_match), None)
+                    return matching_data['answer'], highest_score
+                else:
+                    return "No suitable answer found.", highest_score
+
+            # Pages We would encounter in Apply Modal:
+            # Pages We have found:
+            # Contact Info, Home Address, Additional Questions, Work Authorization, Upload Resume, Voluntary self identification, 
+            # Additional (Similar to Additional Questions),
+            # Sometimes Upload Resume may ask for Cover Letter, typed or uploaded
 
             if "contact info" in current_header_text:
-                # Notes: We found that some jobs may be able to have upload resume within the contacts page
+                # Notes: We found that some jobs may be able to have upload resume within the contacts page, 
+                # CONTACT INFO FIELDS FOUND:
+                # First Name, Last Name, Phone Country Code, Mobile Phone Number, Email Address, Resume
                 print("In the Contact Info Page, Confirming Contacts")
                 email_address_select_option_xpath = "//label[span[@aria-hidden='true' and contains(text(), 'Email address')]]/following-sibling::select[contains(@id, 'text-entity-list')]/option[@value='genomags@gmail.com']"
                 email_address_select_option = WebDriverWait(self.driver, 10).until(
@@ -491,39 +532,51 @@ class Jobs:
                 resumes = self.db_session.query(Resumes).all()
                 resume_titles = [resume.resume_title for resume in resumes]
 
-                # Include the job title for comparison
-                all_titles = resume_titles + [job_title]
+                def rank_and_get_best_resume(job_title, resume_titles):
+                    # Load pre-trained BERT tokenizer and model
+                    tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+                    model = BertModel.from_pretrained('bert-base-uncased')
 
-                # Tokenizer for the Job Title Matching Model
-                def custom_tokenizer(text):
-                    tokens = re.findall(r'\b\w+\b|I{1,3}|IV|V|VI{0,3}', text)
-                    return tokens
+                    # Tokenize and encode job title and resume titles for BERT input
+                    encoded_job_title = tokenizer.encode(job_title, add_special_tokens=True)
+                    encoded_resume_titles = [tokenizer.encode(title, add_special_tokens=True) for title in resume_titles]
+
+                    # Convert to PyTorch tensors
+                    job_title_tensor = torch.tensor([encoded_job_title])
+                    resume_title_tensors = [torch.tensor([title]) for title in encoded_resume_titles]
+
+                    # Get embeddings from BERT model
+                    with torch.no_grad():
+                        job_title_embedding = model(job_title_tensor)[0][:,0,:].squeeze().numpy()
+                        resume_title_embeddings = [model(tensor)[0][:,0,:].squeeze().numpy() for tensor in resume_title_tensors]
+
+                    # Calculate cosine similarity and rank the resume titles
+                    similarities = [1 - cosine(job_title_embedding, embedding) for embedding in resume_title_embeddings]
+                    ranked_indices = sorted(range(len(similarities)), key=lambda i: similarities[i], reverse=True)
+
+                    # Print the top 10 matches
+                    print("Top 10 Matching Resumes:")
+                    for rank, index in enumerate(ranked_indices[:10], start=1):
+                        print(f"{rank}. Resume Title: '{resume_titles[index]}' - Score: {similarities[index]:.4f}")
+
+                    # Get the best match resume title and score
+                    best_match_index = ranked_indices[0]
+                    best_match_resume_title = resume_titles[best_match_index]
+                    best_match_score = similarities[best_match_index]
+
+                    print(f"\nBest Match Resume: '{best_match_resume_title}' - Score: {best_match_score:.4f}")
+
+                    return best_match_resume_title
                 
-                # Generate TF-IDF matrix
-                vectorizer = TfidfVectorizer(tokenizer=custom_tokenizer, stop_words='english')
-                tfidf_matrix = vectorizer.fit_transform(all_titles)
+                best_match_resume_title = rank_and_get_best_resume(job_title, resume_titles)
 
-                # Calculate cosine similarity with the job title
-                cosine_sim = cosine_similarity(tfidf_matrix[-1], tfidf_matrix[:-1])[0]
+                best_match_resume = self.db_session.query(Resumes).filter_by(resume_title=best_match_resume_title).first()
 
-                # Rank the resumes based on similarity scores
-                sorted_indexes = np.argsort(cosine_sim)[::-1]  # Sort in descending order
-
-                # Print the top 10 matches
-                print("Top 10 Matching Resumes:")
-                for rank, index in enumerate(sorted_indexes[:10], start=1):
-                    print(f"{rank}. Resume Title: '{resumes[index].resume_title}' - Score: {cosine_sim[index]:.4f}")
-
-                # Select the highest-scoring resume
-                best_match_index = sorted_indexes[0]
-                best_match_resume = resumes[best_match_index]
-                print(f"Best Match Resume: '{best_match_resume.resume_title}' - Score: {cosine_sim[best_match_index]:.4f}")
-                
                 # Fuzzy Matching System
                 location_groups = {
                     "California": ["California", "CA"],  # California In General not sure where to go
                     "New York": ["New York", "NY", "New Jersey", "NJ", "Manhattan", "Brooklyn", "Queens"], # NYC Metropolitan Area mainly
-                    "New Hampshire": ["Boston", "MA", "Massachusetts", "New Hampshire", "NH"] # Greater Boston Area
+                    "New Hampshire": ["Boston", "MA", "Massachusetts", "New Hampshire", "NH", "RI", "ME", "Remote"] # Greater Boston Area
                 }
 
                 # Determine the job location group directly in the function
@@ -532,24 +585,24 @@ class Jobs:
                     if any(loc.lower() in job_location.lower() for loc in locations):
                         job_location_group = group
                         break
+                
+                # Initialize  best_variation:
+                best_variation = None  # Initialize outside of the conditional block
 
                 # Handle no matching location group
                 if job_location_group is None:
                     print(f"No location group found for '{job_location}'. Using default resume variation or handling otherwise.")
                 else:
                     print(f"Job location '{job_location}' falls under the '{job_location_group}' group.")
-                    # Query for the best matching resume variation based on the location group
+                    # Query for the best matching resume variation based on the location group and resume_id
                     best_variation = self.db_session.query(ResumeVariations) \
                         .filter_by(resume_id=best_match_resume.resume_id, location=job_location_group) \
                         .first()
 
                     if best_variation:
-                        print(f"Selected Resume Variation for '{job_location_group}': {best_variation.file_name}")
+                        print(f"Best variation file name: {best_variation.file_name}")
                     else:
-                        print(f"No resume variation found for '{job_location_group}'.")
-                    
-                    best_resume_file_name = best_variation.file_name
-                    print(best_resume_file_name)
+                        print("No matching resume variation found.")
                 
                 print("With Resume Matched, now uploading the correct resume")
                 
@@ -572,7 +625,189 @@ class Jobs:
 
                 upload_resume_input.send_keys(resume_file_path)
                 random_sleep(10,20)
-                
+            
+            elif "additional questions" in current_header_text:
+                print("Additional Questions Modal Page detected")
+                # Initiate by targeting the modal page content
+                print("Targeting Addititional Questions")
+                try:
+                    additional_questions_content_xpath = "//div[contains(@class, 'jobs-easy-apply-content')]"
+                    additional_questions_content = WebDriverWait(self.driver, 10).until(
+                        EC.presence_of_element_located((By.XPATH, additional_questions_content_xpath))
+                    )
+                    print("Additional Questions Targeted")
+                except:
+                    print("Error targeting additional questions content")
+
+                # Targeting Individual Questions By First Finding how many questions there are
+                print("Looking for how many questions")
+                try:
+                    all_questions_xpath = ".//div[contains(@class, 'jobs-easy-apply-form-section__grouping')]"
+                    all_questions_elements = WebDriverWait(additional_questions_content, 10).until(
+                        EC.presence_of_all_elements_located((By.XPATH, all_questions_xpath))
+                    )
+                    print("All Questions Found")
+                    num_questions = len(all_questions_elements)
+                    print(f'Number of Questions Groupings Found: {num_questions}')
+
+                    # Iterate through each question to determine its type
+                    for index, question_element in enumerate(all_questions_elements, start=1):
+                        question_handled = False
+                        random_sleep(1.2,2.5)
+
+                        # Check if it's a radio question
+
+                        radio_xpath = ".//fieldset[@data-test-form-builder-radio-button-form-component='true']"
+                        try:
+                            print("Trying for radio question search")
+                            radio_elements = question_element.find_elements(By.XPATH, radio_xpath)
+                            print(f'Question #{index} handled')
+                        except:
+                            print("Error looking for radio question")
+                        if len(radio_elements) > 0:
+                            print(f"Question {index} is a Radio Question.")
+                            question_handled = True
+                            try:
+                                print("Looking for Question Label")
+                                question_xpath = ".//span[@data-test-form-builder-radio-button-form-component__title]/span[@aria-hidden='true']"
+                                question = WebDriverWait(question_element, 10).until(
+                                    EC.presence_of_element_located((By.XPATH, question_xpath))
+                                ).text
+                                print(f"question {index} found")
+                                print(f"Question (Input) #{index}: {question}")
+
+                                answer, score = get_answer(question)
+                                print("Question:", question)
+                                print("Answer:", answer)
+                                print("Score:", score)
+                                try:
+                                    label_xpath = ".//label[@data-test-text-selectable-option__label]"
+                                    # Locate all the labels for radio inputs
+                                    labels = WebDriverWait(question_element, 10).until(
+                                        EC.presence_of_all_elements_located((By.XPATH, label_xpath))
+                                    )
+                                    label_texts = []
+                                    print("Labels Found")
+                                    for label in labels:
+                                        text = label.text
+                                        displayed = label.is_displayed()
+                                        label_texts.append((text, label))
+                                        print(f"Text: {text}, Displayed: {displayed}")
+
+                                    
+                                    print("trying to match answer to labels")
+                                    matched_label = model_handler.match_answer_to_labels(answer, labels)
+                                    if matched_label:
+                                        print(f"Best match: {matched_label[0]}")
+                                        matched_label[1].click()  # Click the matched label element
+                                        print("Clicked On Matched Label")
+                                    else:
+                                        print("No suitable label found for the answer.")
+
+                                except Exception as e:
+                                    print(f"Errored on label finder for options on radio questions: {e}")
+                                
+                            except:
+                                print("Question Label Not found")
+
+                            # Handle radio question specifics here
+
+                        # Check if it's an input question
+                        if not question_handled:
+                            print("Trying for input questions")
+                            input_xpath = ".//div[contains(@class, 'artdeco-text-input--container ember-view')]"
+                            try:
+                                print("Trying for input search")
+                                input_elements = WebDriverWait(question_element, 10).until(
+                                    EC.presence_of_all_elements_located((By.XPATH, input_xpath))
+                                )
+                            except:
+                                print("Error Looking for input")
+                            if len(input_elements) > 0:
+                                print(f"Question {index} is an Input Question.")
+                                question_handled = True
+                                try:
+                                    print("Looking for Question Label")
+                                    question_xpath = ".//label[contains(@for, 'single-line-text-form-component-formElement')]"
+                                    question = WebDriverWait(question_element, 10).until(
+                                        EC.presence_of_element_located((By.XPATH, question_xpath))
+                                    ).text
+                                    print(f"question {index} found")
+                                    print(f"Question (Input) #{index}: {question}")
+                                    try:
+                                        answer, score = get_answer(question)
+                                        print("Question:", question)
+                                        print("Answer:", answer)
+                                        print("Score:", score)
+                                    except Exception as e:
+                                        print(f"ERROR: Getting answer from qa_model: {e}")
+
+                                    print("Looking for Input")
+                                    input_xpath = ".//input[contains(@id, 'single-line-text-form-component')]"
+                                    input = WebDriverWait(question_element, 10).until(
+                                        EC.presence_of_element_located((By.XPATH, input_xpath))
+                                    )
+                                    print("Input Found")
+                                    print("Checking for numeric error for input")
+                                    numeric_error_xpath = "//div[contains(@id, 'numeric-error')]"
+                                    try:
+                                        numeric_error = WebDriverWait(question_element, 10).until(
+                                            EC.presence_of_element_located((By.XPATH, numeric_error_xpath))
+                                        )
+                                        print("Numeric Error Found Inputting Numeric Answer")
+                                        input.send_keys(Keys.CONTROL + 'a', Keys.BACKSPACE)
+                                        print("input cleared")
+                                        # Possibly check if there are lettering/non-integers before performing
+                                        print(f"Current Answer {answer}")
+                                        print("Clearing non integers from answer")
+                                        numeric_part = re.search(r'\d+', answer)
+                                        if numeric_part:
+                                            number_answer = numeric_part.group()
+                                        else:
+                                            print("ERROR: No Number found in answer")
+                                        human_type(input, number_answer)
+                                    except:
+                                        print("Numeric Error Not Found, Inputting regular answer")
+                                        human_type(input, answer)
+                                        print(f"Answer: {answer}, typed into input question #{index}")
+                                except:
+                                    print("Question Label Not found")
+                        
+                        
+                        # Check for dropdown-select question
+                        if not question_handled:
+                            dropdown_xpath = ".//div[@data-test-text-entity-list-form-component]"
+                            try:
+                                print("Trying for dropdown question element search")
+                                dropdown_elements = WebDriverWait(question_element, 10).until(
+                                    EC.presence_of_all_elements_located((By.XPATH, dropdown_xpath))
+                                )
+                            except:
+                                print("Failed for searching for dropdown elements")
+                            if len(dropdown_elements) > 0:
+                                print(f"Question {index} is a dropdown-select question.")
+                                question_handled = True
+                                try:
+                                    print("Looking for Question Label")
+                                    question_xpath = ".//label[contains(@for, 'text-entity-list-form-component-formElement')]"
+                                    question = WebDriverWait(self.driver, 10).until(
+                                        EC.presence_of_all_elements_located((By.XPATH, question_xpath))
+                                    ).text
+                                    print(f"question {index} found")
+                                    print(f"Question (Dropdown) #{index}: {question}")
+                                   
+
+                                    answer, score = get_answer(question)
+                                    print("Question:", question)
+                                    print("Answer:", answer)
+                                    print("Score:", score)
+                                    
+                                except:
+                                    print("Question Label Not found")
+
+                except:
+                    print('Error trying to target all of the question element groupings')
+
             if not self.next_or_review_button():
                 print("Neither next or review button found")
             
@@ -612,20 +847,21 @@ class Jobs:
                 next_button.click()
                 print("Next Button Clicked")
                 return True
-            except NoSuchElementException:
+            except Exception as e:
+                print(f'Error Looking for Next Button: {str(e)[:100]}')
                 print("next button in apply modal not found, looking for reveiw button")
                 try:
                     print("Looking for review button")
                     review_button_xpath = "//button[contains(@aria-label, 'Review your application')]"
                     review_button = WebDriverWait(self.driver, 10).until(
-                        EC.element_to_be_clickable((By.XPATH, review_button))
+                        EC.element_to_be_clickable((By.XPATH, review_button_xpath))
                     )
                     print("review button found")
                     review_button.click()
                     print("Review button clicked")
                     return True
-                except NoSuchElementException:
-                    print("Error: Next Button or Review button not found")
+                except Exception as e:
+                    print(f'Error Looking for Next or Review Button: {str(e)[:100]}')
                     print("Breaking the apply modal loop")
                     return(False)
 
