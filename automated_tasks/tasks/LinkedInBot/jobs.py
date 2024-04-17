@@ -6,7 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
-from db.DatabaseManager import LinkedInLocation, LinkedInJobSearch, Resumes, ResumeVariations
+from db.DatabaseManager import LinkedInLocation, LinkedInJobSearch, Resumes, ResumeVariations, ResumeMatches, QuestionAnswer, LinkedInJob
 
 from automated_tasks.tasks.LinkedInBot.match_label_model import ModelHandler
 
@@ -22,27 +22,6 @@ import re, os, json
 # Separate Model Hanlder for Labels, should modularize for the other QA systems as well
 model_handler = ModelHandler()
 
-class JobPost:
-    def __init__(self, date_posted, date_extracted, job_title, posted_by, job_post_link, job_apply_type, job_location, posted_benefits, 
-                 job_highlights, company_highlights, skills_highlights, job_post_description, applied, resume_used):
-        self.date_posted = date_posted
-        self.date_extracted = date_extracted
-        self.job_title = job_title
-        self.posted_by = posted_by
-        self.job_post_link = job_post_link
-        self.job_apply_type = job_apply_type
-        self.job_location = job_location
-        self.posted_benefits = posted_benefits
-        self.job_highlights = job_highlights
-        self.company_highlights = company_highlights
-        self.skills_highlights = skills_highlights
-        self.job_post_description = job_post_description
-        self.applied = applied
-        self.resume_used = resume_used
-
-    def __repr__(self):
-        return (f"JobPost(date_posted={self.date_posted}, job_title={self.job_title}, "
-                f"posted_by={self.posted_by}, job_location={self.job_location}, job_post_description={self.job_post_description[0:100]})")
 
 class Jobs:
     def __init__(self, driver, user_profile, selected_location_id, db_session):
@@ -50,6 +29,7 @@ class Jobs:
         self.user_profile = user_profile
         self.selected_location_id = selected_location_id
         self.db_session = db_session
+        self.search_id = None
 
     
     def get_location_name_by_id(self, location_id):
@@ -173,6 +153,8 @@ class Jobs:
 
             self.db_session.add(new_job_search)
             self.db_session.commit()
+            self.search_id = new_job_search.id
+            print(f"Search initiated with ID: {self.search_id}")
             print("Search record added successfully")
         
         except Exception as e:
@@ -349,6 +331,7 @@ class Jobs:
                         print("Alternate job date posted found in 2nd Attempt")
                     except Exception as e:
                         print(f"Error #2 extracting Job Date Posted span from list item {i}: {e}")
+                        job_date_posted = None
                 # Apply Type(JDP)
                 try:
                     print("Looking For Apply Type")
@@ -361,7 +344,10 @@ class Jobs:
                     if "easy apply" in aria_label.lower():
                         print("This is an Easy Apply button.")
                         apply_type = "Easy Apply"
-                        applied = self.apply_to_job(job_post_title, job_post_loctation, list_item_element)
+                        resume_matched, applied = self.apply_to_job(job_post_title, job_post_loctation, list_item_element)
+                        print(resume_matched.resume_title)
+                        print(f'Applied = {applied}')
+                        resume_used = resume_matched.resume_title
                     else:
                         print("This is a Company Apply button.")
                         apply_type = "Company Apply"
@@ -408,8 +394,10 @@ class Jobs:
                     except Exception as e:
                         print(f"Error extracting applied span from list item {i}: {e}")
 
-
-                job_post = JobPost(
+                # Initiate Job Post Object
+                job_post = LinkedInJob(
+                    user_profile_id = self.user_profile.id,
+                    search_id = self.search_id,
                     date_posted=job_date_posted,
                     date_extracted=datetime.now(),
                     job_title=job_post_title,
@@ -426,8 +414,24 @@ class Jobs:
                     resume_used=resume_used
                 )
                 print(f'Job Post {i}: {job_post}')
+                # Adding and committing to the session
+                try:
+                    print(f'Attempting to add Job Post {i}')
+                    self.db_session.add(job_post)
+                    self.db_session.commit()
+                    print(f"Job Post {i}: {job_post}")
+                    print("Job ID:", job_post.id)  # This will now have the ID assigned by the database
+                    resume_matched.job_id = job_post.id
+                    self.db_session.add(resume_matched)
+                    self.db_session.commit()
+                    print("Resume Matched Entry saved Successfully.")
+                except Exception as e:
+                    self.db_session.rollback()  # Roll back if any error occurs
+                    print(f"Failed to save the job post: {e}")
             except Exception as e:
                 print(f"Error extracting data from list item {i}: {e}")
+            
+
 
     def apply_to_job(self, job_title, job_location, list_item_element):
         """Apply to a single job, deciding which resume to use based on job description matching."""
@@ -487,7 +491,7 @@ class Jobs:
                     return "No suitable answer found.", highest_score
 
             # Pages We would encounter in Apply Modal:
-            # Pages We have found:
+            # Pages We have found:w
             # Contact Info, Home Address, Additional Questions, Work Authorization, Upload Resume, Voluntary self identification, 
             # Additional (Similar to Additional Questions),
             # Sometimes Upload Resume may ask for Cover Letter, typed or uploaded
@@ -566,9 +570,9 @@ class Jobs:
 
                     print(f"\nBest Match Resume: '{best_match_resume_title}' - Score: {best_match_score:.4f}")
 
-                    return best_match_resume_title
+                    return best_match_resume_title, best_match_score
                 
-                best_match_resume_title = rank_and_get_best_resume(job_title, resume_titles)
+                best_match_resume_title, best_match_score = rank_and_get_best_resume(job_title, resume_titles)
 
                 best_match_resume = self.db_session.query(Resumes).filter_by(resume_title=best_match_resume_title).first()
 
@@ -604,13 +608,37 @@ class Jobs:
                     else:
                         print("No matching resume variation found.")
                 
+                
+
+                # Print Tester/Debugger
+                print(best_match_resume.resume_id)
+                print(best_variation.variation_id)
+                print("Job Id: Will Be added after a successful application was sent") # Implementation here
+                print(best_match_resume_title)
+                print(job_title)
+                print(job_location)
+                print(f"Best Match Score: {best_match_score}")
+                # Creating a ResumeMatched object to be put into sql database
+                resume_matched = ResumeMatches(
+                    resume_id = best_match_resume.resume_id,
+                    variation_id = best_variation.variation_id,
+                    resume_title = best_match_resume_title,
+                    job_id = None,
+                    job_title = job_title,
+                    job_location = job_location,
+                    score = best_match_score
+                )
+                
+                
+
+                random_sleep(10,20)
+                
                 print("With Resume Matched, now uploading the correct resume")
                 
                 # In LinkedIn the label may be the trigger the action(uploading) when clicked on
                 try:
                     print("Looking For Resume Input")
                     upload_resume_input_xpath = "//input[contains(@name, 'file')]"
-            
                     upload_resume_input = WebDriverWait(self.driver, 10).until(
                         EC.presence_of_element_located((By.XPATH, upload_resume_input_xpath))
                     )
@@ -620,11 +648,14 @@ class Jobs:
                     resumes_folder_path = r"C:\Users\genom\Documents\apply\resumes"
                     resume_file_path = os.path.join(resumes_folder_path, resume_file_name)
                     print(resume_file_path)
+                    upload_resume_input.send_keys(resume_file_path)
+
                 except Exception as e:
                     print(f"Error Trying To upload resume:{e}")
+                    return resume_matched, False
+                
 
-                upload_resume_input.send_keys(resume_file_path)
-                random_sleep(10,20)
+                return resume_matched, True
             
             elif "additional questions" in current_header_text:
                 print("Additional Questions Modal Page detected")
@@ -807,7 +838,9 @@ class Jobs:
 
                 except:
                     print('Error trying to target all of the question element groupings')
-
+            else:
+                print("Unknown Section: Not Contact Info, Upload Resume or Additional Questions in Header Text")
+                handle_unknown_section()
             if not self.next_or_review_button():
                 print("Neither next or review button found")
             
