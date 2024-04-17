@@ -9,7 +9,7 @@ from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from db.DatabaseManager import LinkedInLocation, LinkedInJobSearch, Resumes, ResumeVariations, ResumeMatches, QuestionAnswer, LinkedInJob
 
 from automated_tasks.tasks.LinkedInBot.match_label_model import ModelHandler
-
+from automated_tasks.subtasks.LinkedIn.handle_unknown_section import handle_unknown_section
 import torch
 from transformers import BertModel, BertTokenizer
 from scipy.spatial.distance import cosine
@@ -236,20 +236,33 @@ class Jobs:
                 try:
                     print("Checking To see if the job post we clicked on matches the full sized job description panel")
                     # Job Description Panel(JDP)
-                    job_title_jdp_span_xpath = "//span[contains(@class, 'job-details-jobs-unified-top-card__job-title-link')]"
-                    job_title_jdp = WebDriverWait(list_item_element, 10).until(
-                        EC.element_to_be_clickable((By.XPATH, job_title_jdp_span_xpath))
-                    ).text
+                    try:
+                        print("Trying Attempt # 1 for JDP Job Title")
+                        job_title_jdp_span_xpath = "//h2[contains(@class, 'job-details-jobs-unified-top-card__job-title')]//span"
+                        job_title_jdp = WebDriverWait(self.driver, 10).until(
+                            EC.visibility_of_element_located((By.XPATH, job_title_jdp_span_xpath))
+                        ).text
+                        print("Job Title JDP Found")
+                    except:
+                        try:
+                            print("Attempt 1 failed... Trying Attempt # 2 for JDP Job Title")
+                            job_title_jdp_span_xpath = "//h1[contains(@class, 'job-details-jobs-unified-top-card__job-title')]//span"
+                            job_title_jdp = WebDriverWait(self.driver, 10).until(
+                                EC.visibility_of_element_located((By.XPATH, job_title_jdp_span_xpath))
+                            ).text
+                        except:
+                            print("Attempt #2 failed, Please Find Job Title in Job Description Panel to ensure check works")
+                            break
+
+                    print(f"Job Title That is current in our Job Description Panel: {job_title_jdp}")
+                    print(f"Job Title That we clicked on, within the Job Postings List: {job_post_title}")
+
                     if job_post_title in job_title_jdp:
                         print("Job Title Clicked and JDP Job Title Matches")
                     else:
                         print("Job Title Clicked and JDP Job Title DOES NOT Match")
-                except TimeoutException:
-                    print("Timed out waiting for the job search bar to be clickable.")
-                except NoSuchElementException:
-                    print("The job search bar was not found.")
                 except Exception as e:
-                    print(f"Error extracting data from list item {i}: {e}")
+                    print(f"Error extracting Job title from the JDP from list item {i}: {e}")
                 
                 # Job Highlights(Found in the JDP next to suitcase sprite)
                 try:        
@@ -301,18 +314,24 @@ class Jobs:
                 except Exception as e:
                     print(f"Error extracting data from list item {i}: {e}")
 
-                # Job Description(JDP)
+                # Job Description(Found in JDP)
                 try:
-                    job_description_span_xpath = "//div[contains(@id,'job-details')]/span"
-                    job_description = WebDriverWait(list_item_element, 10).until(
-                        EC.element_to_be_clickable((By.XPATH, job_description_span_xpath))
-                    ).text
-                except TimeoutException:
-                    print("Timed out waiting for job description span to be clickable.")
-                except NoSuchElementException:
-                    print("The job description span was not found.")
+                    try:
+                        print("Attempting 1st attempt for job description")
+                        job_description_span_xpath = "//div[contains(@id,'job-details')]/span"
+                        job_description = WebDriverWait(self.driver, 10).until(
+                            EC.visibility_of_element_located((By.XPATH, job_description_span_xpath))
+                        ).text
+                        print("Job Description Visible")
+                    except:
+                        print("1st Attempt for job_description failed, trying 2nd attempt.")
+                        job_description_span_xpath = "//div[contains(@id,'job-details')]//span"
+                        job_description = WebDriverWait(self.driver, 10).until(
+                            EC.visibility_of_element_located((By.XPATH, job_description_span_xpath))
+                        ).text
+                        print("Job Description Visible")
                 except Exception as e:
-                    print(f"Error extracting job description span from list item {i}: {e}")
+                    print(f"Error extracting job description span(s) from list item {i}: {e}")
 
                 # Date Posted(JDP)
                 try:
@@ -840,7 +859,8 @@ class Jobs:
                     print('Error trying to target all of the question element groupings')
             else:
                 print("Unknown Section: Not Contact Info, Upload Resume or Additional Questions in Header Text")
-                handle_unknown_section()
+                handle_unknown_section(self.driver, modal_element, current_header_text, job_title)
+                
             if not self.next_or_review_button():
                 print("Neither next or review button found")
             

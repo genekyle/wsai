@@ -50,8 +50,10 @@ class BrowserSessionManager(QObject):
         print("Checking to see if the session ID exists and it's not a warm-up session before closing")
         if session_id in self.sessions and not self.sessions[session_id]["is_warm_up"]:
             session = self.sessions[session_id]
+
             if session["driver"]:
-                session["driver"].quit()
+                print("WARNING: Session Kept Open for Testing. To return refer back to browser_session_manager.py and reinstate the driver.quit() line.")
+                # session["driver"].quit()
             del self.sessions[session_id]  # Remove the session from the manager
 
     def list_sessions(self):
