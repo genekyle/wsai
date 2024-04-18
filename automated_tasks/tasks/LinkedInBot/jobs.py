@@ -450,8 +450,6 @@ class Jobs:
             except Exception as e:
                 print(f"Error extracting data from list item {i}: {e}")
             
-
-
     def apply_to_job(self, job_title, job_location, list_item_element):
         """Apply to a single job, deciding which resume to use based on job description matching."""
         print(f'Trying to apply for {job_title} at {job_location}')
@@ -647,8 +645,6 @@ class Jobs:
                     job_location = job_location,
                     score = best_match_score
                 )
-                
-                
 
                 random_sleep(10,20)
                 
@@ -674,7 +670,7 @@ class Jobs:
                     return resume_matched, False
                 
 
-                return resume_matched, True
+                
             
             elif "additional questions" in current_header_text:
                 print("Additional Questions Modal Page detected")
@@ -823,7 +819,6 @@ class Jobs:
                                 except:
                                     print("Question Label Not found")
                         
-                        
                         # Check for dropdown-select question
                         if not question_handled:
                             dropdown_xpath = ".//div[@data-test-text-entity-list-form-component]"
@@ -860,14 +855,15 @@ class Jobs:
             else:
                 print("Unknown Section: Not Contact Info, Upload Resume or Additional Questions in Header Text")
                 handle_unknown_section(self.driver, modal_element, current_header_text, job_title)
-                
+
+            print("Looking")    
             if not self.next_or_review_button():
                 print("Neither next or review button found")
             
             # Checking for exit condition if next or review button not found
             if self.exit_condition_met():
                 print("ready to submit application")
-                break
+                return resume_matched, True
             else:
                 print("Not ready to submit yet, continuing with modal processing.")
 
