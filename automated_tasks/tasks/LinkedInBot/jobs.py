@@ -363,7 +363,7 @@ class Jobs:
                     if "easy apply" in aria_label.lower():
                         print("This is an Easy Apply button.")
                         apply_type = "Easy Apply"
-                        resume_matched, applied = self.apply_to_job(job_post_title, job_post_loctation, list_item_element)
+                        resume_matched, applied, question_answers = self.apply_to_job(job_post_title, job_post_loctation, list_item_element)
                         print(resume_matched.resume_title)
                         print(f'Applied = {applied}')
                         resume_used = resume_matched.resume_title
@@ -444,6 +444,19 @@ class Jobs:
                     self.db_session.add(resume_matched)
                     self.db_session.commit()
                     print("Resume Matched Entry saved Successfully.")
+                    # Now iterate through your stored QuestionAnswer objects and update the job_id
+                    print("Adding Job Id's to Question Answers List")
+                    for qa in question_answers:
+                        qa.job_id = job_post.id
+                        self.db_session.add(qa)
+                    print("Added Job Id's to question list")
+                    try:
+                        self.db_session.commit()
+                        print("All QuestionAnswer entries saved successfully.")
+                    except Exception as e:
+                        self.db_session.rollback()
+                        print(f"Failed to save QuestionAnswer entries: {e}")
+
                 except Exception as e:
                     self.db_session.rollback()  # Roll back if any error occurs
                     print(f"Failed to save the job post: {e}")
@@ -453,6 +466,8 @@ class Jobs:
     def apply_to_job(self, job_title, job_location, list_item_element):
         """Apply to a single job, deciding which resume to use based on job description matching."""
         print(f'Trying to apply for {job_title} at {job_location}')
+        question_answers = [] # List to store QuestionAnswer objects
+
         random_sleep(1,9)
         easy_apply_button_xpath = "//button[contains(@class, 'jobs-apply-button')][contains(@aria-label, 'Easy Apply')]"
         easy_apply_button = WebDriverWait(self.driver, 10).until(
@@ -740,13 +755,23 @@ class Jobs:
                                         label_texts.append((text, label))
                                         print(f"Text: {text}, Displayed: {displayed}")
 
-                                    
                                     print("trying to match answer to labels")
                                     matched_label = model_handler.match_answer_to_labels(answer, labels)
                                     if matched_label:
                                         print(f"Best match: {matched_label[0]}")
                                         matched_label[1].click()  # Click the matched label element
                                         print("Clicked On Matched Label")
+                                        # Creating a Question ans object to be put into sql database
+                                        question_answer = QuestionAnswer(
+                                            job_id = None,
+                                            question_type = "Radio",
+                                            question = question,
+                                            options = json.dumps(label_texts),
+                                            answer = answer,
+                                            score = score
+                                        )
+                                        question_answers.append(question_answer)  # Add to the list instead of committing immediately
+
                                     else:
                                         print("No suitable label found for the answer.")
 
@@ -785,6 +810,7 @@ class Jobs:
                                         print("Question:", question)
                                         print("Answer:", answer)
                                         print("Score:", score)
+
                                     except Exception as e:
                                         print(f"ERROR: Getting answer from qa_model: {e}")
 
@@ -863,7 +889,7 @@ class Jobs:
             # Checking for exit condition if next or review button not found
             if self.exit_condition_met():
                 print("ready to submit application")
-                return resume_matched, True
+                return resume_matched, True, question_answers
             else:
                 print("Not ready to submit yet, continuing with modal processing.")
 
