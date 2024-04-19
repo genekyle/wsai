@@ -371,7 +371,8 @@ class Jobs:
                         print("This is a Company Apply button.")
                         apply_type = "Company Apply"
                         applied = False
-                        resume_used = "Company Apply"
+                        resume_used = None
+                        resume_matched = None
                 except TimeoutException:
                     print("Timed out waiting for apply type button to be clickable.")
                     try:
@@ -440,26 +441,34 @@ class Jobs:
                     self.db_session.commit()
                     print(f"Job Post {i}: {job_post}")
                     print("Job ID:", job_post.id)  # This will now have the ID assigned by the database
-                    resume_matched.job_id = job_post.id
-                    self.db_session.add(resume_matched)
-                    self.db_session.commit()
-                    print("Resume Matched Entry saved Successfully.")
-                    # Now iterate through your stored QuestionAnswer objects and update the job_id
-                    print("Adding Job Id's to Question Answers List")
-                    for qa in question_answers:
-                        qa.job_id = job_post.id
-                        self.db_session.add(qa)
-                    print("Added Job Id's to question list")
-                    try:
-                        self.db_session.commit()
-                        print("All QuestionAnswer entries saved successfully.")
-                    except Exception as e:
-                        self.db_session.rollback()
-                        print(f"Failed to save QuestionAnswer entries: {e}")
+                    # Check if the job apply type is "Easy Apply"
+                    if job_post.job_apply_type == "Easy Apply":
+                        try:
+                            resume_matched.job_id = job_post.id
+                            self.db_session.add(resume_matched)
+                            self.db_session.commit()
+                            print("Resume Matched Entry saved Successfully.")
+                        except Exception as e:
+                            self.db_session.rollback()  # Roll back if any error occurs
+                            print(f"ERROR: failed to commit resume matched | {e}")
+                            resume_matched = None
+                        # Now iterate through your stored QuestionAnswer objects and update the job_id
+                        print("Adding Job Id's to Question Answers List")
+                        for qa in question_answers:
+                            qa.job_id = job_post.id
+                            self.db_session.add(qa)
+                        print("Added Job Id's to question list")
+                        try:
+                            self.db_session.commit()
+                            print("All QuestionAnswer entries saved successfully.")
+                        except Exception as e:
+                            self.db_session.rollback()
+                            print(f"Failed to save QuestionAnswer entries: {e}")
+                    print(f"Finished commiting job id#:{job_post.id}. Highlights(Title|Company|Location|Applied): {job_post.job_title} | {job_post.posted_by} | {job_post.job_location} | {job_post.applied} ")
 
                 except Exception as e:
                     self.db_session.rollback()  # Roll back if any error occurs
-                    print(f"Failed to save the job post: {e}")
+                    print(f"Failed to save the job post title:{job_post.job_title}/company:{job_post.posted_by}: {e}")
             except Exception as e:
                 print(f"Error extracting data from list item {i}: {e}")
             
@@ -639,8 +648,6 @@ class Jobs:
                         print(f"Best variation file name: {best_variation.file_name}")
                     else:
                         print("No matching resume variation found.")
-                
-                
 
                 # Print Tester/Debugger
                 print(best_match_resume.resume_id)
@@ -752,7 +759,7 @@ class Jobs:
                                     for label in labels:
                                         text = label.text
                                         displayed = label.is_displayed()
-                                        label_texts.append((text, label))
+                                        label_texts.append(text)
                                         print(f"Text: {text}, Displayed: {displayed}")
 
                                     print("trying to match answer to labels")
@@ -762,11 +769,12 @@ class Jobs:
                                         matched_label[1].click()  # Click the matched label element
                                         print("Clicked On Matched Label")
                                         # Creating a Question ans object to be put into sql database
+                                        print("Creating A Radio Question Answer record")
                                         question_answer = QuestionAnswer(
                                             job_id = None,
                                             question_type = "Radio",
                                             question = question,
-                                            options = json.dumps(label_texts),
+                                            options = ', '.join(label_texts),
                                             answer = answer,
                                             score = score
                                         )
@@ -792,58 +800,72 @@ class Jobs:
                                 input_elements = WebDriverWait(question_element, 10).until(
                                     EC.presence_of_all_elements_located((By.XPATH, input_xpath))
                                 )
+                                if len(input_elements) > 0:
+                                    print(f"Question {index} is an Input Question.")
+                                    question_handled = True
+                                    try:
+                                        print("Looking for Question Label")
+                                        question_xpath = ".//label[contains(@for, 'single-line-text-form-component-formElement')]"
+                                        question = WebDriverWait(question_element, 10).until(
+                                            EC.presence_of_element_located((By.XPATH, question_xpath))
+                                        ).text
+                                        print(f"question {index} found")
+                                        print(f"Question (Input) #{index}: {question}")
+                                        try:
+                                            answer, score = get_answer(question)
+                                            print("Question:", question)
+                                            print("Answer:", answer)
+                                            print("Score:", score)
+
+                                        except Exception as e:
+                                            print(f"ERROR: Getting answer from qa_model: {e}")
+
+                                        print("Looking for Input")
+                                        input_xpath = ".//input[contains(@id, 'single-line-text-form-component')]"
+                                        input = WebDriverWait(question_element, 10).until(
+                                            EC.presence_of_element_located((By.XPATH, input_xpath))
+                                        )
+                                        print("Input Found")
+                                        print("Checking for numeric error for input")
+                                        numeric_error_xpath = "//div[contains(@id, 'numeric-error')]"
+                                        try:
+                                            numeric_error = WebDriverWait(question_element, 10).until(
+                                                EC.presence_of_element_located((By.XPATH, numeric_error_xpath))
+                                            )
+                                            print("Numeric Error Found Inputting Numeric Answer")
+                                            input.send_keys(Keys.CONTROL + 'a', Keys.BACKSPACE)
+                                            print("input cleared")
+                                            # Possibly check if there are lettering/non-integers before performing
+                                            print(f"Current Answer {answer}")
+                                            print("Clearing non integers from answer")
+                                            numeric_part = re.search(r'\d+', answer)
+                                            if numeric_part:
+                                                number_answer = numeric_part.group()
+                                            else:
+                                                print("ERROR: No Number found in answer")
+                                            human_type(input, number_answer)
+                                            # Creating a Question ans object to be put into sql database
+                                            print("Creating A Input Question Answer record")
+                                            question_answer = QuestionAnswer(
+                                                job_id = None,
+                                                question_type = "Input",
+                                                question = question,
+                                                options = None,
+                                                answer = answer,
+                                                score = score
+                                            )
+                                            question_answers.append(question_answer)  # Add to the list instead of committing immediately
+                                        except:
+                                            print("Numeric Error Not Found, Inputting regular answer")
+                                            human_type(input, answer)
+                                            print(f"Answer: {answer}, typed into input question #{index}")
+                                    except:
+                                        print("Question Label Not found")
+                                else:
+                                    print(f"Question {index} is not an Input Question.")
                             except:
                                 print("Error Looking for input")
-                            if len(input_elements) > 0:
-                                print(f"Question {index} is an Input Question.")
-                                question_handled = True
-                                try:
-                                    print("Looking for Question Label")
-                                    question_xpath = ".//label[contains(@for, 'single-line-text-form-component-formElement')]"
-                                    question = WebDriverWait(question_element, 10).until(
-                                        EC.presence_of_element_located((By.XPATH, question_xpath))
-                                    ).text
-                                    print(f"question {index} found")
-                                    print(f"Question (Input) #{index}: {question}")
-                                    try:
-                                        answer, score = get_answer(question)
-                                        print("Question:", question)
-                                        print("Answer:", answer)
-                                        print("Score:", score)
-
-                                    except Exception as e:
-                                        print(f"ERROR: Getting answer from qa_model: {e}")
-
-                                    print("Looking for Input")
-                                    input_xpath = ".//input[contains(@id, 'single-line-text-form-component')]"
-                                    input = WebDriverWait(question_element, 10).until(
-                                        EC.presence_of_element_located((By.XPATH, input_xpath))
-                                    )
-                                    print("Input Found")
-                                    print("Checking for numeric error for input")
-                                    numeric_error_xpath = "//div[contains(@id, 'numeric-error')]"
-                                    try:
-                                        numeric_error = WebDriverWait(question_element, 10).until(
-                                            EC.presence_of_element_located((By.XPATH, numeric_error_xpath))
-                                        )
-                                        print("Numeric Error Found Inputting Numeric Answer")
-                                        input.send_keys(Keys.CONTROL + 'a', Keys.BACKSPACE)
-                                        print("input cleared")
-                                        # Possibly check if there are lettering/non-integers before performing
-                                        print(f"Current Answer {answer}")
-                                        print("Clearing non integers from answer")
-                                        numeric_part = re.search(r'\d+', answer)
-                                        if numeric_part:
-                                            number_answer = numeric_part.group()
-                                        else:
-                                            print("ERROR: No Number found in answer")
-                                        human_type(input, number_answer)
-                                    except:
-                                        print("Numeric Error Not Found, Inputting regular answer")
-                                        human_type(input, answer)
-                                        print(f"Answer: {answer}, typed into input question #{index}")
-                                except:
-                                    print("Question Label Not found")
+                            
                         
                         # Check for dropdown-select question
                         if not question_handled:
@@ -861,18 +883,53 @@ class Jobs:
                                 try:
                                     print("Looking for Question Label")
                                     question_xpath = ".//label[contains(@for, 'text-entity-list-form-component-formElement')]"
-                                    question = WebDriverWait(self.driver, 10).until(
-                                        EC.presence_of_all_elements_located((By.XPATH, question_xpath))
-                                    ).text
+                                    question_element = WebDriverWait(self.driver, 10).until(
+                                        EC.presence_of_element_located((By.XPATH, question_xpath))
+                                    )
+                                    question = question_element.text
                                     print(f"question {index} found")
                                     print(f"Question (Dropdown) #{index}: {question}")
-                                   
-
                                     answer, score = get_answer(question)
                                     print("Question:", question)
                                     print("Answer:", answer)
                                     print("Score:", score)
+
+                                    print("Looking for the options of the dropdown question")
+                                    try:
+                                        options_xpath = "//following-sibling::select/option"
+                                        option_elements = WebDriverWait(question_element, 10).until(
+                                            EC.presence_of_all_elements_located((By.XPATH, options_xpath))
+                                        )
+                                        option_texts = []
+                                        for option in option_elements:
+                                            text = option.text
+                                            option_texts.append(text)
+                                        print(f"Options: {option_texts}")
+                                        print("trying to match answer to option")
+                                        try:
+                                            matched_option = model_handler.match_answer_to_options(answer, option_elements)
+                                            if matched_option:
+                                                print(f"Best match: {matched_option[0]}")
+                                                matched_option[1].click()  # Click the matched label element
+                                                print("Clicked On Matched Option")
+                                        except Exception as e:
+                                                print(f"ERROR: Error in matching option: {e}")
+                                        print("ERROR: quitting here, still haven't implemented matching answer functionality for dropdown questions")
+                                        raise Exception
+                                    except Exception as e:
+                                        print(f"ERROR looking for options: {e}")
                                     
+                                    # Creating a Question ans object to be put into sql database
+                                    print("Creating A Dropdown Question Answer record")
+                                    question_answer = QuestionAnswer(
+                                        job_id = None,
+                                        question_type = "Dropdown",
+                                        question = question,
+                                        options = None,
+                                        answer = answer,
+                                        score = score
+                                    )
+                                    question_answers.append(question_answer) 
                                 except:
                                     print("Question Label Not found")
 
@@ -889,6 +946,28 @@ class Jobs:
             # Checking for exit condition if next or review button not found
             if self.exit_condition_met():
                 print("ready to submit application")
+                print("Looking to see if Check Box'Follow (X) hiring company' is active")
+                try:
+                    checkbox_xpath = "//input[contains(@id, 'follow-company-checkbox')]"
+                    checkbox = WebDriverWait(self.driver, 10).until(
+                        EC.element_to_be_clickable((By.XPATH, checkbox_xpath))
+                    )
+                    checkbox.click()
+                    print("UnClicked the CheckBox to follow the company")
+                    random_sleep(1,2)
+                except Exception as e:
+                    print(f"ERROR: Trying to click on the checkbox")
+                print("Looking for submit application button")
+                try:
+                    submit_application_xpath = "//button[contains(@aria-label, 'Submit application')]"
+                    submit_application_button = WebDriverWait(self.driver, 10).until(
+                        EC.element_to_be_clickable((By.XPATH, submit_application_xpath))
+                    )
+                    submit_application_button.click()
+                    print("Submit application button clicked")
+                    check_submission_modal(self.driver)
+                except Exception as e:
+                    print(f"ERROR: Trying to click on submit application after reviewing")
                 return resume_matched, True, question_answers
             else:
                 print("Not ready to submit yet, continuing with modal processing.")

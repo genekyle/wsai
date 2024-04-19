@@ -59,3 +59,20 @@ class ModelHandler:
                 best_label = (text, label_elem)
 
         return best_label
+
+    def match_answer_to_options(self, answer, options):
+        """Find the best matching option for the given answer in a dropdown."""
+        print("within Matching answer to label for drop down questions")
+        print(f"Current Context to match Answer: {answer} Options: {options}")
+        answer_embedding = self.encode(answer)
+        option_embeddings = [(option.text, self.encode(option.text), option) for option in options]
+
+        best_option = None
+        highest_similarity = -1
+        for text, embedding, option_elem in option_embeddings:
+            similarity = cosine_similarity([answer_embedding], [embedding])[0][0]
+            if similarity > highest_similarity:
+                highest_similarity = similarity
+                best_option = (text, option_elem)
+
+        return best_option
