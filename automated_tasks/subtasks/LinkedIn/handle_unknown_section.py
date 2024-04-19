@@ -1,3 +1,8 @@
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.keys import Keys
+import time
 def handle_unknown_section(driver, modal_element, current_header_text, job_title):
     """
     Handle unknown modal sections encountered during the job application process.
@@ -8,4 +13,5 @@ def handle_unknown_section(driver, modal_element, current_header_text, job_title
     :param job_title: The title of the job being applied for, providing context for the application process.
     """
     print(f"Handling unknown section with header: {current_header_text} for job: {job_title}")
-
+    
+    

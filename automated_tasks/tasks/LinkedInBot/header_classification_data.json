@@ -1,0 +1,18 @@
+{
+    "Contact Information": [
+        {"header": "Home Address", "category": "Contact Information"},
+        {"header": "Update Your Address Details", "category": "Contact Information"}
+    ],
+    "Job Related Questions": [
+        {"header": "Additional Questions", "category": "Job Related Questions"},
+        {"header": "Further Inquiry", "category": "Job Related Questions"}
+    ],
+    "Work Authorization": [
+        {"header": "Work Authorization", "category": "Work Authorization"},
+        {"header": "Employment Eligibility", "category": "Work Authorization"}
+    ],
+    "Voluntary Self Identification": [
+        {"header": "Voluntary self identification", "category": "Voluntary Self Identification"},
+        {"header": "Self-Identify", "category": "Voluntary Self Identification"}
+    ]
+}

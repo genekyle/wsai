@@ -10,6 +10,8 @@ from db.DatabaseManager import LinkedInLocation, LinkedInJobSearch, Resumes, Res
 
 from automated_tasks.tasks.LinkedInBot.match_label_model import ModelHandler
 from automated_tasks.subtasks.LinkedIn.handle_unknown_section import handle_unknown_section
+from automated_tasks.subtasks.LinkedIn.page_checks import PageCheck
+
 import torch
 from transformers import BertModel, BertTokenizer
 from scipy.spatial.distance import cosine
@@ -24,13 +26,14 @@ model_handler = ModelHandler()
 
 
 class Jobs:
+
     def __init__(self, driver, user_profile, selected_location_id, db_session):
         self.driver = driver
         self.user_profile = user_profile
         self.selected_location_id = selected_location_id
         self.db_session = db_session
         self.search_id = None
-
+        self.checker = PageCheck(driver)
     
     def get_location_name_by_id(self, location_id):
         print("Trying to query location name")
@@ -965,7 +968,11 @@ class Jobs:
                     )
                     submit_application_button.click()
                     print("Submit application button clicked")
-                    check_submission_modal(self.driver)
+                    print("Checking for Application Submitted Modal")
+                    if self.checker.check_submission_modal():
+                        print("Confirmed the submission modal.")
+                    else:
+                        print("Submission modal not found or another issue occurred.")
                 except Exception as e:
                     print(f"ERROR: Trying to click on submit application after reviewing")
                 return resume_matched, True, question_answers

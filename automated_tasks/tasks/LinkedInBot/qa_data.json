@@ -29,6 +29,7 @@
     "Work Preferences": [
         {"question": "Are you comfortable commuting to this job's location?", "answer": "Yes"},
         {"question": "Are you comfortable working in an onsite setting?", "answer": "Yes"},
+        {"question": "Are you willing to take a drug test, in accordance with local law/regulations?", "answer": "Yes"},
         {"question": "Will you be able to work onsite at our Brooklyn location at least 3 days per week?", "answer": "Yes"}
     ]
 }
