@@ -12,6 +12,7 @@ from automated_tasks.subtasks.LinkedIn.header_classifier import HeaderClassifier
 from automated_tasks.tasks.LinkedInBot.match_label_model import ModelHandler
 from automated_tasks.subtasks.LinkedIn.handle_unknown_section import handle_unknown_section
 from automated_tasks.subtasks.LinkedIn.page_checks import PageCheck
+from automated_tasks.subtasks.LinkedIn.resume_ranking_utils import rank_and_get_best_resume
 
 import torch
 from transformers import BertModel, BertTokenizer
@@ -575,7 +576,7 @@ class Jobs:
                         print("The first name does not match the expected value.")
                 except Exception as e:
                     print(f"Failed to find or process the first name input element: {e}")
-                    break
+                    
 
                 # Last Name Check
                 try:
@@ -593,7 +594,7 @@ class Jobs:
                         print("The Last name does not match the expected value.")
                 except Exception as e:
                     print(f"Failed to find or process the last name input element: {e}")
-                    break
+                    
 
                 # Email Check
                 try:
@@ -607,9 +608,9 @@ class Jobs:
                     else:
                         print("ERROR: Wrong Email Selected in Modal")
                         break
-                except:
+                except Exception as e:
                     print(f"Failed to find or process the email input element: {e}")
-                    break
+                    
 
                 # Phone Country Code Check
                 try:
@@ -626,7 +627,7 @@ class Jobs:
                         print("ERROR: Phone Country Code selected is incorrect")
                 except:
                     print(f"Failed to find or process the country code dropdowm element: {e}")
-                    break
+                    
 
                 # Mobile Phone Number Check
                 try:
@@ -640,50 +641,14 @@ class Jobs:
                     print("Current value in the input field:", mobile_num_input_value)
                 except:
                         print(f"Failed to find or process the mobile phone input element: {e}")
-                        break
+                        
                 
             elif "resume" in current_header_text:
                 print("In the Resumes Page, Selecting the correct resume")
                 random_sleep(1,2)
-                print("Working with Current Job Post Title: ", job_title, 'At location: ', job_location)
+                print("Working with Current Job Post Title: ", job_title, 'At location: ', job_location, ' To decide the best fit resume')
                 resumes = self.db_session.query(Resumes).all()
                 resume_titles = [resume.resume_title for resume in resumes]
-
-                def rank_and_get_best_resume(job_title, resume_titles):
-                    # Load pre-trained BERT tokenizer and model
-                    tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-                    model = BertModel.from_pretrained('bert-base-uncased')
-
-                    # Tokenize and encode job title and resume titles for BERT input
-                    encoded_job_title = tokenizer.encode(job_title, add_special_tokens=True)
-                    encoded_resume_titles = [tokenizer.encode(title, add_special_tokens=True) for title in resume_titles]
-
-                    # Convert to PyTorch tensors
-                    job_title_tensor = torch.tensor([encoded_job_title])
-                    resume_title_tensors = [torch.tensor([title]) for title in encoded_resume_titles]
-
-                    # Get embeddings from BERT model
-                    with torch.no_grad():
-                        job_title_embedding = model(job_title_tensor)[0][:,0,:].squeeze().numpy()
-                        resume_title_embeddings = [model(tensor)[0][:,0,:].squeeze().numpy() for tensor in resume_title_tensors]
-
-                    # Calculate cosine similarity and rank the resume titles
-                    similarities = [1 - cosine(job_title_embedding, embedding) for embedding in resume_title_embeddings]
-                    ranked_indices = sorted(range(len(similarities)), key=lambda i: similarities[i], reverse=True)
-
-                    # Print the top 10 matches
-                    print("Top 10 Matching Resumes:")
-                    for rank, index in enumerate(ranked_indices[:10], start=1):
-                        print(f"{rank}. Resume Title: '{resume_titles[index]}' - Score: {similarities[index]:.4f}")
-
-                    # Get the best match resume title and score
-                    best_match_index = ranked_indices[0]
-                    best_match_resume_title = resume_titles[best_match_index]
-                    best_match_score = similarities[best_match_index]
-
-                    print(f"\nBest Match Resume: '{best_match_resume_title}' - Score: {best_match_score:.4f}")
-
-                    return best_match_resume_title, best_match_score
                 
                 best_match_resume_title, best_match_score = rank_and_get_best_resume(job_title, resume_titles)
 
