@@ -8,6 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from db.DatabaseManager import LinkedInLocation, LinkedInJobSearch, Resumes, ResumeVariations, ResumeMatches, QuestionAnswer, LinkedInJob
 
+from automated_tasks.subtasks.LinkedIn.header_classifier import HeaderClassifier
 from automated_tasks.tasks.LinkedInBot.match_label_model import ModelHandler
 from automated_tasks.subtasks.LinkedIn.handle_unknown_section import handle_unknown_section
 from automated_tasks.subtasks.LinkedIn.page_checks import PageCheck
@@ -24,6 +25,9 @@ import re, os, json
 # Separate Model Hanlder for Labels, should modularize for the other QA systems as well
 model_handler = ModelHandler()
 
+# Model for Modal Heading Classification:
+classifier = HeaderClassifier()
+classifier.train()
 
 class Jobs:
 
@@ -940,7 +944,7 @@ class Jobs:
                     print('Error trying to target all of the question element groupings')
             else:
                 print("Unknown Section: Not Contact Info, Upload Resume or Additional Questions in Header Text")
-                handle_unknown_section(self.driver, modal_element, current_header_text, job_title)
+                handle_unknown_section(self.driver, modal_element, current_header_text, job_title, classifier)
 
             print("Looking")    
             if not self.next_or_review_button():
