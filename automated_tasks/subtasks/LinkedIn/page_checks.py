@@ -24,24 +24,31 @@ class PageCheck:
         Returns:
         bool: True if the submission modal is found, False otherwise.
         """
-        try:
-            # Define the XPath for the modal that contains the confirmation text
-            modal_xpath = "//div[contains(@class, 'artdeco-modal__content')]//h3[contains(text(), 'Your application was sent to')]"
-            # Wait for the modal to be visible on the page
-            WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located((By.XPATH, modal_xpath)))
-            print("Confirmation modal found: Your application was successfully sent. Clicking to dismiss")
+        # Define the XPath for the modal that contains the confirmation text
+        modal_xpaths = [ 
+            """//div[contains(text(), "Keep track of your application")]""",
+            """//p[contains(text(),'You can keep track')]"""
+        ]
+        for xpath in modal_xpaths:
             try:
-                # Dismiss button XPath
-                dismiss_button_xpath = "//button[@data-test-modal-close-btn]"
-                dismiss_button = WebDriverWait(self.driver, 10).until(
-                    EC.presence_of_element_located((By.XPATH, dismiss_button_xpath))
-                )
-                dismiss_button.click()
-                print("Clicked On Dismiss Button for the Submitted Application Modal")
+                print(f"Attempting to find modal using XPath: {xpath}")
+                # Wait for the modal to be visible on the page
+                WebDriverWait(self.driver, 3).until(EC.visibility_of_element_located((By.XPATH, xpath)))
+                print("Confirmation modal found: Your application was successfully sent. Clicking to dismiss")
+                try:
+                    print("Attempting to close using dismiss button #1")
+                    # Dismiss button XPath
+                    dismiss_button_xpath = "//button[@data-test-modal-close-btn]"
+                    dismiss_button = WebDriverWait(self.driver, 2).until(
+                        EC.presence_of_element_located((By.XPATH, dismiss_button_xpath))
+                    )
+                    print("Dismiss button found")
+                    dismiss_button.click()
+                    print("Clicked On Dismiss Button for the Submitted Application Modal")
+                    return True
+                except Exception as e:
+                    print(f"Failed to find the dismiss button for the submitted application modal: {str(e)}")
+                    return False
             except Exception as e:
-                print(f"Failed to find the dismiss button for the submitted application modal: {str(e)}")
-                return False
-            return True
-        except Exception as e:
-            print(f"Failed to find the confirmation modal: {str(e)}")
-            return False
+                print(f"Failed to find the submission modal using {xpath}, Error: {str(e)}")
+                continue  # Try the next XPath if the current one fails

@@ -27,7 +27,15 @@ model_handler = ModelHandler()
 
 # Model for Modal Heading Classification:
 classifier = HeaderClassifier()
-classifier.train()
+
+# Load training data
+header_data_path = r'C:\Users\genom\code\wsai\automated_tasks\subtasks\LinkedIn\header_classification_data.json'
+with open(header_data_path, 'r') as file:
+    header_data = json.load(file)
+
+# Train the classifier with the loaded data
+classifier.train(header_data)
+
 
 class Jobs:
 
@@ -693,13 +701,10 @@ class Jobs:
                     resume_file_path = os.path.join(resumes_folder_path, resume_file_name)
                     print(resume_file_path)
                     upload_resume_input.send_keys(resume_file_path)
-
+                    random_sleep(2,3)
                 except Exception as e:
                     print(f"Error Trying To upload resume:{e}")
-                    return resume_matched, False
-                
-
-                
+                    return resume_matched, False   
             
             elif "additional questions" in current_header_text:
                 print("Additional Questions Modal Page detected")

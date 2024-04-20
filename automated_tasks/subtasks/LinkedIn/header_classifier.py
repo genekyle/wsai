@@ -42,18 +42,3 @@ class HeaderClassifier:
         prediction = self.classifier.predict(header_embedding)
         category = self.label_encoder.inverse_transform(prediction)
         return category[0]
-
-# Load training data
-with open(r'C:\Users\genom\code\wsai\automated_tasks\subtasks\LinkedIn\header_classification_data.json', 'r') as file:
-    header_data = json.load(file)
-
-# Create an instance of the classifier
-classifier = HeaderClassifier()
-
-# Train the classifier
-classifier.train(header_data)
-
-# Example usage
-test_header = "Update Your Address Details"
-predicted_category = classifier.predict(test_header)
-print(f"Predicted Category: {predicted_category}")
