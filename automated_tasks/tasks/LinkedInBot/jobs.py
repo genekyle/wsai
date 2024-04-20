@@ -487,6 +487,8 @@ class Jobs:
             except Exception as e:
                 print(f"Error extracting data from list item {i}: {e}")
             
+        print("FINISHED PROCESSING RESULTS FOR THIS PAGE")
+            
     def apply_to_job(self, job_title, job_location, list_item_element):
         """Apply to a single job, deciding which resume to use based on job description matching."""
         print(f'Trying to apply for {job_title} at {job_location}')

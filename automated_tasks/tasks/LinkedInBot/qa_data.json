@@ -11,8 +11,10 @@
         {"question": "How many years have you worked with Python?", "answer": "3 years"},
         {"question": "How many years have you worked with React?", "answer": "1 Year"},
         {"question": "How many years of expereience do you have with Software Development?", "answer": "3 years"},
+        {"question": "How many years of professional development experience do you have?", "answer": "2 years"},
         {"question": "How many years of professional experience do you have with PostgreSQL?", "answer": "2 years"},
         {"question": "How many years of professional experience do you have with SQL?", "answer": "4 years"},
+        {"question": "How many years of work experience do you have with JavaScript Frameworks?", "answer": "3 years"},
         {"question": "State your experience duration with C#.", "answer": "2 years"}
     ],
     "Programming Languages": [
