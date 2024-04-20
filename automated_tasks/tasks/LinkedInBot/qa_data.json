@@ -12,14 +12,21 @@
         {"question": "Have you ever worked for a startup company?", "answer": "Yes"},
         {"question": "Have you previously managed a team?", "answer": "No"}
     ],
-    "Programming Experience": [
+    "Programming Experience": [  
+        {"question": "Do you have 8-10 years of experience as a Full Stack Software Engineer?Do you have 8-10 years of experience as a Full Stack Software Engineer?", "answer": "No"},
         {"question": "How many years have you worked with Python?", "answer": "3 years"},
         {"question": "How many years have you worked with React?", "answer": "1 year"},
-        {"question": "How many years of work experience do you have with Acceptance Test, AI Driven Development (ATDD)?", "answer": "1 year"},
         {"question": "How many years of work experience do you have with .NET Framework?", "answer": "1 year"},
+        {"question": "How many years of work experience do you have with Acceptance Test, AI Driven Development (ATDD)?", "answer": "1 year"},
+        {"question": "How many years of work experience do you have with AngularJS?", "answer": "2 years"},
+        {"question": "How many years of work experience do you have with ASP.NET?", "answer": "2 years"},
+        {"question": "How many years of work experience do you have with Azure SQL?", "answer": "2 years"},
+        {"question": "How many years of work experience do you have with C# in .NET?", "answer": "1 year"},
         {"question": "How many years of work experience do you have with Javascript?", "answer": "3 years"},
         {"question": "How many years of work experience do you have with Java Development?", "answer": "1 year"},
+        {"question": "How many years of work experience do you have with jQuery?", "answer": "2 years"},
         {"question": "How many years of work experience do you have with Object-Oriented Programming (OOP)?", "answer": "3 years"},
+        {"question": "How many years of work experience do you have with Quality Engineering?", "answer": "2 years"},
         {"question": "How many years of work experience do you have with Visual Basic .NET (VB.NET)?", "answer": "1 year"},
         {"question": "How many years of experience do you have with Software Development?", "answer": "3 years"},
         {"question": "How many years of experience do you have working in an early-stage, high-growth startup as an engineer?", "answer": "3 years"},
@@ -30,11 +37,18 @@
         {"question": "State your experience duration with C#.", "answer": "2 years"}
     ],
     "Programming Languages": [
+        {"question": "Do you have experience porting Web User Interfaces from a legacy .Net framework 4.7.2 application (C#, MVC, jquery, angularJS) to .Net (version 8 or close to that)?", "answer": "Yes"},
         {"question": "What programming languages can you work with?", "answer": "Python, JavaScript, C#"}
+    ],
+    "Related Experience": [
+        {"question": "Do you have experience within the medical device industry or other regulated environment?", "answer": "Yes"},
+        {"question": "How many years of work experience do you have with Technical Support?", "answer": "2 years"}
     ],
     "Skills Proficiency": [
         {"question": "Are you an extremely strong frontend coder with tech stacks like React, JavaScript, and TypeScript?", "answer": "Yes"},
+        {"question": "Do you have experience converting AngularJS components to a newer technology?", "answer": "Yes"},
         {"question": "Do you have experience with System Design?", "answer": "Yes"},
+        {"question": "Do you have experience with the Microsoft stack?", "answer": "Yes"},
         {"question": "Rate your SQL skills.", "answer": "Advanced"},
         {"question": "What is your proficiency with SQL technologies?", "answer": "Advanced"}
     ],
@@ -49,15 +63,16 @@
         {"question": "Are you able to commute to our office near Bryant Park 4 times a week?", "answer":"Yes"},
         {"question": "Are you able to travel to the office 4x/week in NYC or SF?", "answer":"Yes"},
         {"question": "Are you comfortable commuting to this job's location?", "answer": "Yes"},
-        
         {"question": "Are you comfortable working in a hybrid setting?", "answer": "Yes"},
         {"question": "Are you comfortable working in an onsite setting?", "answer": "Yes"},
         {"question": "Are you willing and able to spend 2-3 months working from the company's office in Miami Beach?", "answer": "Yes"},
         {"question": "Are you willing and able to Work 5 days a week in the office?", "answer": "Yes"},
         {"question": "Are you willing to take a drug test, in accordance with local law/regulations?", "answer": "Yes"},
         {"question": "Can you commit as a temporary employee for 3+ months?Can you commit as a temporary employee for 3+ months?", "answer": "Yes"},
+        {"question": "Do you need to relocate from you current location to work with us onsite 3 days per week (Tuesday, Wednesday & Thursday) in Massachusetts?", "answer": "No"},
         {"question": "Will you be able to work onsite at our Brooklyn location at least 3 days per week?", "answer": "Yes"}
     ]
-    
 }
+
+
 

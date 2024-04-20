@@ -4,6 +4,7 @@ from transformers import BertModel, BertTokenizer
 from scipy.spatial.distance import cosine
 
 def rank_and_get_best_resume(job_title, resume_titles):
+    print("Inside new resume ranking utils file")
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
     model = BertModel.from_pretrained('bert-base-uncased')
 
