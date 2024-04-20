@@ -12,7 +12,7 @@
         {"question": "Have you ever worked for a startup company?", "answer": "Yes"},
         {"question": "Have you previously managed a team?", "answer": "No"}
     ],
-    "Programming Experience": [  
+    "Programming Experience": [ 
         {"question": "Do you have 8-10 years of experience as a Full Stack Software Engineer?Do you have 8-10 years of experience as a Full Stack Software Engineer?", "answer": "No"},
         {"question": "How many years have you worked with Python?", "answer": "3 years"},
         {"question": "How many years have you worked with React?", "answer": "1 year"},
@@ -21,12 +21,17 @@
         {"question": "How many years of work experience do you have with AngularJS?", "answer": "2 years"},
         {"question": "How many years of work experience do you have with ASP.NET?", "answer": "2 years"},
         {"question": "How many years of work experience do you have with Azure SQL?", "answer": "2 years"},
-        {"question": "How many years of work experience do you have with C# in .NET?", "answer": "1 year"},
+        {"question": "How many years of work experience do you have with C# in .NET?", "answer": "2 years"},
+        {"question": "How many years of work experience do you have with C++?", "answer": "1 year"},
         {"question": "How many years of work experience do you have with Javascript?", "answer": "3 years"},
         {"question": "How many years of work experience do you have with Java Development?", "answer": "1 year"},
         {"question": "How many years of work experience do you have with jQuery?", "answer": "2 years"},
+        {"question": "How many years of work experience do you have with Kotlin?", "answer": "1 year"},
+        {"question": "How many years of work experience do you have with Microsoft SQL Server?", "answer": "3 years"},
+        {"question": "How many years of work experience do you have with Node.js?", "answer": "2 years"},
         {"question": "How many years of work experience do you have with Object-Oriented Programming (OOP)?", "answer": "3 years"},
         {"question": "How many years of work experience do you have with Quality Engineering?", "answer": "2 years"},
+        {"question": "How many years of work experience do you have with TypeScript?", "answer": "1 year"},
         {"question": "How many years of work experience do you have with Visual Basic .NET (VB.NET)?", "answer": "1 year"},
         {"question": "How many years of experience do you have with Software Development?", "answer": "3 years"},
         {"question": "How many years of experience do you have working in an early-stage, high-growth startup as an engineer?", "answer": "3 years"},
@@ -38,11 +43,18 @@
     ],
     "Programming Languages": [
         {"question": "Do you have experience porting Web User Interfaces from a legacy .Net framework 4.7.2 application (C#, MVC, jquery, angularJS) to .Net (version 8 or close to that)?", "answer": "Yes"},
+        {"question": "How many years of work experience do you have with Data Engineering?", "answer": "2 years"},
         {"question": "What programming languages can you work with?", "answer": "Python, JavaScript, C#"}
     ],
     "Related Experience": [
         {"question": "Do you have experience within the medical device industry or other regulated environment?", "answer": "Yes"},
-        {"question": "How many years of work experience do you have with Technical Support?", "answer": "2 years"}
+        {"question": "Do you have prior experience at a tech startup (2-10 people)? ", "answer": "Yes"},
+        {"question": "How many years of work experience do you have with Product Marketing?", "answer": "2 years"},
+        {"question": "How many years of work experience do you have with Technical Support?", "answer": "2 years"},
+        {"question": "What is your level of proficiency in Chinese?", "answer": "None"},
+        {"question": "What is your level of proficiency in Japanese?", "answer": "None"},
+        {"question": "What is your level of proficiency in Korean?", "answer": "None"},
+        {"question": "What is your level of proficiency in Spanish?", "answer": "Conversational"}
     ],
     "Skills Proficiency": [
         {"question": "Are you an extremely strong frontend coder with tech stacks like React, JavaScript, and TypeScript?", "answer": "Yes"},
@@ -73,6 +85,3 @@
         {"question": "Will you be able to work onsite at our Brooklyn location at least 3 days per week?", "answer": "Yes"}
     ]
 }
-
-
-

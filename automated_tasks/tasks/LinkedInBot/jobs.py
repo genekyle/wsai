@@ -705,7 +705,7 @@ class Jobs:
                     score = best_match_score
                 )
 
-                random_sleep(10,20)
+                random_sleep(5,10)
                 
                 print("With Resume Matched, now uploading the correct resume")
                 
@@ -723,7 +723,7 @@ class Jobs:
                     resume_file_path = os.path.join(resumes_folder_path, resume_file_name)
                     print(resume_file_path)
                     upload_resume_input.send_keys(resume_file_path)
-                    random_sleep(2,3)
+                    random_sleep(4.5,5)
                 except Exception as e:
                     print(f"Error Trying To upload resume:{e}")
                     return resume_matched, False   
@@ -972,8 +972,9 @@ class Jobs:
             else:
                 print("Unknown Section: Not Contact Info, Upload Resume or Additional Questions in Header Text")
                 handle_unknown_section(self.driver, modal_element, current_header_text, job_title, classifier)
-
-            print("Looking")    
+            
+            # Checking for next step button/review button
+            print("Looking for next or review button")    
             if not self.next_or_review_button():
                 print("Neither next or review button found")
             

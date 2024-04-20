@@ -2,6 +2,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
+from automated_tasks.subtasks.random_sleep import random_sleep
+
 class PageCheck:
     """
     Class that handles different Dialogues/Modals that LinkedIn uses Currntly handles:
@@ -35,6 +37,7 @@ class PageCheck:
                 # Wait for the modal to be visible on the page
                 WebDriverWait(self.driver, 3).until(EC.visibility_of_element_located((By.XPATH, xpath)))
                 print("Confirmation modal found: Your application was successfully sent. Clicking to dismiss")
+                random_sleep(2.5,3.5)
                 try:
                     print("Attempting to close using dismiss button #1")
                     # Dismiss button XPath
