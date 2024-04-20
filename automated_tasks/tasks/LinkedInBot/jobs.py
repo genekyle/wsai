@@ -897,7 +897,7 @@ class Jobs:
                                 try:
                                     print("Looking for Question Label")
                                     question_xpath = ".//label[contains(@for, 'text-entity-list-form-component-formElement')]"
-                                    question_element = WebDriverWait(self.driver, 10).until(
+                                    question_element = WebDriverWait(question_element, 10).until(
                                         EC.presence_of_element_located((By.XPATH, question_xpath))
                                     )
                                     question = question_element.text

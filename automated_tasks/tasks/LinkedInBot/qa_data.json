@@ -34,6 +34,8 @@
         {"question": "Are you able to commute to our office near Bryant Park 4 times a week?", "answer":"Yes"},
         {"question": "Are you comfortable commuting to this job's location?", "answer": "Yes"},
         {"question": "Are you comfortable working in an onsite setting?", "answer": "Yes"},
+        {"question": "Are you willing and able to spend 2-3 months working from the company’s office in Miami Beach?", "answer": "Yes"},
+        {"question": "Are you willing and able to Work 5 days a week in the office?", "answer": "Yes"},
         {"question": "Are you willing to take a drug test, in accordance with local law/regulations?", "answer": "Yes"},
         {"question": "Will you be able to work onsite at our Brooklyn location at least 3 days per week?", "answer": "Yes"}
     ]
