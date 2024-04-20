@@ -12,7 +12,7 @@
         {"question": "Have you ever worked for a startup company?", "answer": "Yes"},
         {"question": "Have you previously managed a team?", "answer": "No"}
     ],
-    "Programming Experience": [ 
+    "Programming Experience": [
         {"question": "Do you have 8-10 years of experience as a Full Stack Software Engineer?Do you have 8-10 years of experience as a Full Stack Software Engineer?", "answer": "No"},
         {"question": "How many years have you worked with Python?", "answer": "3 years"},
         {"question": "How many years have you worked with React?", "answer": "1 year"},
@@ -28,9 +28,11 @@
         {"question": "How many years of work experience do you have with jQuery?", "answer": "2 years"},
         {"question": "How many years of work experience do you have with Kotlin?", "answer": "1 year"},
         {"question": "How many years of work experience do you have with Microsoft SQL Server?", "answer": "3 years"},
+        {"question": "How many years of work experience do you have with Mobile Application Development?", "answer": "1 year"},
         {"question": "How many years of work experience do you have with Node.js?", "answer": "2 years"},
         {"question": "How many years of work experience do you have with Object-Oriented Programming (OOP)?", "answer": "3 years"},
         {"question": "How many years of work experience do you have with Quality Engineering?", "answer": "2 years"},
+        {"question": "How many years of work experience do you have with Terraform?", "answer": "0 years"},
         {"question": "How many years of work experience do you have with TypeScript?", "answer": "1 year"},
         {"question": "How many years of work experience do you have with Visual Basic .NET (VB.NET)?", "answer": "1 year"},
         {"question": "How many years of experience do you have with Software Development?", "answer": "3 years"},
@@ -67,6 +69,7 @@
     "Work Authorization": [
         {"question": "Are you authorized to work in the U.S. without restriction?", "answer": "No"},
         {"question": "Are you legally authorized to work in the United States?", "answer": "Yes"},
+        {"question": "Are you willing to undergo a background check, in accordance with local law/regulations?", "answer": "Yes"},
         {"question": "Will you now or in the future require sponsorship to work within the United States?", "answer": "No"},
         {"question": "Will you now, or in the future, require sponsorship for employment visa status (e.g. H-1B visa status)?Will you now, or in the future, require sponsorship for employment visa status (e.g. H-1B visa status)?", "answer":"No"},
         {"question": "This position is not eligible for consultants. Client is unable to sponsor new, or transfer existing visas. Will you now or in the future require new sponsorship or a transfer of existing work visa?This position is not eligible for consultants. Client is unable to sponsor new, or transfer existing visas. Will you now or in the future require new sponsorship or a transfer of existing work visa?", "answer":"No"}

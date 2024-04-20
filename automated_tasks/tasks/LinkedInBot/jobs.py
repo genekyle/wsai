@@ -193,7 +193,7 @@ class Jobs:
         print(f"Number of list items in the current page: {num_li_current_page}")
         # Next is to process each result or all the list items in the ordered list
         for i in range(1, num_li_current_page + 1):
-            print("Looking for list item in the unordered list")
+            print(f"Looking for list item #{i} in the unordered list out of {num_li_current_page}")
             list_item_xpath = f"//ul[contains(@class, 'scaffold-layout__list-container')]/li[{i}]"
             list_item_element =  WebDriverWait(self.driver, 10).until(
                 EC.element_to_be_clickable((By.XPATH, list_item_xpath))
@@ -488,7 +488,10 @@ class Jobs:
             except Exception as e:
                 print(f"Error extracting data from list item {i}: {e}")
             
+            print(f"Finished Scraping List Item {i}/{num_li_current_page}")
+            
         print("FINISHED PROCESSING RESULTS FOR THIS PAGE")
+        print("Initiating pagination...")
             
     def apply_to_job(self, job_title, job_location, list_item_element):
         """Apply to a single job, deciding which resume to use based on job description matching."""
