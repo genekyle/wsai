@@ -82,12 +82,13 @@ def handle_unknown_section(driver, modal_element, current_header_text, job_title
                 try:
                     print("Trying for radio question search")
                     radio_elements = question_element.find_elements(By.XPATH, radio_xpath)
-                    print(f'Question #{index} handled')
+                    
                 except:
                     print("Error looking for radio question")
                 if len(radio_elements) > 0:
                     print(f"Question {index} is a Radio Question.")
                     question_handled = True
+                    print(f'Question #{index} handled at radio check')
                     try:
                         print("Looking for Question Label")
                         question_xpath = ".//span[@data-test-form-builder-radio-button-form-component__title]/span[@aria-hidden='true']"
@@ -128,20 +129,31 @@ def handle_unknown_section(driver, modal_element, current_header_text, job_title
                         except Exception as e:
                             print(f"Errored on label finder for options on radio questions: {e}")
                         
-                    except:
-                        print("Question Label Not found")
+                    except Exception as e:
+                        print(f"ERROR Question Label Not found in Input Search: {e}")
 
                     # Handle radio question specifics here
 
                 # Check if it's an input question
                 if not question_handled:
                     print("Trying for input questions")
-                    input_xpath = ".//div[contains(@class, 'artdeco-text-input--container ember-view')]"
+                     # Mobile Phone Number Check
+                    modal_input_elements = [ 
+                        """.//div[contains(@class, 'artdeco-text-input--container ember-view')]""",
+                        """.//*[contains(@class, 'relative') and @data-test-single-typeahead-entity-form-component='']"""
+                    ]
+                    for xpath in modal_input_elements:
+                        try:
+                            print(f"Attempting to find modal input in contact info using XPath: {xpath}")
+                            # Wait for the modal to be visible on the page
+                            input_elements = WebDriverWait(question_element, 2.5).until(
+                                EC.presence_of_all_elements_located((By.XPATH, xpath))
+                            )                            
+                            print("Modal Input Found: contact info - modal input")
+                            random_sleep(1.5,2.5)
+                        except Exception as e:
+                                print(f"Failed to find or process the modal input element in contact info function: {e}")
                     try:
-                        print("Trying for input search")
-                        input_elements = WebDriverWait(question_element, 10).until(
-                            EC.presence_of_all_elements_located((By.XPATH, input_xpath))
-                        )
                         if len(input_elements) > 0:
                             print(f"Question {index} is an Input Question.")
                             question_handled = True
@@ -191,12 +203,12 @@ def handle_unknown_section(driver, modal_element, current_header_text, job_title
                                     print("Numeric Error Not Found, Inputting regular answer")
                                     human_type(input, answer)
                                     print(f"Answer: {answer}, typed into input question #{index}")
-                            except:
-                                print("Question Label Not found")
+                            except Exception as e:
+                                print(f"ERROR Question Label Not found: {e}")
                         else:
                             print(f"Question {index} is not an Input Question.")
-                    except:
-                        print("Error Looking for input")
+                    except Exception as e:
+                        print(f"ERROR Looking for input: {e}")
 
     if 'Work Authorization' in predicted_category:
         print("Handling Work Authorization questions")

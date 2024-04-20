@@ -43,6 +43,7 @@
         {"question": "How many years of work experience do you have with Node.js?", "answer": "2 years"},
         {"question": "How many years of work experience do you have with Object-Oriented Programming (OOP)?", "answer": "3 years"},
         {"question": "How many years of work experience do you have with Palantir?", "answer": "0 years"},
+        {"question": "How many years of work experience do you have with Powershell?", "answer": "2 years"},
         {"question": "How many years of work experience do you have with Quality Engineering?", "answer": "2 years"},
         {"question": "How many years of work experience do you have with Redux.js?", "answer": "1 year"},
         {"question": "How many years of work experience do you have with Terraform?", "answer": "0 years"},
