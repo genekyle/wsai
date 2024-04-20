@@ -636,7 +636,7 @@ class Jobs:
 
                 # Fuzzy Matching System
                 location_groups = {
-                    "California": ["California", "CA"],  # California In General not sure where to go
+                    "California": ["California", "CA", "Los Angeles", "Santa Monica", "Pasadena"],  # California In General not sure where to go
                     "New York": ["New York", "NY", "New Jersey", "NJ", "Manhattan", "Brooklyn", "Queens"], # NYC Metropolitan Area mainly
                     "New Hampshire": ["Boston", "MA", "Massachusetts", "New Hampshire", "NH", "RI", "ME", "Remote"] # Greater Boston Area
                 }
@@ -910,7 +910,7 @@ class Jobs:
 
                                     print("Looking for the options of the dropdown question")
                                     try:
-                                        options_xpath = "//following-sibling::select/option"
+                                        options_xpath = ".//following-sibling::select/option"
                                         option_elements = WebDriverWait(question_element, 10).until(
                                             EC.presence_of_all_elements_located((By.XPATH, options_xpath))
                                         )
