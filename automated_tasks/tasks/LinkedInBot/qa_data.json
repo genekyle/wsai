@@ -1,14 +1,15 @@
 {
     "Education": [
         {"question": "Do you have a bachelor's degree or higher?", "answer": "Yes"},
+        {"question": "Do you have a higher degree in Computer Science??", "answer": "No"},
         {"question": "What is your highest level of education?", "answer": "Bachelor's degree"}
     ],
     "Leadership Experience": [
         {"question": "Do you have team leadership experience?", "answer": "No"},
+        {"question": "Have you ever worked for a startup company?", "answer": "Yes"},
         {"question": "Have you previously managed a team?", "answer": "No"}
     ],
     "Programming Experience": [
-        
         {"question": "How many years have you worked with Python?", "answer": "3 years"},
         {"question": "How many years have you worked with React?", "answer": "1 Year"},
         {"question": "How many years of experience do you have with Software Development?", "answer": "3 years"},
@@ -23,6 +24,8 @@
         {"question": "What programming languages can you work with?", "answer": "Python, JavaScript, C#"}
     ],
     "Skills Proficiency": [
+        {"question": "Are you an extremely strong frontend coder with tech stacks like React, JavaScript, and TypeScript?", "answer": "Yes"},
+        {"question": "Do you have experience with System Design?", "answer": "Yes"},
         {"question": "Rate your SQL skills.", "answer": "Advanced"},
         {"question": "What is your proficiency with SQL technologies?", "answer": "Advanced"}
     ],
@@ -30,10 +33,12 @@
         {"question": "Are you authorized to work in the U.S. without restriction?", "answer": "No"},
         {"question": "Are you legally authorized to work in the United States?", "answer": "Yes"},
         {"question": "Will you now or in the future require sponsorship to work within the United States?", "answer": "No"},
-        {"question": "Will you now, or in the future, require sponsorship for employment visa status (e.g. H-1B visa status)?Will you now, or in the future, require sponsorship for employment visa status (e.g. H-1B visa status)?", "answer":"No"}
+        {"question": "Will you now, or in the future, require sponsorship for employment visa status (e.g. H-1B visa status)?Will you now, or in the future, require sponsorship for employment visa status (e.g. H-1B visa status)?", "answer":"No"},
+        {"question": "This position is not eligible for consultants. Client is unable to sponsor new, or transfer existing visas. Will you now or in the future require new sponsorship or a transfer of existing work visa?This position is not eligible for consultants. Client is unable to sponsor new, or transfer existing visas. Will you now or in the future require new sponsorship or a transfer of existing work visa?", "answer":"No"}
     ],
     "Work Preferences": [
         {"question": "Are you able to commute to our office near Bryant Park 4 times a week?", "answer":"Yes"},
+        {"question": "Are you able to travel to the office 4x/week in NYC or SF?", "answer":"Yes"},
         {"question": "Are you comfortable commuting to this job's location?", "answer": "Yes"},
         {"question": "Are you comfortable working in an onsite setting?", "answer": "Yes"},
         {"question": "Are you willing and able to spend 2-3 months working from the company’s office in Miami Beach?", "answer": "Yes"},

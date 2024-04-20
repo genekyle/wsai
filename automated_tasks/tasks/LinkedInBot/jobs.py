@@ -558,35 +558,90 @@ class Jobs:
                 # Notes: We found that some jobs may be able to have upload resume within the contacts page, 
                 # CONTACT INFO FIELDS FOUND:
                 # First Name, Last Name, Phone Country Code, Mobile Phone Number, Email Address, Resume
-                print("In the Contact Info Page, Confirming Contacts")
-                email_address_select_option_xpath = "//label[span[@aria-hidden='true' and contains(text(), 'Email address')]]/following-sibling::select[contains(@id, 'text-entity-list')]/option[@value='genomags@gmail.com']"
-                email_address_select_option = WebDriverWait(self.driver, 10).until(
-                    EC.element_to_be_clickable((By.XPATH, email_address_select_option_xpath))
-                ).text
-                if "genomags@gmail.com" in email_address_select_option:
-                    print("Email is confirmed in apply modal")
-                else:
-                    print("Wrong Email Selected in Modal")
+                
+                # First Name check
+                try:
+                    print("Looking to see if first name is part of the contacts module and if it is an input element")
+                    first_name_input_xpath = "//label[contains(text(),'First name')]/following-sibling::input[contains(@type, 'text')]"
+                    first_name_input = WebDriverWait(self.driver, 1.5).until(
+                        EC.presence_of_element_located((By.XPATH, first_name_input_xpath))
+                    )
+                    # Retrieve the current value from the input element
+                    first_name_value = first_name_input.get_attribute('value')
+                    print(f"Current value in 'First Name' input: {first_name_value}")
+                    if first_name_value == "Gene Kyle":
+                        print("The first name matches the expected value.")
+                    else:
+                        print("The first name does not match the expected value.")
+                except Exception as e:
+                    print(f"Failed to find or process the first name input element: {e}")
                     break
-                phone_cc_select_xpath = "//label[span[@aria-hidden='true' and contains(text(), 'Phone country code')]]/following-sibling::select[contains(@id, 'text-entity-list')]"
-                phone_cc_select_element = WebDriverWait(self.driver, 10).until(
-                    EC.element_to_be_clickable((By.XPATH, phone_cc_select_xpath))
-                )
-                selected_phone_cc_obj = Select(phone_cc_select_element)
-                selected_phone_cc = selected_phone_cc_obj.first_selected_option.text
-                if "United States (+1)" in selected_phone_cc:
-                    print("Phone Country Code is confirmed")
-                else:
-                    print("ERROR: Phone Country Code selected is incorrect")
-                mobile_num_input_xpath = "//label[contains(text(), 'Mobile phone number')]/following-sibling::input[contains(@id, 'single-line-text-form')]"
-                mobile_num_input_element = WebDriverWait(self.driver, 10).until(
-                    EC.element_to_be_clickable((By.XPATH, mobile_num_input_xpath))
-                )
 
-                mobile_num_input_value = mobile_num_input_element.get_attribute("value")
-                print("Current value in the input field:", mobile_num_input_value)
-                # Usually the contact page ends at mobile phone number so it will end here may need to account for other possibilities
+                # Last Name Check
+                try:
+                    print("Looking to see if Last Name is part of the contacts module and if it is an input element")
+                    last_name_input_xpath = "//label[contains(text(),'Last name')]/following-sibling::input[contains(@type, 'text')]"
+                    last_name_input = WebDriverWait(self.driver, 1.5).until(
+                        EC.presence_of_element_located((By.XPATH, first_name_input_xpath))
+                    )
+                    # Retrieve the current value from the input element
+                    last_name_value = last_name_input.get_attribute('value')
+                    print(f"Current value in 'Last Name' input: {last_name_value}")
+                    if last_name_value == "Magsipoc":
+                        print("The Last name matches the expected value.")
+                    else:
+                        print("The Last name does not match the expected value.")
+                except Exception as e:
+                    print(f"Failed to find or process the last name input element: {e}")
+                    break
 
+                # Email Check
+                try:
+                    print("Trying for email")
+                    email_address_select_option_xpath = "//label[span[@aria-hidden='true' and contains(text(), 'Email address')]]/following-sibling::select[contains(@id, 'text-entity-list')]/option[@value='genomags@gmail.com']"
+                    email_address_select_option = WebDriverWait(self.driver, 10).until(
+                        EC.element_to_be_clickable((By.XPATH, email_address_select_option_xpath))
+                    ).text
+                    if "genomags@gmail.com" in email_address_select_option:
+                        print("Email is confirmed in apply modal")
+                    else:
+                        print("ERROR: Wrong Email Selected in Modal")
+                        break
+                except:
+                    print(f"Failed to find or process the email input element: {e}")
+                    break
+
+                # Phone Country Code Check
+                try:
+                    print("Trying for Country Code")
+                    phone_cc_select_xpath = "//label[span[@aria-hidden='true' and contains(text(), 'Phone country code')]]/following-sibling::select[contains(@id, 'text-entity-list')]"
+                    phone_cc_select_element = WebDriverWait(self.driver, 10).until(
+                        EC.element_to_be_clickable((By.XPATH, phone_cc_select_xpath))
+                    )
+                    selected_phone_cc_obj = Select(phone_cc_select_element)
+                    selected_phone_cc = selected_phone_cc_obj.first_selected_option.text
+                    if "United States (+1)" in selected_phone_cc:
+                        print("Phone Country Code is confirmed")
+                    else:
+                        print("ERROR: Phone Country Code selected is incorrect")
+                except:
+                    print(f"Failed to find or process the country code dropdowm element: {e}")
+                    break
+
+                # Mobile Phone Number Check
+                try:
+                    print("Trying for Mobile Phone Number")
+                    mobile_num_input_xpath = "//label[contains(text(), 'Mobile phone number')]/following-sibling::input[contains(@id, 'single-line-text-form')]"
+                    mobile_num_input_element = WebDriverWait(self.driver, 10).until(
+                        EC.element_to_be_clickable((By.XPATH, mobile_num_input_xpath))
+                    )
+
+                    mobile_num_input_value = mobile_num_input_element.get_attribute("value")
+                    print("Current value in the input field:", mobile_num_input_value)
+                except:
+                        print(f"Failed to find or process the mobile phone input element: {e}")
+                        break
+                
             elif "resume" in current_header_text:
                 print("In the Resumes Page, Selecting the correct resume")
                 random_sleep(1,2)
