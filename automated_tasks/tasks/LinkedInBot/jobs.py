@@ -3,6 +3,7 @@ from automated_tasks.subtasks.human_type import human_type
 
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
@@ -21,7 +22,7 @@ from scipy.spatial.distance import cosine
 from sentence_transformers import SentenceTransformer, util
 
 from datetime import datetime
-import re, os, json
+import re, os, json, time
 
 # Separate Model Hanlder for Labels, should modularize for the other QA systems as well
 model_handler = ModelHandler()
@@ -189,6 +190,30 @@ class Jobs:
             num_li_current_page = len(results_li)
         except Exception as e:
             print(f"Error searching for results list: {e}")
+
+        # Test scrolling by using page down
+        print("Testing Scrolling Using Page Down on the div we believe accesses the scroll bar for all list items ")
+        try:
+            jobs_list_xpath = "//div[contains(@class,'jobs-search-results-list')]//ul[contains(@class, 'scaffold-layout__list-container')]"
+            # Find the element that needs scrolling
+            scrollable_element = WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, jobs_list_xpath))
+            )
+            
+            # Focus the element if not automatically focused by clicking
+            scrollable_element.click()
+            
+            # Create an instance of ActionChains
+            actions = ActionChains(self.driver)
+            
+            # Emulate more human-like scrolling by pressing and releasing arrow keys
+            # You might repeat the key presses or mix in some PAGE_DOWN key presses for larger scrolls.
+            for _ in range(5):  # Adjust the range for the number of scrolls you want
+                actions.send_keys_to_element(scrollable_element, Keys.PAGE_DOWN).perform()
+                random_sleep(.75, 1.2)  # Pause between scrolls to emulate human speed
+            print("Sent ARROW_DOWN keys to element to scroll within it.")
+        except Exception as e:
+            print(f"Error while attempting to scroll the element: {str(e)}")
 
         print(f"Number of list items in the current page: {num_li_current_page}")
         # Next is to process each result or all the list items in the ordered list
@@ -492,6 +517,7 @@ class Jobs:
             
         print("FINISHED PROCESSING RESULTS FOR THIS PAGE")
         print("Initiating pagination...")
+        return True
             
     def apply_to_job(self, job_title, job_location, list_item_element):
         """Apply to a single job, deciding which resume to use based on job description matching."""
@@ -628,23 +654,113 @@ class Jobs:
                         print("Phone Country Code is confirmed")
                     else:
                         print("ERROR: Phone Country Code selected is incorrect")
-                except:
+                except Exception as e:
                     print(f"Failed to find or process the country code dropdowm element: {e}")
                     
 
                 # Mobile Phone Number Check
+                mobile_phone_xpaths = [ 
+                    """//div[contains(text(), "Keep track of your application")]""",
+                    """//p[contains(text(),'You can keep track')]"""
+                ]
+                for xpath in mobile_phone_xpaths:
+                    try:
+                        print(f"Attempting to find phone input in contact info using XPath: {xpath}")
+                        # Wait for the modal to be visible on the page
+                        mobile_num_input_element = WebDriverWait(self.driver, 1.5).until(EC.visibility_of_element_located((By.XPATH, xpath)))
+                        print("Phone Input Found: contact info - phone input found")
+                        random_sleep(2.5,3.5)
+                        mobile_num_input_value = mobile_num_input_element.get_attribute("value")
+                        print("Current value in the input field:", mobile_num_input_value)
+                    except Exception as e:
+                            print(f"Failed to find or process the mobile phone input element: {e}")
+                
+                # Resume input check
+                print("Print Checking for upload resume input")
                 try:
-                    print("Trying for Mobile Phone Number")
-                    mobile_num_input_xpath = "//label[contains(text(), 'Mobile phone number')]/following-sibling::input[contains(@id, 'single-line-text-form')]"
-                    mobile_num_input_element = WebDriverWait(self.driver, 10).until(
-                        EC.element_to_be_clickable((By.XPATH, mobile_num_input_xpath))
+                    upload_resume_input_xpath = "//input[contains(@name, 'file')]"
+                    upload_resume_input = WebDriverWait(self.driver, 1.5).until(
+                        EC.presence_of_element_located((By.XPATH, upload_resume_input_xpath))
+                    )
+                    print("Resume upload input found in Contact Info section")
+                    print("Working with Current Job Post Title: ", job_title, 'At location: ', job_location, ' To decide the best fit resume')
+                    resumes = self.db_session.query(Resumes).all()
+                    resume_titles = [resume.resume_title for resume in resumes]
+                    
+                    best_match_resume_title, best_match_score = rank_and_get_best_resume(job_title, resume_titles)
+
+                    best_match_resume = self.db_session.query(Resumes).filter_by(resume_title=best_match_resume_title).first()
+
+                    # Fuzzy Matching System
+                    location_groups = {
+                        "California": ["California", "CA", "Los Angeles", "Santa Monica", "Pasadena"],  # California In General not sure where to go
+                        "New York": ["New York", "NY", "New Jersey", "NJ", "Manhattan", "Brooklyn", "Queens"], # NYC Metropolitan Area mainly
+                        "New Hampshire": ["Boston", "MA", "Massachusetts", "New Hampshire", "NH", "RI", "ME", "Remote"] # Greater Boston Area
+                    }
+
+                    # Determine the job location group directly in the function
+                    job_location_group = None
+                    for group, locations in location_groups.items():
+                        if any(loc.lower() in job_location.lower() for loc in locations):
+                            job_location_group = group
+                            break
+                    
+                    # Initialize  best_variation:
+                    best_variation = None  # Initialize outside of the conditional block
+
+                    # Handle no matching location group
+                    if job_location_group is None:
+                        print(f"No location group found for '{job_location}'. Using default resume variation or handling otherwise.")
+                    else:
+                        print(f"Job location '{job_location}' falls under the '{job_location_group}' group.")
+                        # Query for the best matching resume variation based on the location group and resume_id
+                        best_variation = self.db_session.query(ResumeVariations) \
+                            .filter_by(resume_id=best_match_resume.resume_id, location=job_location_group) \
+                            .first()
+
+                        if best_variation:
+                            print(f"Best variation file name: {best_variation.file_name}")
+                        else:
+                            print("No matching resume variation found.")
+
+                    # Print Tester/Debugger
+                    print(best_match_resume.resume_id)
+                    print(best_variation.variation_id)
+                    print("Job Id: Will Be added after a successful application was sent") # Implementation here
+                    print(best_match_resume_title)
+                    print(job_title)
+                    print(job_location)
+                    print(f"Best Match Score: {best_match_score}")
+                    # Creating a ResumeMatched object to be put into sql database
+                    resume_matched = ResumeMatches(
+                        resume_id = best_match_resume.resume_id,
+                        variation_id = best_variation.variation_id,
+                        resume_title = best_match_resume_title,
+                        job_id = None,
+                        job_title = job_title,
+                        job_location = job_location,
+                        score = best_match_score
                     )
 
-                    mobile_num_input_value = mobile_num_input_element.get_attribute("value")
-                    print("Current value in the input field:", mobile_num_input_value)
-                except:
-                        print(f"Failed to find or process the mobile phone input element: {e}")
-                        
+                    random_sleep(5,10)
+                    
+                    print("With Resume Matched, now uploading the correct resume")
+                    
+                    # In LinkedIn the label may be the trigger the action(uploading) when clicked on
+                    try:
+                        print("trying to establish resume file name")
+                        resume_file_name = best_variation.file_name
+                        print(resume_file_name)
+                        resumes_folder_path = r"C:\Users\genom\Documents\apply\resumes"
+                        resume_file_path = os.path.join(resumes_folder_path, resume_file_name)
+                        print(resume_file_path)
+                        upload_resume_input.send_keys(resume_file_path)
+                        random_sleep(4.5,5)
+                    except Exception as e:
+                        print(f"Error Trying To upload resume:{e}")
+                        return resume_matched, False   
+                except Exception as e:
+                    print("No resume upload input found in Contact Info section")
                 
             elif "resume" in current_header_text:
                 print("In the Resumes Page, Selecting the correct resume")
@@ -1079,6 +1195,41 @@ class Jobs:
         
     def iterate_through_results(self):
         """Iterate through all search result pages, processing each page of results."""
-        # Loop through all pages, or until a certain condition is met
-        # Call process_results_page() for each page
-
+        print("Now Within The Iterate Through Results Pages Function, Beginning While Loop to process each page")
+        while True:  # Start a loop that will go through each page
+            processed = self.process_results_page()  # Process the current page
+            print("Checking If Processed or not")
+            if not processed:
+                print("No more jobs to process or end of results reached.")
+                break  # Exit the loop if no jobs were processed on the current page
+            print("Checking If Next Page Exists")
+            if not self.go_to_next_page():
+                print("No more pages to navigate to.")
+                break  # Exit the loop if no next page is available
+    
+    def go_to_next_page(self):
+        """Attempts to navigate to the next page of results."""
+        print("Go To Next Page Function:")
+        try:
+            current_page_button_text_xpath = "//button[contains(@aria-current, 'true')]/span"
+            current_page_button_text = WebDriverWait(self.driver, 10).until(
+                EC.visibility_of_element_located((By.XPATH, current_page_button_text_xpath))
+            )
+            current_page = int(current_page_button_text.text)
+            print(f"Current Page: {current_page}")
+            
+            next_page_number = current_page + 1
+            next_page_button_xpath = f"//button[@aria-label='Page {next_page_number}']"  # Ensure this matches the exact text or format used in the buttons
+            
+            next_page_button = WebDriverWait(self.driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, next_page_button_xpath))
+            )
+            next_page_button.click()
+            random_sleep(9.5,11.5)
+            return True
+        except TimeoutException as e:
+            print(f"Failed to find or click on the next page button: {e}")
+            return False
+        except Exception as e:
+            print(f"An error occurred while trying to navigate to the next page: {e}")
+            return False

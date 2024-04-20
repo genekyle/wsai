@@ -78,8 +78,7 @@ class LinkedInBotOrchestrator(QObject):
                 jobs = Jobs(driver=self.driver, user_profile=user_profile, selected_location_id=self.selected_location_id, db_session=self.db_session)
                 jobs.initiate_search(self.search_input)
                 self.update_state("Search Initiated")
-                jobs.process_results_page()
-
+                jobs.iterate_through_results()
             else:
                 self.update_state("Login Failed")
 

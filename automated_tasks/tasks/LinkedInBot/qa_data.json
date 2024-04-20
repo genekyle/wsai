@@ -5,6 +5,7 @@
     "Education": [
         {"question": "Do you have a bachelor's degree or higher?", "answer": "Yes"},
         {"question": "Do you have a higher degree in Computer Science?", "answer": "No"},
+        {"question": "Have you completed the following level of education: Master's Degree?", "answer": "No"},
         {"question": "What is your highest level of education?", "answer": "Bachelor's degree"}
     ],
     "Human Checks": [
@@ -28,6 +29,8 @@
         {"question": "How many years of work experience do you have with Azure SQL?", "answer": "2 years"},
         {"question": "How many years of work experience do you have with C# in .NET?", "answer": "2 years"},
         {"question": "How many years of work experience do you have with C++?", "answer": "1 year"},
+        {"question": "How many years of work experience do you have with Django?", "answer": "1 year"},
+        {"question": "How many years of work experience do you have with Extract, Transform, Load (ETL)?", "answer": "3 years"},
         {"question": "How many years of work experience do you have with GraphQL?", "answer": "1 year"},
         {"question": "How many years of work experience do you have with Javascript?", "answer": "3 years"},
         {"question": "How many years of work experience do you have with Java Development?", "answer": "1 year"},
@@ -39,7 +42,9 @@
         {"question": "How many years of work experience do you have with Mobile Application Development?", "answer": "1 year"},
         {"question": "How many years of work experience do you have with Node.js?", "answer": "2 years"},
         {"question": "How many years of work experience do you have with Object-Oriented Programming (OOP)?", "answer": "3 years"},
+        {"question": "How many years of work experience do you have with Palantir?", "answer": "0 years"},
         {"question": "How many years of work experience do you have with Quality Engineering?", "answer": "2 years"},
+        {"question": "How many years of work experience do you have with Redux.js?", "answer": "1 year"},
         {"question": "How many years of work experience do you have with Terraform?", "answer": "0 years"},
         {"question": "How many years of work experience do you have with TypeScript?", "answer": "1 year"},
         {"question": "How many years of work experience do you have with Visual Basic .NET (VB.NET)?", "answer": "1 year"},
@@ -55,14 +60,17 @@
         {"question": "Do you have Bash or Python experience?", "answer": "Yes"},
         {"question": "Do you have experience porting Web User Interfaces from a legacy .Net framework 4.7.2 application (C#, MVC, jquery, angularJS) to .Net (version 8 or close to that)?", "answer": "Yes"},
         {"question": "How many years of work experience do you have with Data Engineering?", "answer": "2 years"},
+        {"question": "How many years of work experience do you have with React Hooks?", "answer": "1 year"},
         {"question": "What programming languages can you work with?", "answer": "Python, JavaScript, C#"}
     ],
     "Related Experience": [
         {"question": "Do you have experience trading in the stock market?", "answer": "Yes"},
         {"question": "Do you have experience within the medical device industry or other regulated environment?", "answer": "Yes"},
         {"question": "Do you have prior experience at a tech startup (2-10 people)? ", "answer": "Yes"},
+        {"question": "How many years of Financial Services experience do you currently have?", "answer": "1 year"},
         {"question": "How many years of work experience do you have with Product Marketing?", "answer": "2 years"},
         {"question": "How many years of work experience do you have with Technical Support?", "answer": "2 years"},
+        {"question": "What is your level of proficiency in English?", "answer": "Native or Bilingual"},
         {"question": "What is your level of proficiency in Chinese?", "answer": "None"},
         {"question": "What is your level of proficiency in Japanese?", "answer": "None"},
         {"question": "What is your level of proficiency in Korean?", "answer": "None"},
@@ -70,7 +78,10 @@
     ],
     "Skills Proficiency": [
         {"question": "Are you an extremely strong frontend coder with tech stacks like React, JavaScript, and TypeScript?", "answer": "Yes"},
-        {"question": "Do you have experience converting AngularJS components to a newer technology?", "answer": "Yes"},
+        {"question": "How many years of Information Technology experience do you currently have?", "answer": "3 years"},
+        {"question": "How many years of work experience do you have with Software Engineering Practices?", "answer": "3 years"},
+        {"question": "Do you have 1+ years of professional work experience in game development writing software in C++?", "answer": "Yes"},
+        {"question": "Do you have at least 3 years of professional experience working with Linux?", "answer": "No"},
         {"question": "Do you have experience with System Design?", "answer": "Yes"},
         {"question": "Do you have experience with the Microsoft stack?", "answer": "Yes"},
         {"question": "Rate your SQL skills.", "answer": "Advanced"},
@@ -79,6 +90,7 @@
     "Work Authorization": [
         {"question": "Are you a US citizen or Green Card holder?", "answer": "Yes"},
         {"question": "Are you authorized to work in the U.S. without restriction?", "answer": "Yes"},
+        {"question": "Are you available on a W2 basis?", "answer": "Yes"},
         {"question": "Are you legally authorized to work in the United States?", "answer": "Yes"},
         {"question": "Are you willing to undergo a background check, in accordance with local law/regulations?", "answer": "Yes"},
         {"question": "We must fill this position urgently. Can you start immediately?", "answer": "Yes"},
@@ -89,6 +101,7 @@
     "Work Preferences": [
         {"question": "Are you able to commute to our office near Bryant Park 4 times a week?", "answer":"Yes"},
         {"question": "Are you able to travel to the office 4x/week in NYC or SF?", "answer":"Yes"},
+        {"question": "Are you Boston based and able to attend the office 5 days a week", "answer": "Yes"},
         {"question": "Are you comfortable commuting to this job's location?", "answer": "Yes"},
         {"question": "Are you comfortable working in a hybrid setting?", "answer": "Yes"},
         {"question": "Are you comfortable working in an onsite setting?", "answer": "Yes"},
@@ -99,6 +112,7 @@
         {"question": "Are you willing to take a drug test, in accordance with local law/regulations?", "answer": "Yes"},
         {"question": "Can you commit as a temporary employee for 3+ months?Can you commit as a temporary employee for 3+ months?", "answer": "Yes"},
         {"question": "Do you need to relocate from you current location to work with us onsite 3 days per week (Tuesday, Wednesday & Thursday) in Massachusetts?", "answer": "No"},
+        {"question": "Do you presently reside in the Greater Boston or Greater NYC area? (Please note relocation candidates are not considered at this time)", "answer": "Yes"},
         {"question": "Will you be able to work onsite at our Brooklyn location at least 3 days per week?", "answer": "Yes"}
     ]
 }
