@@ -50,10 +50,12 @@
         {"question": "How many years of work experience do you have with Powershell?", "answer": "2 years"},
         {"question": "How many years of work experience do you have with Quality Engineering?", "answer": "2 years"},
         {"question": "How many years of work experience do you have with Redux.js?", "answer": "1 year"},
+        {"question": "How many years of work experience do you have with REST APIs?", "answer": "3 years"},
         {"question": "How many years of work experience do you have with Terraform?", "answer": "0 years"},
         {"question": "How many years of work experience do you have with TypeScript?", "answer": "1 year"},
         {"question": "How many years of work experience do you have with Visual Basic .NET (VB.NET)?", "answer": "1 year"},
         {"question": "How many years of work experience do you have with VMware?", "answer": "1 year"},
+        {"question": "How many years of work experience do you have with VBScript?", "answer": "1 year"},
         {"question": "How many years of experience do you have with Software Development?", "answer": "3 years"},
         {"question": "How many years of experience do you have working in an early-stage, high-growth startup as an engineer?", "answer": "3 years"},
         {"question": "How many years of professional development experience do you have?", "answer": "2 years"},
@@ -85,6 +87,7 @@
     "Skills Proficiency": [
         {"question": "Are you an extremely strong frontend coder with tech stacks like React, JavaScript, and TypeScript?", "answer": "Yes"},
         {"question": "How many years of Information Technology experience do you currently have?", "answer": "3 years"},
+        {"question": "How many years of work experience do you have with Application Deployment?", "answer": "2 years"},
         {"question": "How many years of work experience do you have with Software Engineering Practices?", "answer": "3 years"},
         {"question": "Do you have 1+ years of professional work experience in game development writing software in C++?", "answer": "Yes"},
         {"question": "Do you have at least 3 years of professional experience working with Linux?", "answer": "No"},
@@ -121,7 +124,8 @@
         {"question": "Can you commit as a temporary employee for 3+ months?Can you commit as a temporary employee for 3+ months?", "answer": "Yes"},
         {"question": "Do you need to relocate from you current location to work with us onsite 3 days per week (Tuesday, Wednesday & Thursday) in Massachusetts?", "answer": "No"},
         {"question": "Do you presently reside in the Greater Boston or Greater NYC area? (Please note relocation candidates are not considered at this time)", "answer": "Yes"},
-        {"question": "Will you be able to work onsite at our Brooklyn location at least 3 days per week?", "answer": "Yes"}
+        {"question": "Will you be able to work onsite at our Brooklyn location at least 3 days per week?", "answer": "Yes"},
+        {"question": "What is your desired salary?", "answer": "50"}
     ]
 }
 
