@@ -17,7 +17,9 @@
         {"question": "Have you previously managed a team?", "answer": "No"}
     ],
     "Programming Experience": [
+        {"question": "Do you have 3+ years working in either Rust, Go, Java or Python? *Unfortunately internships will NOT be considered", "answer": "No"},
         {"question": "Do you have 8-10 years of experience as a Full Stack Software Engineer?Do you have 8-10 years of experience as a Full Stack Software Engineer?", "answer": "No"},
+        {"question": "Do you have backend software development experience?", "answer": "Yes"},
         {"question": "Do you have experience with Advanced Driver Assistance Systems (ADAS) testing?", "answer": "No"},
         {"question": "How many years have you worked with Python?", "answer": "3 years"},
         {"question": "How many years have you worked with React?", "answer": "1 year"},
@@ -25,8 +27,10 @@
         {"question": "How many years of work experience do you have with Acceptance Test, AI Driven Development (ATDD)?", "answer": "1 year"},
         {"question": "How many years of work experience do you have with AngularJS?", "answer": "2 years"},
         {"question": "How many years of work experience do you have with Apache Spark Streaming?", "answer": "1 year"},
+        {"question": "How many years of work experience do you have with API Development?", "answer": "2 years"},
         {"question": "How many years of work experience do you have with ASP.NET?", "answer": "2 years"},
         {"question": "How many years of work experience do you have with Azure SQL?", "answer": "2 years"},
+        {"question": "How many years of work experience do you have with Blazor?", "answer": "1 year"},
         {"question": "How many years of work experience do you have with C# in .NET?", "answer": "2 years"},
         {"question": "How many years of work experience do you have with C++?", "answer": "1 year"},
         {"question": "How many years of work experience do you have with Django?", "answer": "1 year"},
@@ -49,6 +53,7 @@
         {"question": "How many years of work experience do you have with Terraform?", "answer": "0 years"},
         {"question": "How many years of work experience do you have with TypeScript?", "answer": "1 year"},
         {"question": "How many years of work experience do you have with Visual Basic .NET (VB.NET)?", "answer": "1 year"},
+        {"question": "How many years of work experience do you have with VMware?", "answer": "1 year"},
         {"question": "How many years of experience do you have with Software Development?", "answer": "3 years"},
         {"question": "How many years of experience do you have working in an early-stage, high-growth startup as an engineer?", "answer": "3 years"},
         {"question": "How many years of professional development experience do you have?", "answer": "2 years"},
@@ -90,8 +95,10 @@
     ],
     "Work Authorization": [
         {"question": "Are you a US citizen or Green Card holder?", "answer": "Yes"},
+        {"question": "Are you eligible to work in the United States without sponsorship?", "answer": "Yes"},
         {"question": "Are you authorized to work in the U.S. without restriction?", "answer": "Yes"},
         {"question": "Are you available on a W2 basis?", "answer": "Yes"},
+        {"question": "Are you eligible to obtain and maintain U.S. TS Clearance?", "answer": "Yes"},
         {"question": "Are you legally authorized to work in the United States?", "answer": "Yes"},
         {"question": "Are you willing to undergo a background check, in accordance with local law/regulations?", "answer": "Yes"},
         {"question": "We must fill this position urgently. Can you start immediately?", "answer": "Yes"},
@@ -117,3 +124,5 @@
         {"question": "Will you be able to work onsite at our Brooklyn location at least 3 days per week?", "answer": "Yes"}
     ]
 }
+
+

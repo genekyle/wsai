@@ -64,14 +64,14 @@ class Jobs:
         print("attempting to get location")
         location_name = self.get_location_name_by_id(self.selected_location_id)
         print(f"In area: {location_name}")
-        random_sleep(1,10)
+        random_sleep(2,3.5)
         try:
             print("Looking for Jobs Link")
-            job_link = WebDriverWait(self.driver, 10).until(
+            job_link = WebDriverWait(self.driver, 5).until(
                 EC.element_to_be_clickable((By.XPATH, '//a[contains(@href, "/jobs/")]'))
             )
             print("Jobs Page Link Found")
-            random_sleep(1,3)
+            random_sleep(0.5,1.5)
             job_link.click()
             print("Clicked on the job link successfully.")
         except TimeoutException:
@@ -83,7 +83,7 @@ class Jobs:
         expected_url = "https://www.linkedin.com/jobs/"
         
         try:
-            WebDriverWait(self.driver, 10).until(EC.url_to_be(expected_url))
+            WebDriverWait(self.driver, 5).until(EC.url_to_be(expected_url))
             print(f"Arrived at the expected URL: {expected_url}")
         except TimeoutException:
             print(f"Timed out waiting for URL to be: {expected_url}")
@@ -92,11 +92,11 @@ class Jobs:
         # Check to see if job search bar is loaded in
         try:
             print("Looking for Jobs Search Bar")
-            job_search_bar = WebDriverWait(self.driver, 10).until(
+            job_search_bar = WebDriverWait(self.driver, 5).until(
                 EC.element_to_be_clickable((By.XPATH, '//input[contains(@id, "jobs-search-box-keyword")]'))
             )
             print("Jobs Page Search Bar Found")
-            random_sleep(1,3)
+            random_sleep(1.5,2.5)
             job_search_bar.click()
             print("Clicked on the job search bar successfully.")
         except TimeoutException:
@@ -113,7 +113,7 @@ class Jobs:
                 EC.element_to_be_clickable((By.XPATH, '//input[contains(@id, "jobs-search-box-location")]'))
             )
             print("Jobs Page Search Location Bar Found")
-            random_sleep(1,3)
+            random_sleep(0.5,1)
             job_location_bar.click()
             print("Clicked on the job search location bar successfully.")
         except TimeoutException:
@@ -124,13 +124,13 @@ class Jobs:
         try:
             human_type(job_location_bar, location_name)
 
-            random_sleep(2,4)
+            random_sleep(1,2.5)
             
             job_location_bar.send_keys(Keys.ENTER)
         except Exception as e:
             print(f"Error adding search record: {e}")
         
-        random_sleep(5,7)
+        random_sleep(3.5,4)
 
         # Confirm Search
         print("Confirming Search")
@@ -224,7 +224,7 @@ class Jobs:
                 EC.element_to_be_clickable((By.XPATH, list_item_xpath))
             )
             print(f"List item element {i} found")
-            random_sleep(3,5)
+            random_sleep(2,2.5)
             # Click on the list element and then scroll into view
             self.driver.execute_script("arguments[0].scrollIntoView();", list_item_element)
             random_sleep(1.5,2.2)
@@ -243,7 +243,7 @@ class Jobs:
                 # Job Title Extraction
                 job_post_title = job_post_anchor_element.get_attribute('aria-label')
                 print(f'Job Title: {job_post_title}')
-                random_sleep(3.5, 4.4)
+                random_sleep(2, 3.4)
 
                 # Job Link Extraction
                 job_link = job_post_anchor_element.get_attribute('href')
@@ -693,7 +693,7 @@ class Jobs:
 
                     # Fuzzy Matching System
                     location_groups = {
-                        "California": ["California", "CA", "Los Angeles", "Santa Monica", "Pasadena"],  # California In General not sure where to go
+                        "California": ["California", "CA", "Los Angeles", "Santa Monica", "Pasadena", "San Francisco"],  # California In General not sure where to go
                         "New York": ["New York", "NY", "New Jersey", "NJ", "Manhattan", "Brooklyn", "Queens"], # NYC Metropolitan Area mainly
                         "New Hampshire": ["Boston", "MA", "Massachusetts", "New Hampshire", "NH", "RI", "ME", "Remote"] # Greater Boston Area
                     }
@@ -775,7 +775,7 @@ class Jobs:
 
                 # Fuzzy Matching System
                 location_groups = {
-                    "California": ["California", "CA", "Los Angeles", "Santa Monica", "Pasadena"],  # California In General not sure where to go
+                    "California": ["California", "CA", "Los Angeles", "Santa Monica", "Pasadena", "San Francisco"],  # California In General not sure where to go
                     "New York": ["New York", "NY", "New Jersey", "NJ", "Manhattan", "Brooklyn", "Queens"], # NYC Metropolitan Area mainly
                     "New Hampshire": ["Boston", "MA", "Massachusetts", "New Hampshire", "NH", "RI", "ME", "Remote"] # Greater Boston Area
                 }
@@ -824,7 +824,7 @@ class Jobs:
                     score = best_match_score
                 )
 
-                random_sleep(5,10)
+                random_sleep(3,4)
                 
                 print("With Resume Matched, now uploading the correct resume")
                 
@@ -832,7 +832,7 @@ class Jobs:
                 try:
                     print("Looking For Resume Input")
                     upload_resume_input_xpath = "//input[contains(@name, 'file')]"
-                    upload_resume_input = WebDriverWait(self.driver, 10).until(
+                    upload_resume_input = WebDriverWait(self.driver, 5).until(
                         EC.presence_of_element_located((By.XPATH, upload_resume_input_xpath))
                     )
                     print("Resume Input Found, now trying to establish resume file name")
@@ -853,7 +853,7 @@ class Jobs:
                 print("Targeting Addititional Questions")
                 try:
                     additional_questions_content_xpath = "//div[contains(@class, 'jobs-easy-apply-content')]"
-                    additional_questions_content = WebDriverWait(self.driver, 10).until(
+                    additional_questions_content = WebDriverWait(self.driver, 5).until(
                         EC.presence_of_element_located((By.XPATH, additional_questions_content_xpath))
                     )
                     print("Additional Questions Targeted")
@@ -864,7 +864,7 @@ class Jobs:
                 print("Looking for how many questions")
                 try:
                     all_questions_xpath = ".//div[contains(@class, 'jobs-easy-apply-form-section__grouping')]"
-                    all_questions_elements = WebDriverWait(additional_questions_content, 10).until(
+                    all_questions_elements = WebDriverWait(additional_questions_content, 5).until(
                         EC.presence_of_all_elements_located((By.XPATH, all_questions_xpath))
                     )
                     print("All Questions Found")
@@ -1225,7 +1225,7 @@ class Jobs:
                 EC.element_to_be_clickable((By.XPATH, next_page_button_xpath))
             )
             next_page_button.click()
-            random_sleep(9.5,11.5)
+            random_sleep(4.5,6.5)
             return True
         except TimeoutException as e:
             print(f"Failed to find or click on the next page button: {e}")

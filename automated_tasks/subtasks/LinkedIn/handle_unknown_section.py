@@ -60,7 +60,7 @@ def handle_unknown_section(driver, modal_element, current_header_text, job_title
         print("Looking for how many questions")
         try:
             all_questions_xpath = ".//div[contains(@class, 'jobs-easy-apply-form-section__grouping')]"
-            all_questions_elements = WebDriverWait(driver, 10).until(
+            all_questions_elements = WebDriverWait(driver, 5).until(
                 EC.presence_of_all_elements_located((By.XPATH, all_questions_xpath))
             )
             print("All Questions Found")
@@ -92,7 +92,7 @@ def handle_unknown_section(driver, modal_element, current_header_text, job_title
                     try:
                         print("Looking for Question Label")
                         question_xpath = ".//span[@data-test-form-builder-radio-button-form-component__title]/span[@aria-hidden='true']"
-                        question = WebDriverWait(question_element, 10).until(
+                        question = WebDriverWait(question_element, 5).until(
                             EC.presence_of_element_located((By.XPATH, question_xpath))
                         ).text
                         print(f"question {index} found")
@@ -132,83 +132,92 @@ def handle_unknown_section(driver, modal_element, current_header_text, job_title
                     except Exception as e:
                         print(f"ERROR Question Label Not found in Input Search: {e}")
 
-                    # Handle radio question specifics here
+                    
 
                 # Check if it's an input question
+                
                 if not question_handled:
                     print("Trying for input questions")
-                     # Mobile Phone Number Check
-                    modal_input_elements = [ 
+                    # Modal Input element Check
+                    modal_input_elements_xpath = [
                         """.//div[contains(@class, 'artdeco-text-input--container ember-view')]""",
                         """.//*[contains(@class, 'relative') and @data-test-single-typeahead-entity-form-component='']"""
                     ]
-                    for xpath in modal_input_elements:
+                    input_elements = []  # Define outside to ensure scope visibility
+                    for xpath in modal_input_elements_xpath:
                         try:
                             print(f"Attempting to find modal input in contact info using XPath: {xpath}")
                             # Wait for the modal to be visible on the page
                             input_elements = WebDriverWait(question_element, 2.5).until(
                                 EC.presence_of_all_elements_located((By.XPATH, xpath))
-                            )                            
+                            )
                             print("Modal Input Found: contact info - modal input")
                             random_sleep(1.5,2.5)
                         except Exception as e:
-                                print(f"Failed to find or process the modal input element in contact info function: {e}")
-                    try:
-                        if len(input_elements) > 0:
-                            print(f"Question {index} is an Input Question.")
-                            question_handled = True
+                            print(f"Failed to find or process the modal input element in contact info function: {e}")
+
+                    if len(input_elements) > 0:
+                        print(f"Question {index} is an Input Question.")
+                        question_handled = True
+                        print("Looking for Question Label")
+                        # Modal Input label element Check
+                        modal_input_label_elements_xpath = [
+                            """.//label[contains(@for, 'single-line-text-form-component-formElement')]""",
+                            """.//label[contains(@for, 'single-typeahead-entity-form-component-formElement')]"""
+                        ]
+                        for xpath in modal_input_label_elements_xpath:
                             try:
-                                print("Looking for Question Label")
-                                question_xpath = ".//label[contains(@for, 'single-line-text-form-component-formElement')]"
-                                question = WebDriverWait(question_element, 10).until(
-                                    EC.presence_of_element_located((By.XPATH, question_xpath))
-                                ).text
-                                print(f"question {index} found")
-                                print(f"Question (Input) #{index}: {question}")
-                                try:
-                                    answer, score = get_answer(question)
-                                    print("Question:", question)
-                                    print("Answer:", answer)
-                                    print("Score:", score)
-
-                                except Exception as e:
-                                    print(f"ERROR: Getting answer from qa_model: {e}")
-
-                                print("Looking for Input")
-                                input_xpath = ".//input[contains(@id, 'single-line-text-form-component')]"
-                                input = WebDriverWait(question_element, 10).until(
-                                    EC.presence_of_element_located((By.XPATH, input_xpath))
+                                print(f"Attempting to find modal label for input in contact info using XPath: {xpath}")
+                                label_element = WebDriverWait(question_element, 2.5).until(
+                                    EC.presence_of_element_located((By.XPATH, xpath))
                                 )
-                                print("Input Found")
-                                print("Checking for numeric error for input")
-                                numeric_error_xpath = "//div[contains(@id, 'numeric-error')]"
-                                try:
-                                    numeric_error = WebDriverWait(question_element, 10).until(
-                                        EC.presence_of_element_located((By.XPATH, numeric_error_xpath))
-                                    )
-                                    print("Numeric Error Found Inputting Numeric Answer")
-                                    input.send_keys(Keys.CONTROL + 'a', Keys.BACKSPACE)
-                                    print("input cleared")
-                                    # Possibly check if there are lettering/non-integers before performing
-                                    print(f"Current Answer {answer}")
-                                    print("Clearing non integers from answer")
-                                    numeric_part = re.search(r'\d+', answer)
-                                    if numeric_part:
-                                        number_answer = numeric_part.group()
-                                    else:
-                                        print("ERROR: No Number found in answer")
-                                    human_type(input, number_answer)
-                                    # Creating a Question ans object to be put into sql database
-                                except:
-                                    print("Numeric Error Not Found, Inputting regular answer")
-                                    human_type(input, answer)
-                                    print(f"Answer: {answer}, typed into input question #{index}")
+                                question = label_element.text
+                                print(f"Modal Label for Input Found: contact info - modal label for input")
+                                random_sleep(1.5,2.5)
                             except Exception as e:
-                                print(f"ERROR Question Label Not found: {e}")
-                        else:
-                            print(f"Question {index} is not an Input Question.")
-                    except Exception as e:
-                        print(f"ERROR Looking for input: {e}")
+                                print(f"Failed to find or process the modal Label for input element in contact info function: {e}")
+
+                        print(f"question {index} found")
+                        print(f"Question (Input) #{index}: {question}")
+                        try:
+                            answer, score = get_answer(question)
+                            print("Question:", question)
+                            print("Answer:", answer)
+                            print("Score:", score)
+
+                            print("Looking for Input")
+                            input_xpath = ".//input[contains(@id, 'single-line-text-form-component')]"
+                            input_element = WebDriverWait(question_element, 10).until(
+                                EC.presence_of_element_located((By.XPATH, input_xpath))
+                            )
+                            print("Input Found")
+                            print("Checking for numeric error for input")
+                            numeric_error_xpath = "//div[contains(@id, 'numeric-error')]"
+                            try:
+                                numeric_error = WebDriverWait(question_element, 10).until(
+                                    EC.presence_of_element_located((By.XPATH, numeric_error_xpath))
+                                )
+                                print("Numeric Error Found Inputting Numeric Answer")
+                                input_element.send_keys(Keys.CONTROL + 'a', Keys.BACKSPACE)
+                                print("input cleared")
+                                # Possibly check if there are lettering/non-integers before performing
+                                print(f"Current Answer {answer}")
+                                print("Clearing non integers from answer")
+                                numeric_part = re.search(r'\d+', answer)
+                                if numeric_part:
+                                    number_answer = numeric_part.group()
+                                    human_type(input_element, number_answer)
+                                else:
+                                    print("ERROR: No Number found in answer")
+                            except Exception as e:
+                                print("Numeric Error Not Found, Inputting regular answer")
+                                human_type(input_element, answer)
+                                print(f"Answer: {answer}, typed into input question #{index}")
+                        except Exception as e:
+                            print(f"ERROR Getting answer from qa_model: {e}")
+                    else:
+                        print(f"Question {index} is not an Input Question.")
+
 
     if 'Work Authorization' in predicted_category:
         print("Handling Work Authorization questions")
