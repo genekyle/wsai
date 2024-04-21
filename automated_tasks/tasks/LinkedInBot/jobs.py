@@ -579,12 +579,27 @@ class Jobs:
                     return "No suitable answer found.", highest_score
 
             # Pages We would encounter in Apply Modal:
-            # Pages We have found:w
+            # Pages We have found:
             # Contact Info, Home Address, Additional Questions, Work Authorization, Upload Resume, Voluntary self identification, 
-            # Additional (Similar to Additional Questions),
+            # Additional, Screening Questions, Work Experience, Education, Privacy Policy (checkbox)
             # Sometimes Upload Resume may ask for Cover Letter, typed or uploaded
+            if "work experience" in current_header_text:
+                print("ERROR: Not Handling 'Work Experience' Currently Under Construction")
+                random_sleep(20,30)
 
-            if "contact info" in current_header_text:
+            elif "education" in current_header_text:
+                print("ERROR: Not Handling 'Education' Currently Under Construction")
+                random_sleep(20,30)
+
+            elif "screening questions" in current_header_text:
+                print("ERROR: Not Handling 'Screening Questions' Currently Under Construction")
+                random_sleep(20,30)
+            
+            elif "privacy policy" in current_header_text:
+                print("ERROR: Not Handling 'Privacy Policy' Currently Under Construction")
+                random_sleep(20,30)
+
+            elif "contact info" in current_header_text:
                 # Notes: We found that some jobs may be able to have upload resume within the contacts page, 
                 # CONTACT INFO FIELDS FOUND:
                 # First Name, Last Name, Phone Country Code, Mobile Phone Number, Email Address, Resume

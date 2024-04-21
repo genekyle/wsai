@@ -185,16 +185,26 @@ def handle_unknown_section(driver, modal_element, current_header_text, job_title
                             print("Answer:", answer)
                             print("Score:", score)
 
-                            print("Looking for Input")
-                            input_xpath = ".//input[contains(@id, 'single-line-text-form-component')]"
-                            input_element = WebDriverWait(question_element, 10).until(
-                                EC.presence_of_element_located((By.XPATH, input_xpath))
-                            )
+                            try:
+                                print("Attempt #1 Looking for Input for in contact info module")
+                                input_xpath = ".//input[contains(@id, 'single-line-text-form-component')]"
+                                input_element = WebDriverWait(question_element, 3).until(
+                                    EC.presence_of_element_located((By.XPATH, input_xpath))
+                                )
+                            except:
+                                try:
+                                    print("Attempt #2 Looking for Input for in contact info module")
+                                    input_xpath = ".//input[contains(@id, 'single-typeahead-entity-form-component-formElement')]"
+                                    input_element = WebDriverWait(question_element, 3).until(
+                                        EC.presence_of_element_located((By.XPATH, input_xpath))
+                                    )
+                                except Exception as e:
+                                    print(f"ERROR Looking for input after 2nd try in contact module")
                             print("Input Found")
                             print("Checking for numeric error for input")
                             numeric_error_xpath = "//div[contains(@id, 'numeric-error')]"
                             try:
-                                numeric_error = WebDriverWait(question_element, 10).until(
+                                numeric_error = WebDriverWait(question_element, 3).until(
                                     EC.presence_of_element_located((By.XPATH, numeric_error_xpath))
                                 )
                                 print("Numeric Error Found Inputting Numeric Answer")
