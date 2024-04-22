@@ -4,8 +4,8 @@ var config = {
     rules: {
       singleProxy: {
         scheme: "http",
-        host: "45.205.69.76",
-        port: parseInt(7777)
+        host: "45.203.245.56",
+        port: 7777
       },
       bypassList: ["localhost"]
     }

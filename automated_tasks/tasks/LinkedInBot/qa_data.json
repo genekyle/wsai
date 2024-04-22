@@ -52,6 +52,7 @@
         {"question": "How many years of work experience do you have with Django?", "answer": "1 year"},
         {"question": "How many years of work experience do you have with Express.js?", "answer": "1 year"},
         {"question": "How many years of work experience do you have with Extract, Transform, Load (ETL)?", "answer": "3 years"},
+        {"question": "How many years of work experience do you have with Ext JS?", "answer": "2 years"},
         {"question": "How many years of work experience do you have with Flask?", "answer": "0 years"},
         {"question": "How many years of work experience do you have with Google Cloud Platform (GCP)?", "answer": "1 year"},
         {"question": "How many years of work experience do you have with GraphQL?", "answer": "0 years"},
@@ -81,9 +82,10 @@
         {"question": "How many years of work experience do you have with Snowflake?", "answer": "0 years"},
         {"question": "How many years of work experience do you have with Terraform?", "answer": "0 years"},
         {"question": "How many years of work experience do you have with TypeScript?", "answer": "1 year"},
+        {"question": "How many years of work experience do you have with VBScript?", "answer": "1 year"},
         {"question": "How many years of work experience do you have with Visual Basic .NET (VB.NET)?", "answer": "1 year"},
         {"question": "How many years of work experience do you have with VMware?", "answer": "1 year"},
-        {"question": "How many years of work experience do you have with VBScript?", "answer": "1 year"},
+        {"question": "How many years of work experience do you have with Vue.js", "answer": "1 year"},
         {"question": "How many years of experience do you have with Software Development?", "answer": "3 years"},
         {"question": "How many years of experience do you have working in an early-stage, high-growth startup as an engineer?", "answer": "3 years"},
         {"question": "How many years of professional development experience do you have?", "answer": "2 years"},
@@ -93,10 +95,14 @@
         {"question": "State your experience duration with C#.", "answer": "2 years"}
     ],
     "Programming Languages": [
+        {"question": "CSS?", "answer": "4 years"},
         {"question": "Do you have Bash or Python experience?", "answer": "Yes"},
         {"question": "Do you have experience porting Web User Interfaces from a legacy .Net framework 4.7.2 application (C#, MVC, jquery, angularJS) to .Net (version 8 or close to that)?", "answer": "Yes"},
+        {"question": "Django/Flask?", "answer": "2 years"},
         {"question": "How many years of work experience do you have with Data Engineering?", "answer": "2 years"},
         {"question": "How many years of work experience do you have with React Hooks?", "answer": "1 year"},
+        {"question": "Python Programming?", "answer": "3 years"},
+        {"question": "ReactJS?", "answer": "2 years"},
         {"question": "What programming languages can you work with?", "answer": "Python, JavaScript, C#"}
     ],
     "Related Experience": [  
@@ -134,7 +140,7 @@
         {"question": "Rate your SQL skills.", "answer": "Advanced"},
         {"question": "What is your proficiency with SQL technologies?", "answer": "Advanced"}
     ],
-    "Work Authorization": [
+    "Work Authorization": [ 
         {"question": "Are you a US citizen or Green Card holder?", "answer": "Yes"},
         {"question": "Are you eligible to work in the United States without sponsorship?", "answer": "Yes"},
         {"question": "Are you authorized to work in the U.S. without restriction?", "answer": "Yes"},
@@ -146,7 +152,8 @@
         {"question": "This position is not eligible for consultants. Client is unable to sponsor new, or transfer existing visas. Will you now or in the future require new sponsorship or a transfer of existing work visa?", "answer":"No"},
         {"question": "We must fill this position urgently. Can you start immediately?", "answer": "Yes"},
         {"question": "Will you now or in the future require sponsorship to work within the United States?", "answer": "No"},
-        {"question": "Will you now, or in the future, require sponsorship for employment visa status (e.g. H-1B visa status)?Will you now, or in the future, require sponsorship for employment visa status (e.g. H-1B visa status)?", "answer":"No"}
+        {"question": "Will you now, or in the future, require sponsorship for employment visa status (e.g. H-1B visa status)?Will you now, or in the future, require sponsorship for employment visa status (e.g. H-1B visa status)?", "answer":"No"},
+        {"question": "Work Authorization: 1.USC 2.GC 3.GC-EAD 4.H4-EAD 5.TN Visa 6. L2-EAD 7.H1B 8.OPT-EAD 9.CPT-EAD", "answer":"1"}
     ],
     "Work Preferences": [
         {"question": "Are you able to commute to our office near Bryant Park 4 times a week?", "answer":"Yes"},
@@ -169,3 +176,4 @@
         {"question": "What is your desired compensation?", "answer": "50"}
     ]
 }
+

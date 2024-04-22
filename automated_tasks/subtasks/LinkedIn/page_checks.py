@@ -29,7 +29,8 @@ class PageCheck:
         # Define the XPath for the modal that contains the confirmation text
         modal_xpaths = [ 
             """//div[contains(text(), "Keep track of your application")]""",
-            """//p[contains(text(),'You can keep track')]"""
+            """//p[contains(text(),'You can keep track')]""",
+            """//h3[contains(normalize-space(), 'Your application was sent')]"""
         ]
         for xpath in modal_xpaths:
             try:
