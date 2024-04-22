@@ -599,6 +599,9 @@ class Jobs:
                 print("ERROR: Not Handling 'Privacy Policy' Currently Under Construction")
                 random_sleep(20,30)
 
+            elif "diversity" in current_header_text:
+                print("ERROR: Not Handling 'Diversity' Currently Under Construction")
+                random_sleep(20,30)
             elif "contact info" in current_header_text:
                 # Notes: We found that some jobs may be able to have upload resume within the contacts page, 
                 # CONTACT INFO FIELDS FOUND:
@@ -709,7 +712,7 @@ class Jobs:
                     # Fuzzy Matching System
                     location_groups = {
                         "California": ["California", "CA", "Los Angeles", "Santa Monica", "Pasadena", "San Francisco"],  # California In General not sure where to go
-                        "New York": ["New York", "NY", "New Jersey", "NJ", "Manhattan", "Brooklyn", "Queens"], # NYC Metropolitan Area mainly
+                        "New York": ["New York", "NY", "New Jersey", "NJ", "Manhattan", "Brooklyn", "Queens", "Piscataway, NJ", "New Jersey" ], # NYC Metropolitan Area mainly
                         "New Hampshire": ["Boston", "MA", "Massachusetts", "New Hampshire", "NH", "RI", "ME", "Remote"] # Greater Boston Area
                     }
 
