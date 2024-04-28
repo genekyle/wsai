@@ -83,7 +83,7 @@ class Jobs:
         expected_url = "https://www.linkedin.com/jobs/"
         
         try:
-            WebDriverWait(self.driver, 5).until(EC.url_to_be(expected_url))
+            WebDriverWait(self.driver, 30).until(EC.url_to_be(expected_url))
             print(f"Arrived at the expected URL: {expected_url}")
         except TimeoutException:
             print(f"Timed out waiting for URL to be: {expected_url}")
@@ -541,6 +541,7 @@ class Jobs:
                 EC.element_to_be_clickable((By.XPATH, modal_xpath))
             )
             print("Checking for current stage of applying")
+            print("Checking first for different h3 header when dealing with Work Experienced")
             h3_xpath = "//div[contains(@class, 'jobs-easy-apply-content')]//h3[contains(@class, 't-16 t-bold')]"
             h3_header = WebDriverWait(modal_element, 10).until(
                 EC.element_to_be_clickable((By. XPATH, h3_xpath))
@@ -795,7 +796,7 @@ class Jobs:
                 location_groups = {
                     "California": ["California", "CA", "Los Angeles", "Santa Monica", "Pasadena", "San Francisco"],  # California In General not sure where to go
                     "New York": ["New York", "NY", "New Jersey", "NJ", "Manhattan", "Brooklyn", "Queens"], # NYC Metropolitan Area mainly
-                    "New Hampshire": ["Boston", "MA", "Massachusetts", "New Hampshire", "NH", "RI", "ME", "Remote"] # Greater Boston Area
+                    "New Hampshire": ["Boston", "MA", "Massachusetts", "New Hampshire", "NH", "RI", "ME", "Remote", "CT"] # Greater Boston Area
                 }
 
                 # Determine the job location group directly in the function

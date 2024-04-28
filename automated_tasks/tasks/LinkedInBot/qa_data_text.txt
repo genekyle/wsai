@@ -1,0 +1,61 @@
+Do you have knowledge of SQL databases (e.g., PostgreSQL)?Do you have knowledge of SQL databases (e.g., PostgreSQL)? 
+
+Do you have least 8 years of full-stack development experience AND 2+ years of experience as a team lead? Do you have least 8 years of full-stack development experience AND 2+ years of experience as a team lead?  
+
+Do you have strong user-facing product exposure?Do you have strong user-facing product exposure? 
+
+Do you have long-running projects ideally within product companies?Do you have long-running projects ideally within product companies? 
+
+Are you legally authorized to work in the United States?Are you legally authorized to work in the United States? 
+
+Are you local to the San Francisco Bay area or willing to relocate?Are you local to the San Francisco Bay area or willing to relocate? 
+
+Are you a US citizen?Are you a US citizen? 
+
+Do you have 4 years Software Development experience? Do you have 4 years Software Development experience?  
+Required
+Yes
+Do you have 8 years Network Engineering experience?Do you have 8 years Network Engineering experience? 
+Required
+No
+Do you have 4 years Agile (Lean or Scaled Agile Framework) experience?Do you have 4 years Agile (Lean or Scaled Agile Framework) experience? 
+Required
+Select an option
+Do you have Banking / Financial Services industry experience? Do you have Banking / Financial Services industry experience?  
+Required
+Select an option
+Can you commit to the rate range advertised $51 to $56 per hour?Can you commit to the rate range advertised $51 to $56 per hour? 
+Required
+Select an option
+How many years of experience do you have with a Front End tech stack?
+No suitable answer found.
+Enter a decimal number larger than 0.0
+On a scale from 1-10, how would you rate your proficiency in React?
+No suitable answer found.
+Enter a decimal number larger than 0.0
+On a scale from 1-10, how would you rate your proficiency in Javascript?
+No suitable answer found.
+Enter a decimal number larger than 0.0
+Have you worked at an early stage startup before?Have you worked at an early stage startup before? 
+Required
+Yes
+Are you able to commute to the Mountain View, CA office three times a week?Are you able to commute to the Mountain View, CA office three times a week? 
+Required
+Yes
+Have you led a team or been in a leadership role before?Have you led a team or been in a leadership role before? 
+We are Not able to work via Corp-to-Corp (C2C) on this position. We can only work via 1099 (independent) or W2. Would this be an obstacle? We are Not able to work via Corp-to-Corp (C2C) on this position. We can only work via 1099 (independent) or W2. Would this be an obstacle?  
+How many years of experience do you have with a Front End tech stack?
+3
+On a scale from 1-10, how would you rate your proficiency in React?
+o suitable answer found.N
+Enter a decimal number larger than 0.0
+On a scale from 1-10, how would you rate your proficiency in Javascript?
+No sanswer found. el
+Enter a decimal number larger than 0.0
+Have you worked at an early stage startup before?Have you worked at an early stage startup before? 
+Required
+Select an option
+Are you able to commute to the Mountain View, CA office three times a week?Are you able to commute to the Mountain View, CA office three times a week? 
+Required
+Select an option
+Have you led a team or been in a leadership role before?Have you led a team or been in a leadership role before? 

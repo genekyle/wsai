@@ -105,7 +105,7 @@
         {"question": "ReactJS?", "answer": "2 years"},
         {"question": "What programming languages can you work with?", "answer": "Python, JavaScript, C#"}
     ],
-    "Related Experience": [  
+    "Related Experience": [
         {"question": "Do you have experience trading in the stock market?", "answer": "Yes"},
         {"question": "Do you have experience within the medical device industry or other regulated environment?", "answer": "Yes"},
         {"question": "Do you have prior experience at a tech startup (2-10 people)? ", "answer": "Yes"},
@@ -115,13 +115,15 @@
         {"question": "How many years of work experience do you have with Emerging Payments?", "answer": "0 years"},
         {"question": "How many years of work experience do you have with Product Marketing?", "answer": "2 years"},
         {"question": "How many years of work experience do you have with Technical Support?", "answer": "2 years"},
+        {"question": "How many years of experience do you have working with telescopes or optics?", "answer": "0 years"},
         {"question": "What is your level of proficiency in English?", "answer": "Native or Bilingual"},
         {"question": "What is your level of proficiency in Chinese?", "answer": "None"},
         {"question": "What is your level of proficiency in Japanese?", "answer": "None"},
         {"question": "What is your level of proficiency in Korean?", "answer": "None"},
         {"question": "What is your level of proficiency in Spanish?", "answer": "Conversational"}
     ],
-    "Skills Proficiency": [ 
+    "Skills Proficiency": [
+        {"question": "Are you able to build a fully functional web app? Are you able to build a fully functional web app?  ", "answer": "Yes"},
         {"question": "Are you experienced in configuration management tools (Ansible, Puppet, or Chef), GitLab CI/CD for automation, and Docker and Kubernetes for container orchestration?", "answer": "Yes"},
         {"question": "Are you an extremely strong frontend coder with tech stacks like React, JavaScript, and TypeScript?", "answer": "Yes"},
         {"question": "Do you have 1+ years of professional work experience in game development writing software in C++?", "answer": "Yes"},
@@ -131,6 +133,7 @@
         {"question": "Do you have experience with the Microsoft stack?", "answer": "Yes"},
         {"question": "Do you have practical knowledge of cloud platforms (AWS, Google Cloud), and have you implemented monitoring solutions and logging tools? ", "answer": "Yes"},
         {"question": "Do you possess knowledge of micro-services architecture and security practices, protecting against vulnerabilities? ", "answer": "Yes"},
+        {"question": "Have you ever built and deployed a project of your own? Please share in a direct message if so. Have you ever built and deployed a project of your own? Please share in a direct message if so.", "answer": "Yes"},
         {"question": "Have you used Infrastructure as Code (IaC) with Terraform or CloudFormation?", "answer": "No"},
         {"question": "How many full-stack development projects have you worked on?", "answer": "10"},
         {"question": "How many years of Information Technology experience do you currently have?", "answer": "3 years"},
@@ -168,6 +171,7 @@
         {"question": "Are you willing and able to Work 5 days a week in the office?", "answer": "Yes"},
         {"question": "Are you willing to move to/do you live near Irvine, CA?", "answer": "Yes"},
         {"question": "Are you willing to take a drug test, in accordance with local law/regulations?", "answer": "Yes"},
+        {"question": "Are you working with a 3rd Party Employer?", "answer": "No"},
         {"question": "Can you commit as a temporary employee for 3+ months?Can you commit as a temporary employee for 3+ months?", "answer": "Yes"},
         {"question": "Do you need to relocate from you current location to work with us onsite 3 days per week (Tuesday, Wednesday & Thursday) in Massachusetts?", "answer": "No"},
         {"question": "Do you presently reside in the Greater Boston or Greater NYC area? (Please note relocation candidates are not considered at this time)", "answer": "Yes"},
@@ -176,4 +180,3 @@
         {"question": "What is your desired compensation?", "answer": "50"}
     ]
 }
-

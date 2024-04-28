@@ -21,8 +21,17 @@ class BrowserSessionManager(QObject):
         return session_id, driver
 
     def _initialize_browser(self):
+        # Create an instance of ChromeOptions
         options = Options()
+
+        extension_path = r'C:\Users\genom\code\wsai\proxy\newprox'
         
+        options.add_argument(f'--load-extension={extension_path}')
+        
+        # proxy = "45.203.245.56:7777"
+        # options.add_argument(f'--proxy-server={proxy}')
+        
+        # Initialize the Chrome driver with these options
         return webdriver.Chrome(options=options)
 
     def get_browser_session(self, session_id):
