@@ -280,20 +280,27 @@ class Jobs:
                     try:
                         print("Trying Attempt # 1 for JDP Job Title")
                         job_title_jdp_span_xpath = "//h2[contains(@class, 'job-details-jobs-unified-top-card__job-title')]//span"
-                        job_title_jdp = WebDriverWait(self.driver, 10).until(
+                        job_title_jdp = WebDriverWait(self.driver, 7).until(
                             EC.visibility_of_element_located((By.XPATH, job_title_jdp_span_xpath))
                         ).text
                         print("Job Title JDP Found")
                     except:
                         try:
                             print("Attempt 1 failed... Trying Attempt # 2 for JDP Job Title")
-                            job_title_jdp_span_xpath = "//h1[contains(@class, 'job-details-jobs-unified-top-card__job-title')]//span"
-                            job_title_jdp = WebDriverWait(self.driver, 10).until(
+                            job_title_jdp_span_xpath = "//div[contains(@class, 'job-details-jobs-unified-top-card__job-title')]//a"
+                            job_title_jdp = WebDriverWait(self.driver, 1).until(
                                 EC.visibility_of_element_located((By.XPATH, job_title_jdp_span_xpath))
                             ).text
                         except:
-                            print("Attempt #2 failed, Please Find Job Title in Job Description Panel to ensure check works")
-                            break
+                            try:
+                                print("Attempt 2 failed... Trying Attempt # 3 for JDP Job Title")
+                                job_title_jdp_span_xpath = "//h1[contains(@class, 'job-details-jobs-unified-top-card__job-title')]//span"
+                                job_title_jdp = WebDriverWait(self.driver, 5).until(
+                                    EC.visibility_of_element_located((By.XPATH, job_title_jdp_span_xpath))
+                                ).text
+                            except:
+                                print("Attempt #3 failed, Please Find Job Title in Job Description Panel to ensure check works")
+                                break
 
                     print(f"Job Title That is current in our Job Description Panel: {job_title_jdp}")
                     print(f"Job Title That we clicked on, within the Job Postings List: {job_post_title}")
