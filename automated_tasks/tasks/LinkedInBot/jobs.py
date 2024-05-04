@@ -1174,9 +1174,10 @@ class Jobs:
         # for "Next" or "review" button cases
             try:
                 # Starting to look for Next button first
+                random_sleep(2,3)
                 print("Looking for next button")
                 next_button_xpath = "//button[contains(@aria-label, 'Continue to next step')]"
-                next_button = WebDriverWait(self.driver, 10).until(
+                next_button = WebDriverWait(self.driver, 3).until(
                     EC.element_to_be_clickable((By.XPATH, next_button_xpath))
                 )
                 print("Next button found")
@@ -1189,7 +1190,7 @@ class Jobs:
                 try:
                     print("Looking for review button")
                     review_button_xpath = "//button[contains(@aria-label, 'Review your application')]"
-                    review_button = WebDriverWait(self.driver, 10).until(
+                    review_button = WebDriverWait(self.driver, 3).until(
                         EC.element_to_be_clickable((By.XPATH, review_button_xpath))
                     )
                     print("review button found")
