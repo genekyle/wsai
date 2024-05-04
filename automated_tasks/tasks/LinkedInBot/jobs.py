@@ -1174,10 +1174,9 @@ class Jobs:
         # for "Next" or "review" button cases
             try:
                 # Starting to look for Next button first
-                random_sleep(1,3)
                 print("Looking for next button")
                 next_button_xpath = "//button[contains(@aria-label, 'Continue to next step')]"
-                next_button = WebDriverWait(self.driver, 3).until(
+                next_button = WebDriverWait(self.driver, 10).until(
                     EC.element_to_be_clickable((By.XPATH, next_button_xpath))
                 )
                 print("Next button found")
@@ -1239,7 +1238,7 @@ class Jobs:
         print("Go To Next Page Function:")
         try:
             current_page_button_text_xpath = "//button[contains(@aria-current, 'true')]/span"
-            current_page_button_text = WebDriverWait(self.driver, 3).until(
+            current_page_button_text = WebDriverWait(self.driver, 10).until(
                 EC.visibility_of_element_located((By.XPATH, current_page_button_text_xpath))
             )
             current_page = int(current_page_button_text.text)
